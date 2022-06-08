@@ -46,179 +46,42 @@ def save_var_latex(key, value):
             f.write(f"{key},{dict_var[key]}\n")
 
 
-def preprocess_comfort_db_data(read_csv):
-
-    if read_csv:
-        # fixme convert to pickle
-        return pd.read_csv(r"./Data/DBII_preprocessed.csv")
-
-    # import DB II data
-    df_db2 = pd.read_csv(r"./Data/DatabaseI&II_20180703.csv", encoding="unicode_escape")
-
-    rename_cols = {
-        "Thermal sensation": "TSV",
-        "Air temperature (°C)": "Ta",
-        "Radiant temperature (°C)": "Tr",
-        "Relative humidity (%)": "Rh",
-        "Air velocity (m/s)": "V",
-        "Operative temperature (°C)": "To",
-    }
-    df_db2.rename(columns=rename_cols, inplace=True)
-
-    # remove entries which do not have all the data
-    tot_entries = df_db2.shape[0]
-
-    # I am keeping entries without Tr otherwise I would lose too many data points
-    df_db2 = (
-        df_db2.dropna(subset=["Ta", "V", "Rh", "Met", "Clo", "TSV"])
-        .reset_index(drop=True)
-        .copy()
-    )
-
-    def entries_removed(initial, new_df):
-        print(
-            f"Entries: {new_df.shape[0]} -- Entries removed: "
-            f"{initial - new_df.shape[0]}"
-        )
-
-    entries_removed(tot_entries, df_db2)
-
-    df_db2 = df_db2.reset_index(drop=True).copy()
-
-    # calculate PMV ISO, PMV SET and PMV*
-    results = []
-    for ix, row in df_db2.iterrows():
-
-        # remove entries outside applicability limits
-        if row["Tr"] != row["Tr"]:
-            if row["To"] != row["To"]:
-                row["Tr"] = row["Ta"]
-            else:
-                row["Tr"] = 2 * row["To"] - row["Ta"]
-
-        vr = v_relative(v=row["V"], met=row["Met"])
-        clo_d = clo_dynamic(clo=row["Clo"], met=row["Met"])
-        pmv_ashrae = pmv_ppd(
-            tdb=row["Ta"],
-            tr=row["Tr"],
-            vr=vr,
-            rh=row["Rh"],
-            met=row["Met"],
-            clo=clo_d,
-            standard="ashrae",
-        )["pmv"]
-        pmv_iso = pmv_ppd(
-            tdb=row["Ta"],
-            tr=row["Tr"],
-            vr=vr,
-            rh=row["Rh"],
-            met=row["Met"],
-            clo=clo_d,
-            standard="iso",
-        )["pmv"]
-        # pmv_set = two_nodes(
-        #     tdb=row["Ta"],
-        #     tr=row["Tr"],
-        #     v=row["V"],
-        #     rh=row["Rh"],
-        #     met=row["Met"],
-        #     clo=row["Clo"],
-        # )["pmv_set"]
-        # set_py = set_tmp(
-        #     tdb=row["Ta"],
-        #     tr=row["Tr"],
-        #     v=row["V"],
-        #     rh=row["Rh"],
-        #     met=row["Met"],
-        #     clo=row["Clo"],
-        # )
-        results.append(
-            {
-                "index": ix,
-                "pmv_ashrae": pmv_ashrae,
-                "pmv_iso": pmv_iso,
-                "Tr_est": row["Tr"]
-                # "pmv_set": pmv_set,
-                # "set_py": set_py,
-            }
-        )
-
-    df_ = pd.DataFrame(results)
-
-    df_ = pd.concat([df_db2, df_], axis=1, sort=False)
-
-    df_.to_csv(r"./Data/DBII_preprocessed.csv", index=False)
-
-    return df_
-
-
 def filter_data(df_):
 
-    # remove entries outside the Standards' applicability limits
-    df_ = df_[
-        (df_["Ta"] >= applicability_limits["Ta"][0])
-        & (df_["Ta"] <= applicability_limits["Ta"][1])
-    ]
-    df_ = df_[
-        (df_["Tr_est"] >= applicability_limits["Tr"][0])
-        & (df_["Tr_est"] <= applicability_limits["Tr"][1])
-    ]
-    df_ = df_[
-        (df_["V"] >= applicability_limits["V"][0])
-        & (df_["V"] <= applicability_limits["V"][1])
-    ]
-    df_ = df_[
-        (df_["Clo"] >= applicability_limits["Clo"][0])
-        & (df_["Clo"] <= applicability_limits["Clo"][1])
-    ]
-    df_ = df_[
-        (df_["Met"] >= applicability_limits["Met"][0])
-        & (df_["Met"] <= applicability_limits["Met"][1])
-    ]
-    df_ = df_[
-        (df_["pmv_iso"] > applicability_limits["PMV"][0])
-        & (df_["pmv_iso"] < applicability_limits["PMV"][1])
-    ]
-    df_ = df_[
-        (df_["pmv_ashrae"] > applicability_limits["PMV"][0])
-        & (df_["pmv_ashrae"] < applicability_limits["PMV"][1])
-    ]
-    df_ = df_[
-        (df_["TSV"] > applicability_limits["TSV"][0])
-        & (df_["TSV"] < applicability_limits["TSV"][1])
-    ]
     pa_arr = []
     for i, row in df_.iterrows():
-        pa_arr.append(psychrolib.GetVapPresFromRelHum(row["Ta"], row["Rh"] / 100))
-    df_["Pa"] = pa_arr
-    df_ = df_[
-        (df_["Pa"] > applicability_limits["Pa"][0])
-        & (df_["Pa"] < applicability_limits["Pa"][1])
-    ]
+        pa_arr.append(psychrolib.GetVapPresFromRelHum(row["ta"], row["rh"] / 100))
+
+    df_["pa"] = pa_arr
+
+    # remove entries outside the Standards' applicability limits
+    for key in applicability_limits.keys():
+        df_ = df_[
+            (df_[key] >= applicability_limits[key][0])
+            & (df_[key] <= applicability_limits[key][1])
+        ]
 
     return df_
 
 
 def calculate_new_indices(df_):
 
-    df_["pmv_iso_round"] = df_["pmv_iso"].round()
-    df_["pmv_ashrae_round"] = df_["pmv_ashrae"].round()
-    df_["PMV_round"] = df_["PMV"].round()
-    df_["TSV_round"] = df_["TSV"].round()
-    df_["diff_iso"] = df_[["TSV", "pmv_iso"]].diff(axis=1)["pmv_iso"]
-    df_["diff_ash"] = df_[["TSV", "pmv_ashrae"]].diff(axis=1)["pmv_ashrae"]
+    df_["pmv_round"] = df_["pmv"].round()
+    df_["pmv_ce_round"] = df_["pmv_ce"].round()
+    df_["thermal_sensation_round"] = df_["thermal_sensation"].round()
+    df_["diff_ts_pmv"] = df_[["thermal_sensation", "pmv"]].diff(axis=1)["pmv"]
+    df_["diff_ts_pmv_ce"] = df_[["thermal_sensation", "pmv_ce"]].diff(axis=1)["pmv_ce"]
 
     # check delta between the PMV I calculated and the one Toby did
-    df_["PMV - pmv_iso"] = df_["PMV"] - df_["pmv_iso"]
-    df_["PMV - pmv_ashrae"] = df_["PMV"] - df_["pmv_ashrae"]
-    # df_["SET - set_py"] = df_["SET"] - df_["set_py"]
-    df_["TSV_round - pmv_ashrae_round"] = df_["TSV"] - df_["pmv_ashrae_round"]
+    df_["PMV - pmv"] = df_["PMV"] - df_["pmv"]
+    df_["PMV - pmv_ce"] = df_["PMV"] - df_["pmv_ce"]
+    df_["thermal_sensation_round - pmv_ce_round"] = df_["thermal_sensation"] - df_["pmv_ce_round"]
 
     return df_
 
 
 def bar_chart(data, ind="tsv", show_per=True, figletter=False):
-    if data.V.min() != 0:
+    if data.vel.min() != 0:
         f, axs = plt.subplots(
             1, 2, sharey=True, constrained_layout=True, figsize=(8.0, 4.1)
         )
@@ -227,13 +90,13 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
             1, 2, sharey=True, constrained_layout=True, figsize=(8.0, 4)
         )
 
-    for ix, model in enumerate(["pmv_iso_round", "pmv_ashrae_round"]):
+    for ix, model in enumerate(["pmv_round", "pmv_ce_round"]):
         if ind == "pmv":
-            _df = data.groupby(["TSV_round", model])[model].count().unstack("TSV_round")
+            _df = data.groupby(["thermal_sensation_round", model])[model].count().unstack("thermal_sensation_round")
             x = model
             x_label = "PMV"
             axs[ix].set(xlabel=map_model_name[model], ylabel="Percentage [%]")
-            # conside the special case I am only including data with TSV = 0
+            # conside the special case I am only including data with thermal_sensation = 0
             if _df.columns == [0.0]:
                 for index in _df.index:
                     if index in _df.columns:
@@ -242,11 +105,11 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
                 _df = _df[_df.index.sort_values()]
 
         else:
-            _df = data.groupby(["TSV_round", model])["TSV_round"].count().unstack(model)
-            x = "TSV_round"
-            x_label = "TSV"
+            _df = data.groupby(["thermal_sensation_round", model])["thermal_sensation_round"].count().unstack(model)
+            x = "thermal_sensation_round"
+            x_label = "thermal_sensation"
             axs[ix].set(xlabel=x_label, ylabel="Percentage [%]")
-            if data.V.min() == 0:
+            if data.vel.min() == 0:
                 axs[ix].set_title(map_model_name[model], y=0.9)
         df_total = _df.sum(axis=1)
         df_rel = _df.div(df_total, 0) * 100
@@ -277,7 +140,7 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
             axs[ix].set(xlabel=map_model_name[model], ylabel="Percentage [%]")
         else:
             axs[ix].set(xlabel=x_label, ylabel="Percentage [%]")
-            if data.V.min() == 0:
+            if data.vel.min() == 0:
                 axs[ix].set_title(map_model_name[model], y=1.1)
                 axs[ix].set_xticklabels("")
                 axs[ix].set_xlabel("")
@@ -332,7 +195,7 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
                         )
                     cum_sum += el
 
-    # if data.V.min() != 0:
+    # if data.vel.min() != 0:
     # sm = plt.cm.ScalarMappable(cmap=cmap1, norm=plt.Normalize(vmin=-3.5, vmax=+3.5))
     # cmap = mpl.cm.rainbow
     # bounds = np.linspace(-3.5, 3.5, 8)
@@ -362,7 +225,7 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
     if figletter:
         plt.gcf().text(0.05, 0.95, f"{figletter})", weight="bold")
 
-    plt.savefig(f"./Manuscript/Figures/bar_plot_{ind}_Vmin_{data.V.min()}.png", dpi=300)
+    plt.savefig(f"./Manuscript/Figures/bar_plot_{ind}_Vmin_{data.vel.min()}.png", dpi=300)
 
 
 def legend_pmv():
@@ -394,11 +257,11 @@ def legend_pmv():
 
 
 def distributions_pmv(v_lower=False):
-    # check difference in distribution for V > 0.1
-    variables = ["pmv_iso", "pmv_ashrae", "TSV"]
+    # check difference in distribution for vel > 0.1
+    variables = ["pmv", "pmv_ce", "thermal_sensation"]
     f, axs = plt.subplots(len(variables), 1, sharex=True)
     if v_lower:
-        data = df[df["V"] > 0.1]
+        data = df[df["vel"] > 0.1]
     else:
         data = df.copy()
     for ix, var in enumerate(variables):
@@ -411,24 +274,24 @@ def scatter_plot_flip_x(data):
     f, axs = plt.subplots(1, 2, sharex=True, sharey=True, constrained_layout=True)
     sns.regplot(
         data=data,
-        x="TSV",
-        y="pmv_iso",
+        x="thermal_sensation",
+        y="pmv",
         ax=axs[0],
         scatter_kws={"s": 5, "alpha": 0.5, "color": "lightgray"},
     )
     slope, intercept, r_value, p_value, std_err = stats.linregress(
-        x=data["TSV"], y=data["pmv_iso"]
+        x=data["thermal_sensation"], y=data["pmv"]
     )
-    print("TSV x-axis:", slope, intercept, r_value, p_value, std_err)
+    print("thermal_sensation x-axis:", slope, intercept, r_value, p_value, std_err)
     sns.regplot(
         data=data,
-        y="TSV",
-        x="pmv_iso",
+        y="thermal_sensation",
+        x="pmv",
         ax=axs[1],
         scatter_kws={"s": 5, "alpha": 0.5, "color": "lightgray"},
     )
     slope, intercept, r_value, p_value, std_err = stats.linregress(
-        x=data["pmv_iso"], y=data["TSV"]
+        x=data["pmv"], y=data["thermal_sensation"]
     )
     print("ISO x-axis:", slope, intercept, r_value, p_value, std_err)
 
@@ -436,27 +299,27 @@ def scatter_plot_flip_x(data):
 def scatter_plot(data, ind="tsv", x_jitter=0):
     f, axs = plt.subplots(1, 2, constrained_layout=True)
 
-    for ix, model in enumerate(["pmv_iso", "pmv_ashrae"]):
+    for ix, model in enumerate(["pmv", "pmv_ce"]):
         if ind == "pmv":
-            sns.regplot(data=df, x=df[model], y="TSV", ax=axs[ix], x_jitter=0.1)
+            sns.regplot(data=df, x=df[model], y="thermal_sensation", ax=axs[ix], x_jitter=0.1)
             slope, intercept, r_value, p_value, std_err = stats.linregress(
-                y=df["TSV"], x=df[model]
+                y=df["thermal_sensation"], x=df[model]
             )
         else:
             axs[ix].scatter(
                 # data=data,
                 y=data[model],
-                x=data["TSV"],
+                x=data["thermal_sensation"],
                 alpha=0.5,
                 s=5,
                 c="lightgray",
             )
             slope, intercept, r_value, p_value, std_err = stats.linregress(
-                x=data["TSV"], y=data[model]
+                x=data["thermal_sensation"], y=data[model]
             )
 
         # mean absolute error
-        r2 = r2_score(data["TSV"], data[model])
+        r2 = r2_score(data["thermal_sensation"], data[model])
         mae = mean_absolute_error(data["TSV"], data[model])
 
         axs[ix].set(ylim=(-3.5, 3.5))
@@ -473,7 +336,7 @@ def scatter_plot(data, ind="tsv", x_jitter=0):
         )
 
         color = "#FDB515"
-        if model == "pmv_iso":
+        if model == "pmv":
             color = "#3B7EA1"
 
         axs[ix].plot(data["TSV"], intercept + data["TSV"] * slope, color=color)
@@ -504,13 +367,13 @@ def plot_error_prediction(data):
     f, axs = plt.subplots(1, 1, constrained_layout=True, figsize=(8.0, 6))
 
     _df = (
-        data[["TSV_round", "diff_iso", "diff_ash"]]
-        .set_index("TSV_round")
+        data[["thermal_sensation_round", "diff_ts_pmv", "diff_ts_pmv_ce"]]
+        .set_index("thermal_sensation_round")
         .stack()
         .reset_index()
     )
     _df.columns = ["TSV", "model", "delta"]
-    _df["model"] = _df["model"].map({"diff_iso": "PMV", "diff_ash": r"PMV$_{CE}$"})
+    _df["model"] = _df["model"].map({"diff_ts_pmv": "PMV", "diff_ts_pmv_ce": r"PMV$_{CE}$"})
     _df["TSV"] = pd.to_numeric(_df["TSV"], downcast="integer")
     sns.violinplot(
         data=_df,
@@ -624,25 +487,25 @@ def plot_error_prediction(data):
             )
 
     plt.savefig(
-        f"./Manuscript/Figures/prediction_error_Vmin_{data.V.min()}.png", dpi=300
+        f"./Manuscript/Figures/prediction_error_Vmin_{data.vel.min()}.png", dpi=300
     )
 
 
 def plot_distribution_variable():
     f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(8, 3))
 
-    for ix, var in enumerate(["Ta", "Tr", "V", "Clo", "Met", "Rh"]):
+    for ix, var in enumerate(["ta", "tr", "vel", "clo", "met", "rh"]):
         sns.boxenplot(y=var, data=df, ax=axs[ix], color="lightgray")
         axs[ix].set(
             ylabel="",
             xlabel=f"{var_names[var]} ({var_units[var]})",
             ylim=(applicability_limits[var][0], applicability_limits[var][1]),
         )
-        if var == "Ta":
+        if var == "ta":
             axs[ix].set(
-                ylim=(applicability_limits["Tr"][0], applicability_limits["Tr"][1]),
+                ylim=(applicability_limits["tr"][0], applicability_limits["tr"][1]),
             )
-        if var == "Clo":
+        if var == "clo":
             axs[ix].set(yticks=(np.arange(0, 1.8, 0.3)))
     sns.despine(bottom=True, left=True)
     plt.savefig("./Manuscript/Figures/dist_input_data.png", dpi=300)
@@ -655,68 +518,67 @@ if __name__ == "__main__":
     mpl.rcParams["figure.figsize"] = [8.0, 3.5]
     sns.set_theme(style="whitegrid")
     map_model_name = {
-        "pmv_iso": r"PMV",
-        "pmv_iso_round": r"PMV",
-        "pmv_ashrae_round": r"PMV$_{CE}$",
-        "pmv_ashrae": r"PMV$_{CE}$",
+        "pmv": r"PMV",
+        "pmv_round": r"PMV",
+        "pmv_ce_round": r"PMV$_{CE}$",
+        "pmv_ce": r"PMV$_{CE}$",
     }
     applicability_limits = {
-        "Ta": [10, 30],
-        "Tr": [10, 40],
-        "V": [0, 1],
-        "Clo": [0, 1.5],
-        "Met": [1, 4],
-        "PMV": [-3.5, 3.5],
-        "TSV": [-3.5, 3.5],
-        "Rh": [0, 100],
-        "Pa": [0, 2700],
+        "ta": [10, 30],
+        "tr": [10, 40],
+        "vel": [0, 1],
+        "clo": [0, 1.5],
+        "met": [1, 4],
+        "thermal_sensation": [-3.5, 3.5],
+        "rh": [0, 100],
+        "pa": [0, 2700],
     }
 
     var_names = {
-        "Ta": r"$t_{db}$",
-        "Tr": r"$\overline{t_{r}}$",
-        "V": r"$V$",
-        "Rh": r"$RH$",
-        "Clo": r"$I_{cl}$",
-        "Met": r"$M$",
+        "ta": r"$t_{db}$",
+        "tr": r"$\overline{t_{r}}$",
+        "vel": r"$V$",
+        "rh": r"$RH$",
+        "clo": r"$I_{cl}$",
+        "met": r"$M$",
     }
 
     var_units = {
-        "Ta": r"$^{\circ}$C",
-        "Tr": r"$^{\circ}$C",
-        "V": r"m/s",
-        "Rh": r"%",
-        "Clo": r"clo",
-        "Met": r"met",
+        "ta": r"$^{\circ}$C",
+        "tr": r"$^{\circ}$C",
+        "vel": r"m/s",
+        "rh": r"%",
+        "clo": r"clo",
+        "met": r"met",
     }
 
     # import data
-    df = preprocess_comfort_db_data(read_csv=True)
+    df = pd.read_csv(r"./Data/db_measurements_v2.1.0.csv.gz", compression="gzip")
 
     df = filter_data(df_=df)
     df = calculate_new_indices(df_=df)
 
     save_var_latex("Tot usable surveys", df.shape[0])
-    save_var_latex("Tot surveys V higher 0.1", df[df.V > 0.1].shape[0])
+    save_var_latex("Tot surveys vel higher 0.1", df[df.vel > 0.1].shape[0])
 
     # accuracies calculation
     for limit in [3, 2, 1]:
-        data = df[df["TSV_round"].abs() <= limit]
-        data_iso = data[df["pmv_iso_round"].abs() <= limit]
-        data_ash = data[df["pmv_ashrae_round"].abs() <= limit]
+        data = df[df["thermal_sensation_round"].abs() <= limit]
+        data_iso = data[df["pmv_round"].abs() <= limit]
+        data_ash = data[df["pmv_ce_round"].abs() <= limit]
 
         # check
-        print(data_iso["pmv_iso_round"].sort_values().unique())
-        print(data_ash["pmv_ashrae_round"].sort_values().unique())
-        print(data["TSV_round"].sort_values().unique())
+        print(data_iso["pmv_round"].sort_values().unique())
+        print(data_ash["pmv_ce_round"].sort_values().unique())
+        print(data["thermal_sensation_round"].sort_values().unique())
 
         acc_iso = (
-            data_iso[data_iso["TSV_round"] == data_iso["pmv_iso_round"]].shape[0]
+            data_iso[data_iso["thermal_sensation_round"] == data_iso["pmv_round"]].shape[0]
             / data_iso.shape[0]
         )
         save_var_latex(f"Overall PMV ISO accuracy - limit {limit}", int(acc_iso * 100))
         acc_ash = (
-            data_ash[data_ash["TSV_round"] == data_ash["pmv_ashrae_round"]].shape[0]
+            data_ash[data_ash["thermal_sensation_round"] == data_ash["pmv_ce_round"]].shape[0]
             / data_ash.shape[0]
         )
         save_var_latex(
@@ -724,11 +586,11 @@ if __name__ == "__main__":
         )
 
     def accuracy_varying_v(v):
-        data = df[df["V"] > v]
-        data = data[data["TSV_round"] == 0]
+        data = df[df["vel"] > v]
+        data = data[data["thermal_sensation_round"] == 0]
         print(f"{v=}")
-        print(round(data[data["pmv_iso_round"] == 0].shape[0] / data.shape[0] * 100))
-        print(round(data[data["pmv_ashrae_round"] == 0].shape[0] / data.shape[0] * 100))
+        print(round(data[data["pmv_round"] == 0].shape[0] / data.shape[0] * 100))
+        print(round(data[data["pmv_ce_round"] == 0].shape[0] / data.shape[0] * 100))
         print(data.shape[0])
 
     accuracy_varying_v(0.1)
@@ -740,7 +602,7 @@ if __name__ == "__main__":
     df_tpv = df.dropna(subset=["Thermal preference"])
     print(
         df_tpv[
-            (df_tpv.TSV_round.isin([-1, 1]))
+            (df_tpv.thermal_sensation_round.isin([-1, 1]))
             & (df_tpv["Thermal preference"] == "no change")
         ].shape[0]
     )
@@ -753,18 +615,18 @@ if __name__ == "__main__":
     # bar_chart(ind="pmv")
     bar_chart(data=df, ind="tsv", show_per=False, figletter="a")
     # bar_chart(data=df[df.TSV == 0], ind="pmv")
-    bar_chart(data=df[df.V > 0.1], ind="tsv", show_per=False, figletter="b")
-    # bar_chart(data=df[(df.V > 0.2)], ind="tsv")
-    # bar_chart(data=df[(df.V > 0.4)], ind="tsv")
-    # bar_chart(data=df[(df.TSV == 0) & (df.V > 0.3)], ind="tsv")
-    # bar_chart(data=df[(df.TSV == 0) & (df.V > 0.6)], ind="tsv")
-    # bar_chart(data=df[(df.TSV == 0) & (df.V > 0.9)], ind="tsv")
+    bar_chart(data=df[df.vel > 0.1], ind="tsv", show_per=False, figletter="b")
+    # bar_chart(data=df[(df.vel > 0.2)], ind="tsv")
+    # bar_chart(data=df[(df.vel > 0.4)], ind="tsv")
+    # bar_chart(data=df[(df.TSV == 0) & (df.vel > 0.3)], ind="tsv")
+    # bar_chart(data=df[(df.TSV == 0) & (df.vel > 0.6)], ind="tsv")
+    # bar_chart(data=df[(df.TSV == 0) & (df.vel > 0.9)], ind="tsv")
     legend_pmv()
 
     # Figure 3
-    plot_error_prediction(data=df[df.V > 0.1])
+    plot_error_prediction(data=df[df.vel > 0.1])
 
     # Figure 4
-    scatter_plot(data=df[df.V > 0.1], ind="tsv")
+    scatter_plot(data=df[df.vel > 0.1], ind="tsv")
     # scatter_plot(data=df, ind="pmv")
     # scatter_plot(data=df, ind="tsv")

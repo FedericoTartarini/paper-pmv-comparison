@@ -24,7 +24,7 @@ def save_var_latex(key, value):
 
     dict_var = {}
 
-    file_path = "Manuscript/Variables/results.dat"
+    file_path = "Manuscript/src/mydata.dat"
 
     try:
         with open(file_path, newline="") as file:
@@ -216,7 +216,7 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
     if figletter:
         plt.gcf().text(0.05, 0.95, f"{figletter})", weight="bold")
 
-    plt.savefig(f"./Manuscript/Figures/bar_plot_{ind}_Vmin_{data.vel.min()}.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/bar_plot_{ind}_Vmin_{data.vel.min()}.png", dpi=300)
 
 
 def legend_pmv():
@@ -351,7 +351,7 @@ def scatter_plot(data, ind="tsv", x_jitter=0):
         axs[ix].grid(axis="x")
 
     plt.tight_layout()
-    plt.savefig("./Manuscript/Figures/scatter_tsv_pmv.png", dpi=300)
+    plt.savefig("./Manuscript/src/figures/scatter_tsv_pmv.png", dpi=300)
 
 
 def plot_error_prediction(data):
@@ -478,11 +478,11 @@ def plot_error_prediction(data):
             )
 
     plt.savefig(
-        f"./Manuscript/Figures/prediction_error_Vmin_{data.vel.min()}.png", dpi=300
+        f"./Manuscript/src/figures/prediction_error_Vmin_{data.vel.min()}.png", dpi=300
     )
 
 
-def plot_distribution_variable():
+def plot_distribution_variable(data=df):
     f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(8, 3))
 
     for ix, var in enumerate(["ta", "tr", "vel", "clo", "met", "rh"]):
@@ -499,7 +499,7 @@ def plot_distribution_variable():
         if var == "clo":
             axs[ix].set(yticks=(np.arange(0, 1.8, 0.3)))
     sns.despine(bottom=True, left=True)
-    plt.savefig("./Manuscript/Figures/dist_input_data.png", dpi=300)
+    plt.savefig("./Manuscript/src/figures/dist_input_data.png", dpi=300)
     plt.show()
 
 
@@ -553,8 +553,8 @@ if __name__ == "__main__":
     # calculate rounded values
     df = calculate_new_indices(df_=df)
 
-    save_var_latex("Tot usable surveys", df.shape[0])
-    save_var_latex("Tot surveys vel higher 0.1", df[df.vel > 0.1].shape[0])
+    save_var_latex("tot_surveys", df.shape[0])
+    save_var_latex("tot_surveys_v_01", df[df.vel > 0.1].shape[0])
 
     # accuracies calculation
     for limit in [3, 2, 1]:
@@ -576,7 +576,7 @@ if __name__ == "__main__":
         )
 
     # Figure 1
-    plot_distribution_variable()
+    plot_distribution_variable(data=df)
 
     # Figure 2
     bar_chart(data=df, ind="tsv", show_per=False, figletter="a")

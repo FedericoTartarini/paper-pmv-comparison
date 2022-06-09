@@ -1,17 +1,24 @@
 %! Author = sbbfti
 %! Date = 10/06/2020
 
-% Document
-
 \section{Introduction}\label{sec:introduction}
 
     In 1970, Fanger~\cite{Fanger1970} developed the \ac{pmv} model, which is now incorporated into the \gls{7730} Standard~\cite{iso7730} in its original form.
+    The \ac{pmv} model has been widely adopted worldwide both among researchers and practitioners.
     The \ac{pmv} is the most extensively used thermal comfort index for estimating the thermal sensation of a group of people sharing the same thermal environment.
-    It is used both by researchers and practitioners.
     However, Cheung et al. (2019) demonstrated that the accuracy of the \ac{pmv} in predicting self-reported thermal sensation of people is only \qty{34}{\percent}~\cite{Cheung2019}.
 
-    ASHRAE 55:2020 Standard utilizes a modified version of the PMV model [4] that calculates a Cooling Effect (CE) using the Standard Effective Temperature (SET) equation for air speeds higher than \qty{0.1}{\m\per\s}.
-    The value of CE is then subtracted from both the measured dry-bulb air temperature (tdb) and \ac{tr} and these results become the input into the PMV model.
-    Since the CE already accounts for convective heat losses from the person to the environment, the air speed used to calculate the PMV value is set to 0.1 m/s.
+    To overcome this problem, the \gls{55} Standard introduced a modified version of the \ac{pmv}, the \gls{pmv-ce}~\cite{ashrae552020}.
+    For \ac{v} higher than \qty{0.1}{\m\per\s} the \gls{55} prescribes the use of the \ac{ce}.
+    The value of \ac{ce}, calculated using the \ac{set} equation, is subtracted from both the value of \ac{tdb} and \ac{tr} and these results become the input into the \ac{pmv} model.
+    The \ac{ce} already accounts for convective heat losses from the person to the environment, thus, the value of \ac{v}, used to calculate the \ac{pmv}, is set to \qty{0.1}{\m\per\s}.
+    The other three input parameters (\ac{clo}, \ac{met}, and \ac{rh}) are not modified.
+    Consequently, given the same thermal environment and same occupants, results from the two \ac{pmv} formulation differ when the value of \ac{v} is higher than \qty{0.1}{\m\per\s}.
+    This may be a source of confusion for many users worldwide since both the \gls{7730} and the \gls{55} are the widely adopted and incorporated in many national building codes worldwide.
+    In addition, over the course of the last \num{50} years, other formulations of the \ac{pmv} model have been formulated by other researchers.
+    To our knowledge, no other study compared the accuracy all the aforementioned  two aforementioned PMV models.
+    One study compared the accuracy of the \ac{pmv-ce} and the \ac{pmv} model.
+
+    This study aims to specifically fill this knowledge gap by comparing the results of the \ac{pmv} formulations developed over the course of the last years with self-reported \ac{tsv} contained in the ASHRAE Global Thermal Comfort Database II v2.1, referred to as the \gls{db2} thereafter.
 
 

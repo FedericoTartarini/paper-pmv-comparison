@@ -11,8 +11,10 @@ seaborn = "*"
 statsmodels = "*"
 numpy = "*"
 psychrolib = "*"
+sklearn = "*"
 
 [dev-packages]
+pyqt5 = "*"
 
 [requires]
 python_version = "3.10"

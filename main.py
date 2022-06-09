@@ -1,17 +1,12 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from pythermalcomfort.models import pmv_ppd, set_tmp, two_nodes
-from pythermalcomfort.utilities import v_relative, clo_dynamic
+import matplotlib as mpl
+mpl.use("Qt5Agg")  # or can use 'TkAgg', whatever you have/prefer
+
+from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import statsmodels.api as sm
 import numpy as np
 import warnings
-from scipy import stats
-import matplotlib.style
 import matplotlib as mpl
 from scipy import stats
 from sklearn.metrics import r2_score, mean_absolute_error
@@ -29,7 +24,7 @@ def save_var_latex(key, value):
 
     dict_var = {}
 
-    file_path = "Manuscript/Variables/results.csv"
+    file_path = "Manuscript/Variables/results.dat"
 
     try:
         with open(file_path, newline="") as file:
@@ -71,10 +66,6 @@ def calculate_new_indices(df_):
     df_["thermal_sensation_round"] = df_["thermal_sensation"].round()
     df_["diff_ts_pmv"] = df_[["thermal_sensation", "pmv"]].diff(axis=1)["pmv"]
     df_["diff_ts_pmv_ce"] = df_[["thermal_sensation", "pmv_ce"]].diff(axis=1)["pmv_ce"]
-
-    # check delta between the PMV I calculated and the one Toby did
-    df_["PMV - pmv"] = df_["PMV"] - df_["pmv"]
-    df_["PMV - pmv_ce"] = df_["PMV"] - df_["pmv_ce"]
     df_["thermal_sensation_round - pmv_ce_round"] = df_["thermal_sensation"] - df_["pmv_ce_round"]
 
     return df_
@@ -509,6 +500,7 @@ def plot_distribution_variable():
             axs[ix].set(yticks=(np.arange(0, 1.8, 0.3)))
     sns.despine(bottom=True, left=True)
     plt.savefig("./Manuscript/Figures/dist_input_data.png", dpi=300)
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -555,7 +547,10 @@ if __name__ == "__main__":
     # import data
     df = pd.read_csv(r"./Data/db_measurements_v2.1.0.csv.gz", compression="gzip")
 
+    # filter data outside standard applicability limits
     df = filter_data(df_=df)
+
+    # calculate rounded values
     df = calculate_new_indices(df_=df)
 
     save_var_latex("Tot usable surveys", df.shape[0])
@@ -566,11 +561,6 @@ if __name__ == "__main__":
         data = df[df["thermal_sensation_round"].abs() <= limit]
         data_iso = data[df["pmv_round"].abs() <= limit]
         data_ash = data[df["pmv_ce_round"].abs() <= limit]
-
-        # check
-        print(data_iso["pmv_round"].sort_values().unique())
-        print(data_ash["pmv_ce_round"].sort_values().unique())
-        print(data["thermal_sensation_round"].sort_values().unique())
 
         acc_iso = (
             data_iso[data_iso["thermal_sensation_round"] == data_iso["pmv_round"]].shape[0]
@@ -585,34 +575,10 @@ if __name__ == "__main__":
             f"Overall PMV ASHRAE accuracy - limit {limit}", int(acc_ash * 100)
         )
 
-    def accuracy_varying_v(v):
-        data = df[df["vel"] > v]
-        data = data[data["thermal_sensation_round"] == 0]
-        print(f"{v=}")
-        print(round(data[data["pmv_round"] == 0].shape[0] / data.shape[0] * 100))
-        print(round(data[data["pmv_ce_round"] == 0].shape[0] / data.shape[0] * 100))
-        print(data.shape[0])
-
-    accuracy_varying_v(0.1)
-    accuracy_varying_v(0.2)
-    accuracy_varying_v(0.4)
-    accuracy_varying_v(0.6)
-
-    print(df[~df.TSV.isin(range(-3, 3))].shape[0])
-    df_tpv = df.dropna(subset=["Thermal preference"])
-    print(
-        df_tpv[
-            (df_tpv.thermal_sensation_round.isin([-1, 1]))
-            & (df_tpv["Thermal preference"] == "no change")
-        ].shape[0]
-    )
-    print(df_tpv.shape[0])
-
     # Figure 1
     plot_distribution_variable()
 
     # Figure 2
-    # bar_chart(ind="pmv")
     bar_chart(data=df, ind="tsv", show_per=False, figletter="a")
     # bar_chart(data=df[df.TSV == 0], ind="pmv")
     bar_chart(data=df[df.vel > 0.1], ind="tsv", show_per=False, figletter="b")

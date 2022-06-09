@@ -3,34 +3,25 @@
 
 \begin{frontmatter}
 
-\title{Elsevier \LaTeX\ template\tnoteref{mytitlenote}}
-\tnotetext[mytitlenote]{Fully documented templates are available in the elsarticle package on \href{http://www.ctan.org/tex-archive/macros/latex/contrib/elsarticle}{CTAN}.}
+    \title{Title of the paper}
 
-%% Group authors per affiliation:
-\author{Elsevier\fnref{myfootnote}}
-\address{Radarweg 29, Amsterdam}
-\fntext[myfootnote]{Since 1880.}
+    \author[label1]{Federico Tartarini\corref{mycorrespondingauthor}}
+    \ead{federicotartarini@berkeley.edu}
+    \author[label2]{Stefano Schiavon}
 
-%% or include affiliations in footnotes:
-\author[mymainaddress,mysecondaryaddress]{Elsevier Inc}
-\ead[url]{www.elsevier.com}
+    \address[label1]{Berkeley Education Alliance for Research in Singapore, Singapore}
+    \address[label2]{Center for the Built Environment, University of California, Berkeley, CA, USA}
 
-\author[mysecondaryaddress]{Global Customer Service\corref{mycorrespondingauthor}}
-\cortext[mycorrespondingauthor]{Corresponding author}
-\ead{support@elsevier.com}
+    \cortext[mycorrespondingauthor]{Corresponding author}
 
-\address[mymainaddress]{1600 John F Kennedy Boulevard, Philadelphia}
-\address[mysecondaryaddress]{360 Park Avenue South, New York}
+    \begin{abstract}
+        The \ac{pmv} model developed by Fanger predicts thermal sensation.
+    %    It is used in its original formulation in the \gls{iso}, while the \gls{ashrae} uses a modified version \acs{pmv-ce} to better account for air speeds.
+        We compared their results against XXX thermal sensation votes collected in buildings.
+    \end{abstract}
 
-\begin{abstract}
-    The \ac{pmv} model developed by Fanger predicts thermal sensation.
-%    It is used in its original formulation in the \gls{iso}, while the \gls{ashrae} uses a modified version \acs{pmv-ce} to better account for air speeds.
-    We compared their results against XXX thermal sensation votes collected in buildings.
-\end{abstract}
-
-\begin{keyword}
-\texttt{elsarticle.cls}\sep \LaTeX\sep Elsevier \sep template
-\MSC[2010] 00-01\sep  99-00
-\end{keyword}
+    \begin{keyword}
+        Personal thermal comfort model \sep Ecological momentary assessment \sep Skin temperature \sep Machine learning \sep Internet of Things (IoT)
+    \end{keyword}
 
 \end{frontmatter}

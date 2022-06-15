@@ -1,4 +1,5 @@
 import matplotlib as mpl
+
 mpl.use("Qt5Agg")  # or can use 'TkAgg', whatever you have/prefer
 
 from matplotlib.colors import LinearSegmentedColormap
@@ -12,6 +13,7 @@ from scipy import stats
 from sklearn.metrics import r2_score, mean_absolute_error
 import psychrolib
 import matplotlib.patches as patches
+from pythermalcomfort.models import two_nodes, athb
 
 warnings.filterwarnings("ignore")
 
@@ -19,7 +21,7 @@ warnings.filterwarnings("ignore")
 psychrolib.SetUnitSystem(psychrolib.SI)
 
 
-def save_var_latex(key, value):
+def save_var_latex(key, value, units=False):
     import csv
 
     dict_var = {}
@@ -34,14 +36,19 @@ def save_var_latex(key, value):
     except FileNotFoundError:
         pass
 
-    dict_var[key] = value
+    if units:
+        dict_var[key] = f"\\qty{{{value}}}{{{units}}}"
+    else:
+        dict_var[key] = f"\\num{{{value}}}"
 
     with open(file_path, "w") as f:
         for key in dict_var.keys():
             f.write(f"{key},{dict_var[key]}\n")
 
 
-def filter_data(df_):
+def filtering_processing(df_):
+
+    save_var_latex("all_entries_db", df.shape[0])
 
     pa_arr = []
     for i, row in df_.iterrows():
@@ -51,27 +58,63 @@ def filter_data(df_):
 
     # remove entries outside the Standards' applicability limits
     for key in applicability_limits.keys():
+        if "pmv" in key:
+            continue
         df_ = df_[
             (df_[key] >= applicability_limits[key][0])
             & (df_[key] <= applicability_limits[key][1])
         ]
 
-    return df_
+    two_nodes_results = two_nodes(
+        tdb=df_.ta,
+        tr=df_.tr,
+        v=df_.vel,
+        rh=df_.rh,
+        met=df_.met,
+        clo=df_.clo,
+    )
 
+    df_["pmv_gagge"] = two_nodes_results["pmv_gagge"]
+    df_["pmv_set"] = two_nodes_results["pmv_set"]
 
-def calculate_new_indices(df_):
+    df_["athb"] = athb(
+        tdb=df_.ta,
+        tr=df_.tr,
+        vr=df_.vel,
+        rh=df_.rh,
+        met=df_.met,
+        t_running_mean=df_.t_mot_isd,
+    )
+
+    for key in applicability_limits.keys():
+        if "pmv" in key:
+            df_ = df_[
+                (df_[key] >= applicability_limits[key][0])
+                & (df_[key] <= applicability_limits[key][1])
+            ]
 
     df_["pmv_round"] = df_["pmv"].round()
     df_["pmv_ce_round"] = df_["pmv_ce"].round()
     df_["thermal_sensation_round"] = df_["thermal_sensation"].round()
     df_["diff_ts_pmv"] = df_[["thermal_sensation", "pmv"]].diff(axis=1)["pmv"]
     df_["diff_ts_pmv_ce"] = df_[["thermal_sensation", "pmv_ce"]].diff(axis=1)["pmv_ce"]
-    df_["thermal_sensation_round - pmv_ce_round"] = df_["thermal_sensation"] - df_["pmv_ce_round"]
+    df_["thermal_sensation_round - pmv_ce_round"] = (
+        df_["thermal_sensation"] - df_["pmv_ce_round"]
+    )
+    df_["pmv_gagge_round"] = df_["pmv_gagge"].round()
+    df_["pmv_set_round"] = df_["pmv_set"].round()
+    df_["athb_round"] = df_["pmv_set"].round()
 
     return df_
 
 
-def bar_chart(data, ind="tsv", show_per=True, figletter=False):
+def bar_chart(
+    data,
+    ind="tsv",
+    show_per=True,
+    figletter=False,
+    variables=["pmv_round", "pmv_ce_round"],
+):
     if data.vel.min() != 0:
         f, axs = plt.subplots(
             1, 2, sharey=True, constrained_layout=True, figsize=(8.0, 4.1)
@@ -81,9 +124,13 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
             1, 2, sharey=True, constrained_layout=True, figsize=(8.0, 4)
         )
 
-    for ix, model in enumerate(["pmv_round", "pmv_ce_round"]):
+    for ix, model in enumerate(variables):
         if ind == "pmv":
-            _df = data.groupby(["thermal_sensation_round", model])[model].count().unstack("thermal_sensation_round")
+            _df = (
+                data.groupby(["thermal_sensation_round", model])[model]
+                .count()
+                .unstack("thermal_sensation_round")
+            )
             x = model
             x_label = "PMV"
             axs[ix].set(xlabel=map_model_name[model], ylabel="Percentage [%]")
@@ -96,7 +143,13 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
                 _df = _df[_df.index.sort_values()]
 
         else:
-            _df = data.groupby(["thermal_sensation_round", model])["thermal_sensation_round"].count().unstack(model)
+            _df = (
+                data.groupby(["thermal_sensation_round", model])[
+                    "thermal_sensation_round"
+                ]
+                .count()
+                .unstack(model)
+            )
             x = "thermal_sensation_round"
             x_label = "thermal_sensation"
             axs[ix].set(xlabel=x_label, ylabel="Percentage [%]")
@@ -104,6 +157,12 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
                 axs[ix].set_title(map_model_name[model], y=0.9)
         df_total = _df.sum(axis=1)
         df_rel = _df.div(df_total, 0) * 100
+        for col in df_rel.index:
+            if col in df_rel.columns:
+                continue
+            else:
+                df_rel[col] = 0
+        df_rel = df_rel.reindex(sorted(df_rel.columns), axis=1)
         colors = [
             (33 / 255, 102 / 255, 172 / 255),
             (103 / 255, 169 / 255, 207 / 255),
@@ -216,7 +275,9 @@ def bar_chart(data, ind="tsv", show_per=True, figletter=False):
     if figletter:
         plt.gcf().text(0.05, 0.95, f"{figletter})", weight="bold")
 
-    plt.savefig(f"./Manuscript/src/figures/bar_plot_{ind}_Vmin_{data.vel.min()}.png", dpi=300)
+    plt.savefig(
+        f"./Manuscript/src/figures/bar_plot_{ind}_Vmin_{data.vel.min()}.png", dpi=300
+    )
 
 
 def legend_pmv():
@@ -292,7 +353,9 @@ def scatter_plot(data, ind="tsv", x_jitter=0):
 
     for ix, model in enumerate(["pmv", "pmv_ce"]):
         if ind == "pmv":
-            sns.regplot(data=df, x=df[model], y="thermal_sensation", ax=axs[ix], x_jitter=0.1)
+            sns.regplot(
+                data=df, x=df[model], y="thermal_sensation", ax=axs[ix], x_jitter=0.1
+            )
             slope, intercept, r_value, p_value, std_err = stats.linregress(
                 y=df["thermal_sensation"], x=df[model]
             )
@@ -364,7 +427,9 @@ def plot_error_prediction(data):
         .reset_index()
     )
     _df.columns = ["TSV", "model", "delta"]
-    _df["model"] = _df["model"].map({"diff_ts_pmv": "PMV", "diff_ts_pmv_ce": r"PMV$_{CE}$"})
+    _df["model"] = _df["model"].map(
+        {"diff_ts_pmv": "PMV", "diff_ts_pmv_ce": r"PMV$_{CE}$"}
+    )
     _df["TSV"] = pd.to_numeric(_df["TSV"], downcast="integer")
     sns.violinplot(
         data=_df,
@@ -482,7 +547,7 @@ def plot_error_prediction(data):
     )
 
 
-def plot_distribution_variable(data=df):
+def plot_distribution_variable(data):
     f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(8, 3))
 
     for ix, var in enumerate(["ta", "tr", "vel", "clo", "met", "rh"]):
@@ -514,6 +579,10 @@ if __name__ == "__main__":
         "pmv_round": r"PMV",
         "pmv_ce_round": r"PMV$_{CE}$",
         "pmv_ce": r"PMV$_{CE}$",
+        "pmv_set": r"PMV$_{SET}$",
+        "pmv_set_round": r"PMV$_{SET}$",
+        "pmv_gagge": r"PMV$_{Gagge}$",
+        "pmv_gagge_round": r"PMV$_{Gagge}$",
     }
     applicability_limits = {
         "ta": [10, 30],
@@ -522,6 +591,9 @@ if __name__ == "__main__":
         "clo": [0, 1.5],
         "met": [1, 4],
         "thermal_sensation": [-3.5, 3.5],
+        "pmv_ce": [-3.49999, 3.5],
+        "pmv_set": [-3.49999, 3.5],
+        "pmv_gagge": [-3.49999, 3.5],
         "rh": [0, 100],
         "pa": [0, 2700],
     }
@@ -544,17 +616,15 @@ if __name__ == "__main__":
         "met": r"met",
     }
 
-    # import data
     df = pd.read_csv(r"./Data/db_measurements_v2.1.0.csv.gz", compression="gzip")
 
     # filter data outside standard applicability limits
-    df = filter_data(df_=df)
-
-    # calculate rounded values
-    df = calculate_new_indices(df_=df)
+    df = filtering_processing(df_=df)
 
     save_var_latex("tot_surveys", df.shape[0])
     save_var_latex("tot_surveys_v_01", df[df.vel > 0.1].shape[0])
+
+if __name__ == "__plot__":
 
     # accuracies calculation
     for limit in [3, 2, 1]:
@@ -563,34 +633,78 @@ if __name__ == "__main__":
         data_ash = data[df["pmv_ce_round"].abs() <= limit]
 
         acc_iso = (
-            data_iso[data_iso["thermal_sensation_round"] == data_iso["pmv_round"]].shape[0]
+            data_iso[
+                data_iso["thermal_sensation_round"] == data_iso["pmv_round"]
+            ].shape[0]
             / data_iso.shape[0]
         )
         save_var_latex(f"Overall PMV ISO accuracy - limit {limit}", int(acc_iso * 100))
         acc_ash = (
-            data_ash[data_ash["thermal_sensation_round"] == data_ash["pmv_ce_round"]].shape[0]
+            data_ash[
+                data_ash["thermal_sensation_round"] == data_ash["pmv_ce_round"]
+            ].shape[0]
             / data_ash.shape[0]
         )
         save_var_latex(
             f"Overall PMV ASHRAE accuracy - limit {limit}", int(acc_ash * 100)
         )
 
+    print(
+        df[
+            [
+                "ta",
+                "tr",
+                "set",
+                "rh",
+                "vel",
+                "met",
+                "clo",
+                "clo_d",
+                "pmv",
+                "pmv_ce",
+                "pmv_set",
+                "pmv_gagge",
+            ]
+        ]
+        .head()
+        .to_markdown()
+    )
+
+    # Scatter thermal_sensation vs pmv prediction
+    f, axs = plt.subplots(1, 5, sharex=True, sharey=True, constrained_layout=True)
+    axs = axs.flatten()
+    for ix, pmv in enumerate(["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb"]):
+        # sns.regplot(x="thermal_sensation", y=pmv, data=df,ax=axs[ix], scatter_kws={"s":2, "alpha":0.3}, line_kws={"color":"k"})
+        sns.regplot(
+            x="thermal_sensation",
+            y=pmv,
+            data=df,
+            ax=axs[ix],
+            robust=True,
+            ci=None,
+            line_kws={"color": "k"},
+        )
+        axs[ix].set_title(pmv)
+
     # Figure 1
     plot_distribution_variable(data=df)
 
     # Figure 2
     bar_chart(data=df, ind="tsv", show_per=False, figletter="a")
+    bar_chart(
+        data=df,
+        ind="tsv",
+        show_per=False,
+        figletter="a",
+        variables=["pmv_gagge_round", "pmv_set_round"],
+    )
     # bar_chart(data=df[df.TSV == 0], ind="pmv")
     bar_chart(data=df[df.vel > 0.1], ind="tsv", show_per=False, figletter="b")
-    # bar_chart(data=df[(df.vel > 0.2)], ind="tsv")
-    # bar_chart(data=df[(df.vel > 0.4)], ind="tsv")
-    # bar_chart(data=df[(df.TSV == 0) & (df.vel > 0.3)], ind="tsv")
-    # bar_chart(data=df[(df.TSV == 0) & (df.vel > 0.6)], ind="tsv")
-    # bar_chart(data=df[(df.TSV == 0) & (df.vel > 0.9)], ind="tsv")
     legend_pmv()
 
     # Figure 3
     plot_error_prediction(data=df[df.vel > 0.1])
+    plot_error_prediction(data=df)
 
     # Figure 4
     scatter_plot(data=df[df.vel > 0.1], ind="tsv")

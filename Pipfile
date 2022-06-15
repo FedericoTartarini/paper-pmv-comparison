@@ -12,6 +12,7 @@ statsmodels = "*"
 numpy = "*"
 psychrolib = "*"
 sklearn = "*"
+tabulate = "*"
 
 [dev-packages]
 pyqt5 = "*"

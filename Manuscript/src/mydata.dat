@@ -1,8 +1,10 @@
 Tot surveys vel higher 0.1,17151
-Overall PMV ISO accuracy - limit 3,33
-Overall PMV ASHRAE accuracy - limit 3,34
-Overall PMV ISO accuracy - limit 2,35
-Overall PMV ASHRAE accuracy - limit 2,36
-Overall PMV ISO accuracy - limit 1,44
-Overall PMV ASHRAE accuracy - limit 1,45
-tot_surveys,49396
+Overall PMV ISO accuracy - limit 3,\num{33}
+Overall PMV ASHRAE accuracy - limit 3,\num{34}
+Overall PMV ISO accuracy - limit 2,\num{35}
+Overall PMV ASHRAE accuracy - limit 2,\num{36}
+Overall PMV ISO accuracy - limit 1,\num{44}
+Overall PMV ASHRAE accuracy - limit 1,\num{45}
+tot_surveys,\num{49367}
+all_entries_db,\num{109033}
+tot_surveys_v_01,\num{17131}

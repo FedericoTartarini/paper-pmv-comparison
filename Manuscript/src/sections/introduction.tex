@@ -6,22 +6,47 @@ It is the most extensively used thermal comfort index for estimating the thermal
 However, it has a relatively low accuracy in predicting self-reported thermal sensation of people~\cite{Cheung2019}.
 
 To overcome this problem, the \gls{55} Standard uses a modified version of the original model developed by Fanger, the \gls{pmv-ce}~\cite{ashrae552020}.
+The process used by the Standard is summarized in the flowchart depicted in Figure~\ref{fig:flowchart_pmv_ce}.
 For \ac{v} higher than \qty{0.1}{\m\per\s} the \gls{55} prescribes the use of the \ac{ce}.
 The value of \ac{ce}, which is calculated using the \ac{set} equation, is subtracted from both the value of \ac{tdb} and \ac{tr}.
 The resulting values become the new inputs into the \ac{pmv} model.
 The \ac{ce} accounts for convective heat losses from the person to the environment, thus, the value of \ac{v}, used to calculate the \ac{pmv}, is set to \qty{0.1}{\m\per\s}.
 While the other three input parameters (\ac{clo}, \ac{met}, and \ac{rh}) remain unchanged.
 Consequently, for a given thermal environment, results from the two \ac{pmv} formulation differ when the value of \ac{v} is higher than \qty{0.1}{\m\per\s}.
+
+\begin{figure}[!htb]
+    \centering
+
+    \begin{tikzpicture}[node distance=1cm]
+        \node (start) [startstop] {\ac{pmv} calculation as per \gls{55}};
+        \node (dec1) [decision, below of=start, yshift=-.25cm] {\ac{met} $> \qty{1}{met}$ };
+        \node (pro1a) [process, right of=dec1, xshift=4cm] {\ac{v} = \ac{v}$+ 0.3 ($\ac{met}$-1)$};
+        \node (dec2) [decision, below of=dec1, yshift=-0.75cm] {\ac{met} $> \qty{1.2}{met}$ };
+        \node (pro2a) [process, right of=dec2, xshift=4cm] {\ac{clo} = \ac{clo}$(0.6 + 0.4/$\ac{met}$)$};
+        \node (dec3) [decision, below of=dec2, yshift=-0.75cm] {\ac{v} $> \qty{0.1}{\m\per\s}$ };
+        \node (end1) [startstop, below of=dec3, yshift=-.25cm, xshift=-4cm] {\ac{pmv}(\ac{tdb}, \ac{tr}, \ac{rh}, \ac{v}, \ac{met}, \ac{clo})};
+        \node (pro3) [process_large, below of=dec3, yshift=-.25cm, xshift=4cm] {Calculate \ac{ce}};
+        \node (end2) [startstop, below of=pro3, yshift=-.5cm] {\ac{pmv}(\ac{tdb} - \ac{ce}, \ac{tr} - \ac{ce}, \ac{rh}, \ac{v} = \qty{0.1}{\m\per\s}, \ac{met}, \ac{clo})};
+
+        \draw [arrow] (start) -- (dec1);
+        \draw [arrow] (dec1) -- node[above,pos=0.3] {Yes} (pro1a);
+        \draw [arrow] (dec1) -- node[right,pos=0.3] {No} (dec2);
+        \draw [arrow] (pro1a) -- ($(pro1a.south)+(0,-0.5)$) -| (dec2);
+        \draw [arrow] (dec2) -- node[above,pos=0.3] {Yes} (pro2a);
+        \draw [arrow] (dec2) -- node[right,pos=0.3] {No} (dec3);
+        \draw [arrow] (pro2a) -- ($(pro2a.south)+(0,-0.5)$) -| (dec3);
+        \draw [arrow] (dec3) -- ($(dec3.west)$) -| node[above,pos=0.3] {No} (end1);
+        \draw [arrow] (dec3) -- ($(dec3.east)$) -| node[above,pos=0.3] {Yes} (pro3);
+        \draw [arrow] (pro3) -- (end2);
+    \end{tikzpicture}\label{fig:flowchart_pmv_ce}
+\end{figure}
+
 This is a source of confusion for many users worldwide since both the \gls{7730} and the \gls{55} are the widely adopted and incorporated in many national and international building codes worldwide.
 To further complicate this issue, over the course of the last \num{50} years, several other formulations of the \ac{pmv} model have been proposed.
-Among the most notable formulations there are the:
-\begin{enumerate}
-    \item \gls{epmv}
-    \item \gls{apmv}
-    \item SET \ac{pmv}
-    \item Gagge \ac{pmv}
-    \item Marcel \ac{pmv}
-\end{enumerate}
+Among the most notable formulations there are the: \gls{pmvs}, \gls{pmvg}, \gls{epmv}, \gls{apmv}, and \ac{athb}.
+
+% todo pmv SET
+% todo pmv Gagge
 
 In 2002, Fanger, P. O. and Toftum, J. developed the \gls{epmv} an extension of the \ac{pmv}.
 The \gls{epmv} includes an expectancy factor introduced for use in non-air-conditioned buildings in warm climates.
@@ -32,13 +57,19 @@ The \ac{ef} for non-air-conditioned buildings can be determined by the length of
 If the temperature is hot all year or most of the year and there are no or few other air-conditioned buildings, \ac{ef} may be \num{0.5}, but if there are many other air-conditioned buildings, \ac{ef} may be \num{0.7}.
 For non-air-conditioned buildings in locations where the temperature is warm solely during the summer and no or few buildings have air-conditioning \ac{ef} is \numrange{0.7}{0.8}, whereas it is \numrange{0.8}{.9} in areas where there are numerous air-conditioned buildings.
 In regions with only brief periods of warm weather during the summer, the expectancy factor may be \numrange{0.9}{1}.
-To better account for occupants adaptation Yao, R. et al. (2009) developed the Adaptive Predicted Mean
- Vote Model~\gls{apmv}.
-They used a ``Black Box'' model to determine an adaptive coefficient which is in turn use to calculate the \gls{apmv} using the following equation: $\mathrm{aPMV} = \mathrm{PMV}/(1+\lambda \mathrm{PMV})$
-The main issue with this approach is that the adaptive coefficient cannot be known a priori, but it is estimated based on the \ac{tsv} collected by a cohort of participants.
+This arbitrary and non-scientific definition of the expectancy factor make the \gls{epmv} difficult to calculate and non-generalizable.
+Consequently, the \gls{epmv} has not gained any widespread adoption.
 
-To our knowledge, no other study compared the accuracy all the aforementioned two aforementioned PMV models.
-One study compared the accuracy of the \gls{pmv-ce} and the \ac{pmv} model.
+Yao, R. et al. (2009) developed the Adaptive Predicted Mean Vote Model~\gls{apmv} to account for occupants adaptation.
+They used a ``Black Box'' model to estimate an adaptive coefficient which is in turn use to calculate the \gls{apmv} using the following equation: $\mathrm{aPMV} = \mathrm{PMV}/(1+\lambda \mathrm{PMV})$
+The main issue with this approach is that the adaptive coefficient cannot be known a priori, but it is estimated based on the \ac{tsv} collected by a cohort of participants.
+This approach cannot be, therefore, generalizable and similarly to the \gls{epmv} model the \gls{apmv} is rarely used in thermal comfort research.
+
+% todo describe marcel's work
+
+To our knowledge, no other study compared the accuracy all the aforementioned aforementioned PMV models.
+\mycite{Cheung2019} determined the accuracy of the \ac{pmv} model, by comparing its results with the \ac{tsv} from the ASHRAE ASHRAE Global Thermal Comfort Database II.
+While \textbf{COBEE paper} compared the accuracy of the \gls{pmv-ce} and the \ac{pmv} models.
 
 This study aims to specifically fill this knowledge gap by comparing the results of the \ac{pmv} formulations developed over the course of the last years with self-reported \ac{tsv} contained in the ASHRAE Global Thermal Comfort Database II v2.1, referred to as the \gls{db2} thereafter.
 

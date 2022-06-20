@@ -14,6 +14,13 @@ from sklearn.metrics import r2_score, mean_absolute_error
 import psychrolib
 import matplotlib.patches as patches
 from pythermalcomfort.models import two_nodes, athb
+from sklearn.linear_model import LogisticRegression
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.special import expit, logit
+from statsmodels.tools import add_constant
+import statsmodels.api as sm
+import pandas as pd
 
 warnings.filterwarnings("ignore")
 
@@ -46,9 +53,14 @@ def save_var_latex(key, value, units=False):
             f.write(f"{key},{dict_var[key]}\n")
 
 
-def filtering_processing(df_):
+def importing_filtering_processing(load_preprocessed=False):
 
-    save_var_latex("all_entries_db", df.shape[0])
+    df_ = pd.read_csv(r"./Data/db_measurements_v2.1.0.csv.gz", compression="gzip")
+
+    save_var_latex("all_entries_db", df_.shape[0])
+
+    if load_preprocessed:
+        return pd.read_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
 
     pa_arr = []
     for i, row in df_.iterrows():
@@ -75,7 +87,13 @@ def filtering_processing(df_):
     )
 
     df_["pmv_gagge"] = two_nodes_results["pmv_gagge"]
+    df_["hb_gagge"] = two_nodes_results["pmv_gagge"] / (
+        0.303 * np.exp(-0.036 * df_["met"] * 58.2) + 0.028
+    )
     df_["pmv_set"] = two_nodes_results["pmv_set"]
+    df_["hb_set"] = two_nodes_results["pmv_set"] / (
+        0.303 * np.exp(-0.036 * df_["met"] * 58.2) + 0.028
+    )
 
     df_["athb"] = athb(
         tdb=df_.ta,
@@ -93,17 +111,22 @@ def filtering_processing(df_):
                 & (df_[key] <= applicability_limits[key][1])
             ]
 
-    df_["pmv_round"] = df_["pmv"].round()
-    df_["pmv_ce_round"] = df_["pmv_ce"].round()
+    # calculate rounded variables and differences
+    for model in models_to_test:
+        rounded_col = f"{model}_round"
+        diff_col = f"diff_ts_{model}"
+        df_[rounded_col] = df_[model].round()
+        df_[diff_col] = df_[["thermal_sensation", model]].diff(axis=1)[model]
+
     df_["thermal_sensation_round"] = df_["thermal_sensation"].round()
-    df_["diff_ts_pmv"] = df_[["thermal_sensation", "pmv"]].diff(axis=1)["pmv"]
-    df_["diff_ts_pmv_ce"] = df_[["thermal_sensation", "pmv_ce"]].diff(axis=1)["pmv_ce"]
     df_["thermal_sensation_round - pmv_ce_round"] = (
         df_["thermal_sensation"] - df_["pmv_ce_round"]
     )
-    df_["pmv_gagge_round"] = df_["pmv_gagge"].round()
-    df_["pmv_set_round"] = df_["pmv_set"].round()
-    df_["athb_round"] = df_["pmv_set"].round()
+
+    save_var_latex("tot_surveys", df_.shape[0])
+    save_var_latex("tot_surveys_v_01", df_[df_.vel > 0.1].shape[0])
+
+    df_.to_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
 
     return df_
 
@@ -583,6 +606,7 @@ if __name__ == "__main__":
         "pmv_set_round": r"PMV$_{SET}$",
         "pmv_gagge": r"PMV$_{Gagge}$",
         "pmv_gagge_round": r"PMV$_{Gagge}$",
+        "athb_round": r"ATHB",
     }
     applicability_limits = {
         "ta": [10, 30],
@@ -616,13 +640,10 @@ if __name__ == "__main__":
         "met": r"met",
     }
 
-    df = pd.read_csv(r"./Data/db_measurements_v2.1.0.csv.gz", compression="gzip")
+    models_to_test = ["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb"]
 
     # filter data outside standard applicability limits
-    df = filtering_processing(df_=df)
-
-    save_var_latex("tot_surveys", df.shape[0])
-    save_var_latex("tot_surveys_v_01", df[df.vel > 0.1].shape[0])
+    df = importing_filtering_processing(load_preprocessed=True)
 
 if __name__ == "__plot__":
 
@@ -649,27 +670,6 @@ if __name__ == "__plot__":
             f"Overall PMV ASHRAE accuracy - limit {limit}", int(acc_ash * 100)
         )
 
-    print(
-        df[
-            [
-                "ta",
-                "tr",
-                "set",
-                "rh",
-                "vel",
-                "met",
-                "clo",
-                "clo_d",
-                "pmv",
-                "pmv_ce",
-                "pmv_set",
-                "pmv_gagge",
-            ]
-        ]
-        .head()
-        .to_markdown()
-    )
-
     # Scatter thermal_sensation vs pmv prediction
     f, axs = plt.subplots(1, 5, sharex=True, sharey=True, constrained_layout=True)
     axs = axs.flatten()
@@ -689,6 +689,143 @@ if __name__ == "__plot__":
     # Figure 1
     plot_distribution_variable(data=df)
 
+    # logistic regression models
+    plt.figure()
+    sns.boxenplot(df.hb_gagge)
+    print(df.groupby("thermal_preference")["ta"].count())
+
+    # gagge heat balance vs thermal sensation
+    clf = LogisticRegression(random_state=0).fit(
+        df["hb_gagge"].values.reshape(-1, 1), df["thermal_sensation_round"]
+    )
+    set_range = np.arange(-60, 60, 0.5)
+    prob = clf.predict_proba(set_range.reshape(-1, 1))
+    df_prob = pd.DataFrame(prob, columns=sorted(df["thermal_sensation_round"].unique()))
+    plt.figure()
+    for col in df_prob.columns:
+        plt.plot(set_range, df_prob[col], label=col)
+    plt.tight_layout()
+    plt.legend()
+
+    # gagge heat balance vs thermal preference
+    df_dropna = df[["hb_set", "thermal_preference"]].dropna().sample(frac=1)
+    df_log = pd.DataFrame()
+    for preference in df_dropna.thermal_preference.unique():
+        _df = df_dropna.query("thermal_preference == @preference").head(10000)
+        df_log = pd.concat([df_log, _df])
+    print(df_log.groupby("thermal_preference")["hb_set"].count())
+    clf = LogisticRegression(
+        random_state=0,
+    ).fit(df_log["hb_set"].values.reshape(-1, 1), df_log["thermal_preference"])
+    set_range = np.arange(-60, 60, 0.5)
+    prob = clf.predict_proba(set_range.reshape(-1, 1))
+    df["tp_fede"] = clf.predict(df["hb_set"].values.reshape(-1, 1))
+    print(
+        df.groupby(["thermal_preference", "tp_fede"])["ta"]
+        .count()
+        .unstack("thermal_preference")
+    )
+    df_prob = pd.DataFrame(prob, columns=sorted(df_log["thermal_preference"].unique()))
+    plt.figure()
+    for col in df_prob.columns:
+        plt.plot(set_range, df_prob[col], label=col)
+    plt.tight_layout()
+    plt.legend()
+
+    # gagge heat balance vs thermal preference
+    df_dropna = (
+        df[["hb_set", "met", "clo", "t_mot_isd", "thermal_preference"]]
+        .dropna()
+        .sample(frac=1)
+    )
+    df_log = pd.DataFrame()
+    for preference in df_dropna.thermal_preference.unique():
+        _df = df_dropna.query("thermal_preference == @preference").head(3000)
+        df_log = pd.concat([df_log, _df])
+    print(df_log.groupby("thermal_preference")["hb_set"].count())
+    clf = LogisticRegression(random_state=0,).fit(
+        df_log[["hb_set", "met", "clo", "t_mot_isd"]].values,
+        df_log["thermal_preference"],
+    )
+    set_range = np.arange(-60, 60, 0.5)
+    prob = clf.predict_proba([[x[0], 1.2, 0.6, 15] for x in set_range.reshape(-1, 1)])
+    df_dropna["tp_fede"] = clf.predict(
+        df_dropna[["hb_set", "met", "clo", "t_mot_isd"]].values
+    )
+    print(
+        df_dropna.groupby(["thermal_preference", "tp_fede"])["tp_fede"]
+        .count()
+        .unstack("thermal_preference")
+    )
+    df_prob = pd.DataFrame(prob, columns=sorted(df_log["thermal_preference"].unique()))
+    plt.figure()
+    for col in df_prob.columns:
+        plt.plot(set_range, df_prob[col], label=col)
+    plt.tight_layout()
+    plt.legend()
+
+    plt.figure()
+    plt.plot(set_range, df_prob["no change"], label="no change")
+    plt.plot(set_range, df_prob[["cooler", "warmer"]].sum(axis=1), label="change")
+    plt.tight_layout()
+    plt.legend()
+
+    clf = LogisticRegression(random_state=0).fit(
+        df["set"].values.reshape(-1, 1), df["thermal_sensation_round"]
+    )
+    set_range = np.arange(5, 40, 0.5)
+    prob = clf.predict_proba(set_range.reshape(-1, 1))
+    df_prob = pd.DataFrame(prob, columns=sorted(df["thermal_sensation_round"].unique()))
+    plt.figure()
+    for col in df_prob.columns:
+        plt.plot(set_range, df_prob[col], label=col)
+    plt.tight_layout()
+    plt.legend()
+
+    plt.figure()
+    plt.plot(set_range, df_prob[[0]].sum(axis=1), label="neutral")
+    plt.plot(set_range, df_prob[[-3, -2, -1, 1, 3, 2]].sum(axis=1), label="hot or cold")
+    plt.tight_layout()
+    plt.legend()
+
+    df_log = df[["set", "thermal_preference"]].dropna()
+    clf = LogisticRegression(random_state=0).fit(
+        df_log["set"].values.reshape(-1, 1), df_log["thermal_preference"]
+    )
+    set_range = np.arange(5, 40, 0.5)
+    prob = clf.predict_proba(set_range.reshape(-1, 1))
+    df_prob = pd.DataFrame(prob, columns=sorted(df_log["thermal_preference"].unique()))
+    plt.figure()
+    for col in df_prob.columns:
+        plt.plot(set_range, df_prob[col], label=col)
+    plt.tight_layout()
+    plt.legend()
+
+    plt.figure()
+    plt.plot(set_range, df_prob["no change"], label="no change")
+    plt.plot(set_range, df_prob[["cooler", "warmer"]].sum(axis=1), label="change")
+    plt.tight_layout()
+    plt.legend()
+
+    df_log = df[["ta", "thermal_preference"]].dropna()
+    clf = LogisticRegression(random_state=0).fit(
+        df_log["ta"].values.reshape(-1, 1), df_log["thermal_preference"]
+    )
+    set_range = np.arange(5, 40, 0.5)
+    prob = clf.predict_proba(set_range.reshape(-1, 1))
+    df_prob = pd.DataFrame(prob, columns=sorted(df_log["thermal_preference"].unique()))
+    plt.figure()
+    for col in df_prob.columns:
+        plt.plot(set_range, df_prob[col], label=col)
+    plt.tight_layout()
+    plt.legend()
+
+    plt.figure()
+    plt.plot(set_range, df_prob["no change"], label="no change")
+    plt.plot(set_range, df_prob[["cooler", "warmer"]].sum(axis=1), label="change")
+    plt.tight_layout()
+    plt.legend()
+
     # Figure 2
     bar_chart(data=df, ind="tsv", show_per=False, figletter="a")
     bar_chart(
@@ -698,8 +835,13 @@ if __name__ == "__plot__":
         figletter="a",
         variables=["pmv_gagge_round", "pmv_set_round"],
     )
-    # bar_chart(data=df[df.TSV == 0], ind="pmv")
-    bar_chart(data=df[df.vel > 0.1], ind="tsv", show_per=False, figletter="b")
+    bar_chart(
+        data=df,
+        ind="tsv",
+        show_per=False,
+        figletter="a",
+        variables=["pmv_round", "athb_round"],
+    )
     legend_pmv()
 
     # Figure 3

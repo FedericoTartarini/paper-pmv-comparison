@@ -1,5 +1,16 @@
 \ProvidesPackage{mypreamble}
 
+% create diagram
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows,calc,positioning}
+
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black, fill=gray!10]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=gray!10]
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=gray!10]
+\tikzstyle{process_large} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=gray!10, text width=6cm]
+\tikzstyle{decision} = [diamond, aspect=3.5, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=gray!10]
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
 \usepackage{lineno,hyperref}
 
 \usepackage[range-phrase=--, range-units=single]{siunitx}
@@ -79,5 +90,4 @@
 \bibliographystyle{elsarticle-num}
 %%%%%%%%%%%%%%%%%%%%%%%
 
-\newcommand\mycite[1]{%
-    \citeauthor{#1}~(\citeyear{#1})}
+\newcommand\mycite[1]{\citeauthor{#1}~(\citeyear{#1})}

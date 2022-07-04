@@ -17,6 +17,7 @@ from pythermalcomfort.models import two_nodes, athb
 from sklearn.linear_model import LogisticRegression
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 from scipy.special import expit, logit
 from statsmodels.tools import add_constant
 import statsmodels.api as sm
@@ -26,6 +27,53 @@ warnings.filterwarnings("ignore")
 
 
 psychrolib.SetUnitSystem(psychrolib.SI)
+
+
+palette_tp = [
+    "#06A6EE",
+    "#31CAA8",
+    "#FF412C",
+]
+palette_tp = [
+    "#4F96FF",
+    "#60E693",
+    "#FF362B",
+]
+palette_tsv = [
+    "#2C45FE",
+    "#4F96FF",
+    "#6CDFFF",
+    "#60E693",
+    "#FFDF6B",
+    "#FFB36B",
+    "#FF362B",
+]
+
+# sns.palplot(palette_tsv)
+
+palette_primary = [
+    "#FFBA22",
+    "#FF2380",
+    "#6600AB",
+    "#FF7BB3",
+    "#003CAB",
+    "#83DFCB",
+    "#C20800",
+    "#C57FFF",
+    "#FF8D80",
+    "#6ACAF5",
+    "#006B46",
+    "#FF6756",
+    "#9F29FF",
+    "#8001D8",
+    "#FF4F99",
+    "#006BDB",
+    "#5AD5B9",
+    "#E8281E",
+    "#B254FF",
+    "#149678",
+    "#FFE146",
+]
 
 
 def save_var_latex(key, value, units=False):
@@ -57,7 +105,21 @@ def importing_filtering_processing(load_preprocessed=False):
 
     df_ = pd.read_csv(r"./Data/db_measurements_v2.1.0.csv.gz", compression="gzip")
 
-    save_var_latex("all_entries_db", df_.shape[0])
+    save_var_latex("entries_db_all", df_.shape[0])
+
+    # entries without ta, rh, v, clo, met
+    df_valid_input = df_.dropna(subset=["ta", "vel", "rh", "met", "clo"])
+    df_valid_input_no_tr = df_valid_input.dropna(subset=["tr"]).shape[0]
+    save_var_latex(
+        "entries_db_valid",
+        int(100 - df_valid_input.shape[0] / df_.shape[0] * 100),
+        "\\percent",
+    )
+    save_var_latex(
+        "entries_db_valid_no_tr",
+        int(100 - df_valid_input_no_tr / df_valid_input.shape[0] * 100),
+        "\\percent",
+    )
 
     if load_preprocessed:
         return pd.read_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
@@ -123,8 +185,8 @@ def importing_filtering_processing(load_preprocessed=False):
         df_["thermal_sensation"] - df_["pmv_ce_round"]
     )
 
-    save_var_latex("tot_surveys", df_.shape[0])
-    save_var_latex("tot_surveys_v_01", df_[df_.vel > 0.1].shape[0])
+    save_var_latex("entries_db_used", df_.shape[0])
+    save_var_latex("entries_db_used_v_01", df_[df_.vel > 0.1].shape[0])
 
     df_.to_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
 
@@ -156,7 +218,7 @@ def bar_chart(
             )
             x = model
             x_label = "PMV"
-            axs[ix].set(xlabel=map_model_name[model], ylabel="Percentage [%]")
+            axs[ix].set(xlabel=var_names[model], ylabel="Percentage [%]")
             # conside the special case I am only including data with thermal_sensation = 0
             if _df.columns == [0.0]:
                 for index in _df.index:
@@ -177,7 +239,7 @@ def bar_chart(
             x_label = "thermal_sensation"
             axs[ix].set(xlabel=x_label, ylabel="Percentage [%]")
             if data.vel.min() == 0:
-                axs[ix].set_title(map_model_name[model], y=0.9)
+                axs[ix].set_title(var_names[model], y=0.9)
         df_total = _df.sum(axis=1)
         df_rel = _df.div(df_total, 0) * 100
         for col in df_rel.index:
@@ -210,11 +272,11 @@ def bar_chart(
             colormap=cmap1,
         )
         if ind == "pmv":
-            axs[ix].set(xlabel=map_model_name[model], ylabel="Percentage [%]")
+            axs[ix].set(xlabel=var_names[model], ylabel="Percentage [%]")
         else:
             axs[ix].set(xlabel=x_label, ylabel="Percentage [%]")
             if data.vel.min() == 0:
-                axs[ix].set_title(map_model_name[model], y=1.1)
+                axs[ix].set_title(var_names[model], y=1.1)
                 axs[ix].set_xticklabels("")
                 axs[ix].set_xlabel("")
             else:
@@ -404,7 +466,7 @@ def scatter_plot(data, ind="tsv", x_jitter=0):
         axs[ix].text(
             0.5,
             0.85,
-            f"{map_model_name[model]}={slope:.2}*TSV{intercept:.2}\n"
+            f"{var_names[model]}={slope:.2}*TSV{intercept:.2}\n"
             + r"R$^2$"
             + f"={r_value**2:.2}, MAE={mae:.2}",
             transform=axs[ix].transAxes,
@@ -417,7 +479,7 @@ def scatter_plot(data, ind="tsv", x_jitter=0):
             color = "#3B7EA1"
 
         axs[ix].plot(data["TSV"], intercept + data["TSV"] * slope, color=color)
-        axs[ix].set(ylabel=map_model_name[model])
+        axs[ix].set(ylabel=var_names[model])
         axs[ix].set_xticks(
             np.arange(-3, 4, step=1),
         )
@@ -570,10 +632,10 @@ def plot_error_prediction(data):
     )
 
 
-def plot_distribution_variable(data):
+def plot_distribution_variable():
     f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(8, 3))
 
-    for ix, var in enumerate(["ta", "tr", "vel", "clo", "met", "rh"]):
+    for ix, var in enumerate(["ta", "tr", "rh", "vel", "clo", "met"]):
         sns.boxenplot(y=var, data=df, ax=axs[ix], color="lightgray")
         axs[ix].set(
             ylabel="",
@@ -590,6 +652,183 @@ def plot_distribution_variable(data):
     plt.savefig("./Manuscript/src/figures/dist_input_data.png", dpi=300)
     plt.show()
 
+    df["const"] = 1
+    df["gender"].value_counts(normalize=True)
+    pd.cut(df["age"], [0, 20, 35, 999]).value_counts(normalize=True)
+    pd.cut(df["t_mot_isd"], [0, 10, 25, 999]).value_counts(normalize=True)
+    df[df.gender.isna()]["const"].count()
+    f, axs = plt.subplots(1, 4, figsize=(8, 3))
+    for ix, var in enumerate(["age", "ht", "wt", "t_mot_isd"]):
+        sns.violinplot(
+            y=var,
+            x="const",
+            data=df,
+            ax=axs[ix],
+            hue="gender",
+            split=True,
+            inner="quartile",
+            palette="viridis",
+        )
+        axs[ix].get_legend().remove()
+        axs[ix].set(xlabel=var_names[var], xticks=[], ylabel="")
+    sns.despine(bottom=True, left=True)
+    handles, labels = axs[ix].get_legend_handles_labels()
+    f.legend(
+        handles=handles,
+        labels=labels,
+        bbox_to_anchor=(0.5, 1.03),
+        loc="upper center",
+        # borderaxespad=0,
+        frameon=False,
+        ncol=3,
+    )
+    plt.tight_layout()
+    plt.savefig("./Manuscript/src/figures/dist_other_data.png", dpi=300)
+    plt.show()
+
+
+def plot_bubble_models_vs_tsv():
+    # Scatter thermal_sensation vs pmv prediction
+    f, axs = plt.subplots(1, 5, sharex=True, sharey=True, constrained_layout=True)
+    axs = axs.flatten()
+
+    for ix, model in enumerate(["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb"]):
+        # sns.regplot(x="thermal_sensation", y=pmv, data=df,ax=axs[ix], scatter_kws={"s":2, "alpha":0.3}, line_kws={"color":"k"})
+        df_plot = df.copy()
+        df_plot["ts_binned"] = pd.cut(
+            df["thermal_sensation"],
+            np.arange(-3.5, 4, 0.5),
+        )
+
+        df_plot["y_binned"] = pd.cut(df[model], np.arange(-3.5, 4, 0.5))
+        df_plot = df_plot.groupby(["ts_binned", "y_binned"]).size()
+        axs[ix].scatter(
+            pd.IntervalIndex(df_plot.index.get_level_values("ts_binned")).mid,
+            pd.IntervalIndex(df_plot.index.get_level_values("y_binned")).mid,
+            s=df_plot / 20,
+            alpha=0.5,
+        )
+        sns.regplot(
+            x="thermal_sensation",
+            y=model,
+            data=df,
+            ax=axs[ix],
+            robust=True,
+            ci=None,
+            line_kws={"color": "k"},
+            scatter_kws={"s": 1},
+            scatter=False,
+        )
+        axs[ix].axvline(0, c="darkgray", ls="--")
+        axs[ix].axhline(0, c="darkgray", ls="--")
+        axs[ix].set(title=var_names[model], ylabel="", xlabel="")
+    f.supxlabel(var_names["thermal_sensation"])
+
+    plt.savefig(f"./Manuscript/src/figures/bubble_models_vs_tsv.png", dpi=300)
+
+
+def plot_bar_tp_by_ts():
+    x_var, y_var = "thermal_sensation_round", "thermal_preference"
+    save_var_latex(
+        f"entries_with_tp",
+        df["thermal_preference"].value_counts().sum(),
+    )
+
+    df_count = df.groupby(x_var)[[y_var]].count()
+
+    save_var_latex(
+        f"perc_tsv_neutral",
+        int(
+            df[x_var]
+            .value_counts(normalize=True)
+            .to_frame()
+            .query("index == 0")
+            .values[0][0]
+            * 100
+        ),
+        "\\percent",
+    )
+
+    save_var_latex(
+        f"perc_tsv_hot",
+        int(
+            df[x_var]
+            .value_counts(normalize=True)
+            .to_frame()
+            .query("index == 3")
+            .values[0][0]
+            * 100
+        ),
+        "\\percent",
+    )
+    fig = plt.figure(constrained_layout=True)
+    gs = GridSpec(1, 3, figure=fig)
+    ax1 = fig.add_subplot(gs[0, :-1])
+    df.groupby(x_var)[y_var].value_counts(normalize=True).unstack(y_var).plot.barh(
+        stacked=True, color=palette_tp, ax=ax1
+    )
+    ax1.set(xlabel="Percentage (%)", ylabel=var_names[x_var])
+    ax1.legend(
+        bbox_to_anchor=(0.5, 1.04),
+        loc="lower center",
+        borderaxespad=0,
+        frameon=False,
+        ncol=3,
+    )
+    ax1.grid(axis="y")
+    for ix, row in df_count.reset_index().iterrows():
+        ax1.text(1.12, ix, int(row[y_var]), va="center", ha="right")
+
+    ax2 = fig.add_subplot(gs[0, -1])
+    df.groupby(x_var)[x_var].count().plot.bar(color=palette_tsv, ax=ax2)
+    ax2.set(ylabel="", xlabel=var_names[x_var], title="Number of points")
+    ax2.yaxis.tick_right()
+    ax2.grid(axis="x")
+
+    plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
+
+
+def plot_stacked_bar_predictions():
+    plt.close("all")
+
+    # Stacked boxplot
+    f, axs = plt.subplots(1, 5, sharex=True, sharey=True, constrained_layout=True)
+    axs = axs.flatten()
+
+    for ix, pmv in enumerate(["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb"]):
+        var = f"{pmv}_round"
+        df_plot = (
+            df.groupby("thermal_sensation_round")[var]
+            .value_counts(normalize=True)
+            .unstack(var)
+        )
+        if len(df_plot.columns) != 7:
+            for x in range(-3, 4):
+                if x in df_plot.columns:
+                    continue
+                else:
+                    df_plot[x] = np.nan
+        df_plot = df_plot[df_plot.columns.sort_values()]
+        df_plot.plot.bar(stacked=True, color=palette_tsv, ax=axs[ix])
+        axs[ix].set(title=var_names[pmv], xlabel="")
+        handles, labels = axs[ix].get_legend_handles_labels()
+        axs[ix].get_legend().remove()
+
+    plt.subplots_adjust(left=0.05, right=1, bottom=0.2, top=0.85)
+    cax = plt.axes([0, 0.95, 1, 0.05])
+    cax.axis("off")
+
+    cax.legend(
+        handles,
+        labels,
+        frameon=False,
+        # mode="expand",
+        # bbox_to_anchor=(0, 1.1, 1, 0.2),
+        loc="upper center",
+        ncol=7,
+    )
+    f.supxlabel(var_names["thermal_sensation"])
+
 
 if __name__ == "__main__":
 
@@ -597,17 +836,10 @@ if __name__ == "__main__":
     sns.set_context("paper")
     mpl.rcParams["figure.figsize"] = [8.0, 3.5]
     sns.set_theme(style="whitegrid")
-    map_model_name = {
-        "pmv": r"PMV",
-        "pmv_round": r"PMV",
-        "pmv_ce_round": r"PMV$_{CE}$",
-        "pmv_ce": r"PMV$_{CE}$",
-        "pmv_set": r"PMV$_{SET}$",
-        "pmv_set_round": r"PMV$_{SET}$",
-        "pmv_gagge": r"PMV$_{Gagge}$",
-        "pmv_gagge_round": r"PMV$_{Gagge}$",
-        "athb_round": r"ATHB",
-    }
+
+    plt.rc("axes.spines", top=False, right=False, left=False)
+    plt.rcParams["font.family"] = "sans-serif"
+
     applicability_limits = {
         "ta": [10, 30],
         "tr": [10, 40],
@@ -626,9 +858,26 @@ if __name__ == "__main__":
         "ta": r"$t_{db}$",
         "tr": r"$\overline{t_{r}}$",
         "vel": r"$V$",
-        "rh": r"$RH$",
+        "rh": r"RH",
         "clo": r"$I_{cl}$",
         "met": r"$M$",
+        "thermal_sensation": "Thermal Sensation Vote (TSV)",
+        "thermal_sensation_round": "Thermal Sensation Vote (TSV)",
+        "thermal_preference": "Thermal Preference Vote (TPV)",
+        "age": "Age (years)",
+        "ht": "Height (m)",
+        "wt": "Weight (kg)",
+        "t_mot_isd": r"$t_{ormt} ^{\circ}C$",
+        "pmv": r"PMV",
+        "pmv_round": r"PMV",
+        "pmv_ce_round": r"PMV$_{CE}$",
+        "pmv_ce": r"PMV$_{CE}$",
+        "pmv_set": r"PMV$_{SET}$",
+        "pmv_set_round": r"PMV$_{SET}$",
+        "pmv_gagge": r"PMV$_{Gagge}$",
+        "pmv_gagge_round": r"PMV$_{Gagge}$",
+        "athb_round": r"ATHB",
+        "athb": r"ATHB",
     }
 
     var_units = {
@@ -645,7 +894,18 @@ if __name__ == "__main__":
     # filter data outside standard applicability limits
     df = importing_filtering_processing(load_preprocessed=True)
 
+
 if __name__ == "__plot__":
+
+    # Figure 1 and 2
+    plot_distribution_variable()
+
+    # Figure 3
+    plot_bar_tp_by_ts()
+
+    # plot model results vs TSV
+    # todo add regression lines info
+    plot_bubble_models_vs_tsv()
 
     # accuracies calculation
     for limit in [3, 2, 1]:
@@ -669,25 +929,6 @@ if __name__ == "__plot__":
         save_var_latex(
             f"Overall PMV ASHRAE accuracy - limit {limit}", int(acc_ash * 100)
         )
-
-    # Scatter thermal_sensation vs pmv prediction
-    f, axs = plt.subplots(1, 5, sharex=True, sharey=True, constrained_layout=True)
-    axs = axs.flatten()
-    for ix, pmv in enumerate(["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb"]):
-        # sns.regplot(x="thermal_sensation", y=pmv, data=df,ax=axs[ix], scatter_kws={"s":2, "alpha":0.3}, line_kws={"color":"k"})
-        sns.regplot(
-            x="thermal_sensation",
-            y=pmv,
-            data=df,
-            ax=axs[ix],
-            robust=True,
-            ci=None,
-            line_kws={"color": "k"},
-        )
-        axs[ix].set_title(pmv)
-
-    # Figure 1
-    plot_distribution_variable(data=df)
 
     # logistic regression models
     plt.figure()

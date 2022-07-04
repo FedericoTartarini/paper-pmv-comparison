@@ -6,7 +6,7 @@ It is the most extensively used thermal comfort index for estimating the thermal
 However, it has a relatively low accuracy in predicting self-reported thermal sensation of people~\cite{Cheung2019}.
 
 To overcome this problem, the \gls{55} Standard uses a modified version of the original model developed by Fanger, the \gls{pmv-ce}~\cite{ashrae552020}.
-The process used by the Standard is summarized in the flowchart depicted in Figure~\ref{fig:flowchart_pmv_ce}.
+The process used to calculate the \gls{pmv-ce} is summarized in the flowchart depicted in Figure~\ref{fig:flowchart_pmv_ce}.
 For \ac{v} higher than \qty{0.1}{\m\per\s} the \gls{55} prescribes the use of the \ac{ce}.
 The value of \ac{ce}, which is calculated using the \ac{set} equation, is subtracted from both the value of \ac{tdb} and \ac{tr}.
 The resulting values become the new inputs into the \ac{pmv} model.
@@ -42,11 +42,11 @@ Consequently, for a given thermal environment, results from the two \ac{pmv} for
 \end{figure}
 
 This is a source of confusion for many users worldwide since both the \gls{7730} and the \gls{55} are the widely adopted and incorporated in many national and international building codes worldwide.
-To further complicate this issue, over the course of the last \num{50} years, several other formulations of the \ac{pmv} model have been proposed.
+To further complicate this issue, over the course of the last decades, several other formulations of the \ac{pmv} model have been proposed.
 Among the most notable formulations there are the: \gls{pmvs}, \gls{pmvg}, \gls{epmv}, \gls{apmv}, and \ac{athb}.
 
-% todo pmv SET
-% todo pmv Gagge
+% todo describe pmv SET
+% todo describe pmv Gagge
 
 In 2002, Fanger, P. O. and Toftum, J. developed the \gls{epmv} an extension of the \ac{pmv}.
 The \gls{epmv} includes an expectancy factor introduced for use in non-air-conditioned buildings in warm climates.
@@ -67,10 +67,17 @@ This approach cannot be, therefore, generalizable and similarly to the \gls{epmv
 
 % todo describe marcel's work
 
-To our knowledge, no other study compared the accuracy all the aforementioned aforementioned PMV models.
-\mycite{Cheung2019} determined the accuracy of the \ac{pmv} model, by comparing its results with the \ac{tsv} from the ASHRAE ASHRAE Global Thermal Comfort Database II.
-While \textbf{COBEE paper} compared the accuracy of the \gls{pmv-ce} and the \ac{pmv} models.
+To our knowledge, no other study compared the accuracy of all the aforementioned PMV models, aside from a conference paper we previously published that stands at the basis of this work.
+In particular, no previous study compared the accuracy of the \ac{pmv} and \ac{pmv-ce} models which are currently used in the \gls{7730} and \gls{55} Standards.
+Previous works were limited to the determination of the accuracy of the \ac{pmv} model.
+For example, some notable works include, the work from \mycite{Doherty1988} who evaluated the ability of the \ac{pmv} and \ac{set} models to predict several physiological variables (i.e., skin temperature, core temperature, and skin wettedness) under a wide range of still air environments and metabolic rates.
+They concluded that the \ac{pmv} model is accurate for simulations of resting subjects but its accuracy decreases as a function of metabolic rate.
+Humphreys and Nicol estimated the effects of measurement and formulation error on predicting thermal sensation using the \ac{pmv}~\cite{Humphreys2000}.
+They used the ASHRAE Thermal Comfort database v1.0 and determined that the measurement error and the error introduced by the \ac{pmv} model formulation had a similar and non-negligible contribution.
+Humphreys and Nicol also determined the validity of the \ac{pmv} for predicting comfort votes collected in field studies~\cite{Humphreys2002}.
+They concluded that the \ac{pmv} range of applicability should be significantly reduced and it fails to predict the extent of thermal dissatisfaction of people in buildings.
+The \ac{pmv} was free from bias only when it was used to predict thermal neutrality.
+While, \mycite{Cheung2019} determined the accuracy of the \ac{pmv} model, by comparing its results with the \ac{tsv} from the ASHRAE Global Thermal Comfort Database II.
 
-This study aims to specifically fill this knowledge gap by comparing the results of the \ac{pmv} formulations developed over the course of the last years with self-reported \ac{tsv} contained in the ASHRAE Global Thermal Comfort Database II v2.1, referred to as the \gls{db2} thereafter.
-
-
+This study aims to specifically fill this knowledge gap by comparing the results of the major \ac{pmv} formulations developed over the course of the last decades with self-reported \ac{tsv} contained in the ASHRAE Global Thermal Comfort Database II v2.1, referred to as the \gls{db2} thereafter.
+Our results have significant and profound implications for both researchers and practitioners since it provides quantitative evidence on which formulation of the \ac{pmv} model is more accurate.

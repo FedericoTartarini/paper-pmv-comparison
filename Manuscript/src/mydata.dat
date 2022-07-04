@@ -5,6 +5,11 @@ Overall PMV ISO accuracy - limit 2,\num{35}
 Overall PMV ASHRAE accuracy - limit 2,\num{36}
 Overall PMV ISO accuracy - limit 1,\num{44}
 Overall PMV ASHRAE accuracy - limit 1,\num{45}
-tot_surveys,\num{49367}
-all_entries_db,\num{109033}
-tot_surveys_v_01,\num{17131}
+entries_db_used,\num{49367}
+entries_db_used_v_01,\num{17131}
+entries_db_all,\num{109033}
+entries_db_valid,\qty{23}{\percent}
+entries_db_valid_no_tr,\qty{29}{\percent}
+perc_tsv_neutral,\qty{42}{\percent}
+perc_tsv_hot,\qty{3}{\percent}
+entries_with_tp,\num{41120}

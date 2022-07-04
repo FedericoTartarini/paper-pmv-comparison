@@ -4,29 +4,64 @@
 
 \section{Methodology}\label{sec:methodology}
 
-The \gls{db2} has \var{all_entries_db} independent recordings from various field investigations throughout the world and it is the largest of its kind.
+The \gls{db2} has \var{entries_db_all} independent recordings from various field investigations throughout the world and it is the largest of its kind.
 \Ac{tsv} were collected using a \gls{rhrn} survey and environmental parameters were measured and logged while participants completed their survey.
 The Comfort DB contains data collected by researchers in cross-sectional field studies that have been published in peer reviewed journals.
-%We compared the results obtained by the \ac{pmv} and the \gls{pmv-ce} with the self-reported \ac{tsv}.
+% We compared the results obtained by the \ac{pmv} and the \gls{pmv-ce} with the self-reported \ac{tsv}.
 %    All the results were calculated using the function pmv_ppd [6] included in pythermalcomfort v1.10.0 a Python package for thermal comfort calculations.
 
-\subsection{Data Processing and Cleaning}\label{subsec:data-processing-and-cleaning}
+\subsection{Data Preparation and Cleaning}\label{subsec:data-processing-and-cleaning}
 Not all researchers logged all the six parameters required to calculate the PMV.\@
-We, therefore, decided to remove all entries that did not have any of the following variables: \ac{tdb}, \ac{rh}, \ac{v}, \ac{clo}, and \ac{met}.
-These constraints filtered out approximately \qty{28}{\percent} of the data in the Comfort DB.\@  % todo check the above value
-We decided to keep only entries that did not have \ac{tr} data but instead had the \ac{to} value.
+We, therefore, decided to remove all entries that did not have any of the following variables: \ac{tdb}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv}.
+These constraints filtered out approximately \var{entries_db_valid} of the data in the Comfort DB.\@
+We decided to keep entries that did not have \ac{tr}.
 Since \ac{tr} is a required input in the \ac{pmv} model, it was calculated using the following equation: 2\ac{to} – \ac{tdb}.
-Alternatively, if not value of \ac{tr} was available we assumed \ac{tr} equal to \ac{tdb}.
-We are aware that these assumptions may introduce an error, but removing samples without \ac{tr} would cause an additional \qty{44}{\percent} drop in the total entries in the database and there is evidence that in many conditions is possible to assume assumed \ac{tr} equal to tdb [7].  % todo check the above value and fix citation
+Alternatively, if \ac{to} was not available we assumed \ac{tr} equal to \ac{tdb}.
+We are aware that these assumptions may introduce an error, but removing samples without \ac{tr} would cause an additional \var{entries_db_valid_no_tr} drop in the data used to compare the models.
+There is also evidence that in many conditions is possible to assume \ac{tr} equal to \ac{tdb} without committing a major error~\cite{Dawe2020}.
 
 Both the \gls{55} and \gls{7730} specify a set of applicability limits, we hence filtered out those data points which did not meet the inclusion criteria of both Standards.
 The rationale is that the model accuracy should only be tested in within its applicability limits.
-The limits we used to filter the data are as follows: \qty{10}{\celsius} $\leq$ \ac{tdb} $\leq$ \qty{30}{\celsius}, \qty{10}{\celsius} $\leq$ \ac{tr} $\leq$ \qty{40}{\celsius}, \qty{0}{\m\per\s} $\leq$ \ac{v} $\leq$ \qty{1}{\m\per\s}, \qty{0}{clo} $\leq$ \ac{clo} $\leq$ \qty{1.5}{clo}, 0 Pa $\leq$ water vapour partial pressure $\leq$ 2000 Pa, and \qty{1}{met} $\leq$ \ac{met} $\leq$ \qty{4}{met}.
+The limits we used are as follows: \qty{10}{\celsius} $\leq$ \ac{tdb} $\leq$ \qty{30}{\celsius}, \qty{10}{\celsius} $\leq$ \ac{tr} $\leq$ \qty{40}{\celsius}, \qty{0}{\m\per\s} $\leq$ \ac{v} $\leq$ \qty{1}{\m\per\s}, \qty{0}{clo} $\leq$ \ac{clo} $\leq$ \qty{1.5}{clo}, 0 Pa $\leq$ water vapour partial pressure $\leq$ 2000 Pa, and \qty{1}{met} $\leq$ \ac{met} $\leq$ \qty{4}{met}.
 We then calculated the adjusted total clothing insulation and relative airspeed as required by both Standards.
 We used these inputs to calculate the \ac{pmv} values.  % todo check with marcel if this is required in his model too
 
-The \ac{pmv} model is only applicable when its absolute value is lower than 2 \cite{Fanger1970, iso7730}.
-However, since the thermal sensation was measured with at least a seven-point scale we decided also to show entries with |\ac{tsv}| or |\ac{pmv}| $\leq$ than \num{3.5}.
+Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
+However, since the thermal sensation was measured with at least a seven-point scale we decided also to show entries with $|$\ac{tsv}$|$ or $|$\ac{pmv}$|$ $\leq$ than \num{3.5}.
+
+The values of \ac{pmv} and \gls{pmv-ce} are available inside the \gls{db2}.
+We calculated the values of \gls{pmvs}, \gls{pmvg}, and \ac{athb} using pythermalcomfort v2.5.1~\cite{Tartarini2020a}.
 We used Python to analyse and plot the results.
 
 We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \textbf{provide URL} so other users can test different assumptions.
+
+\subsection{Model Validation}\label{subsec:model-validation}
+The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants sharing the same environment.
+While the \gls{db2} contains data from a sufficiently wide population no information is available on where exactly these data were collected.
+We only have access to building level data and no information about weather a group of occupants was sharing the same thermal environment.
+We, therefore, decided to first group the participants responses by their \ac{tsv} and we determined how many of these votes were correctly labelled by the \ac{pmv} model.
+This approach is useful to perform an overall assessment of the accuracy of the model, but it introduces an error due to the rounding of the \ac{pmv} models output and \ac{tsv} values.
+The latter were sometimes collected using a continuous scale and not a discrete one, in other words they could take any value in the range of \numrange{-3.0}{3.0}.
+To remove this rounding error, we then went on subtracted the \ac{tsv} value from the respective \ac{pmv} value.
+These deltas quantify the success of the model in predicting \ac{tsv}.
+However, on their own are a low precision estimate of the overall accuracy of the model~\cite{Humphreys2002}.
+These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{rh}).
+If the \ac{pmv} formulation is bias-free, the distribution of any batch derived from these differences would have a mean value that was little different from zero.
+The standard deviation would reflect the combined effect of the people's individual differences as well as any errors in the \ac{pmv} formulation~\cite{Humphreys2002}.
+According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned deltas are within \numrange{-0.25}{0.25}.
+% todo why not 0.5 since the delta between a PMV of 2.5 and a self-reported vote of either 2 or 3 (closest points to 2.5) is 0.5?
+
+\subsection{Sources of Error}\label{subsec:sources-of-error}
+One minor but not negligible source of error is the use of a discrete scale to assess thermal sensation.
+Most of the \ac{tsv} in the \gls{db2} were collected using a discrete scale while the \ac{pmv} output is continuous.
+For example, even if the model was 100~\% accurate and the estimated \ac{pmv} values was \num{2.5} the person could only report to be `warm (+2)' or `hot (+3)'.
+
+Measurement errors are also inevitably present in the dataset.
+These will add a random error to the model output.
+
+Errors are also caused by the fact that the \ac{pmv} model is an approximation of a highly complex system (the human body and mind) which interacts with the surrounding environment.
+Fanger could not, therefore, include all the factors that contribute to the comfort vote and some of them have been omitted.
+Finally, it should be noted that the \ac{pmv} model has been developed considering based on the assumption of steady-state heat transfer, however, this never precisely occurs since the human thermo regulatory system is always actively engaged to ensure a stable core temperature.
+However, as \mycite{Humphreys2002} note, these approximations and errors present in the \ac{pmv} model, if the model is accurate, should combine to produce a quasi-random error in the prediction.
+This would increase the standard deviation of the delta between the \ac{tsv} and \ac{pmv}, but if the model is sound, they should produce a negligible bias~\cite{Humphreys2002}.
+On the other hand, if the model is neither accurate nor representative of the real system a significant bias will arise.

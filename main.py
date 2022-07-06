@@ -22,6 +22,7 @@ from scipy.special import expit, logit
 from statsmodels.tools import add_constant
 import statsmodels.api as sm
 import pandas as pd
+from sklearn.metrics import f1_score
 
 warnings.filterwarnings("ignore")
 
@@ -365,48 +366,6 @@ def bar_chart(
     )
 
 
-def legend_pmv():
-    f, ax = plt.subplots()
-
-    colors = [
-        (33 / 255, 102 / 255, 172 / 255),
-        (103 / 255, 169 / 255, 207 / 255),
-        (209 / 255, 229 / 255, 240 / 255),
-        (153 / 255, 213 / 255, 148 / 255),
-        (253 / 255, 219 / 255, 199 / 255),
-        (239 / 255, 138 / 255, 98 / 255),
-        (178 / 255, 24 / 255, 43 / 255),
-    ]
-
-    ax.legend(
-        handles=[
-            patches.Patch(color=colors[ix], label=str(x))
-            for ix, x in enumerate(range(-3, 4))
-        ],
-        frameon=False,
-        mode="expand",
-        bbox_to_anchor=(0, 1.02, 1, 0.2),
-        loc="lower left",
-        ncol=7,
-    )
-    f.text(0.05, 0.95, "PMV = ", va="center", ha="left")
-    ax.grid(False)
-
-
-def distributions_pmv(v_lower=False):
-    # check difference in distribution for vel > 0.1
-    variables = ["pmv", "pmv_ce", "thermal_sensation"]
-    f, axs = plt.subplots(len(variables), 1, sharex=True)
-    if v_lower:
-        data = df[df["vel"] > 0.1]
-    else:
-        data = df.copy()
-    for ix, var in enumerate(variables):
-        sns.histplot(data=data, x=var, kde=True, stat="density", ax=axs[ix])
-        axs[ix].set(title=var)
-    plt.tight_layout()
-
-
 def scatter_plot_flip_x(data):
     f, axs = plt.subplots(1, 2, sharex=True, sharey=True, constrained_layout=True)
     sns.regplot(
@@ -692,7 +651,7 @@ def plot_bubble_models_vs_tsv():
     f, axs = plt.subplots(1, 5, sharex=True, sharey=True, constrained_layout=True)
     axs = axs.flatten()
 
-    for ix, model in enumerate(["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb"]):
+    for ix, model in enumerate(models_to_test):
         # sns.regplot(x="thermal_sensation", y=pmv, data=df,ax=axs[ix], scatter_kws={"s":2, "alpha":0.3}, line_kws={"color":"k"})
         df_plot = df.copy()
         df_plot["ts_binned"] = pd.cut(
@@ -788,14 +747,16 @@ def plot_bar_tp_by_ts():
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
 
 
-def plot_stacked_bar_predictions():
+def plot_stacked_bar_predictions_ts():
     plt.close("all")
 
     # Stacked boxplot
-    f, axs = plt.subplots(1, 5, sharex=True, sharey=True, constrained_layout=True)
+    f, axs = plt.subplots(
+        1, len(models_to_test), sharex=True, sharey=True, constrained_layout=True
+    )
     axs = axs.flatten()
 
-    for ix, pmv in enumerate(["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb"]):
+    for ix, pmv in enumerate(models_to_test):
         var = f"{pmv}_round"
         df_plot = (
             df.groupby("thermal_sensation_round")[var]
@@ -813,6 +774,22 @@ def plot_stacked_bar_predictions():
         axs[ix].set(title=var_names[pmv], xlabel="")
         handles, labels = axs[ix].get_legend_handles_labels()
         axs[ix].get_legend().remove()
+        df_match = df_plot.stack().reset_index()
+        df_match = df_match[df_match["thermal_sensation_round"] == df_match[var]]
+        for x in axs[ix].get_xticklabels():
+            try:
+                match = df_match[df_match[var] == float(x._text)][0].values[0]
+                axs[ix].text(
+                    x._x,
+                    0.5,
+                    f"{int(match * 100)}%",
+                    va="center",
+                    ha="center",
+                    size=10,
+                    rotation=90,
+                )
+            except IndexError:
+                pass
 
     plt.subplots_adjust(left=0.05, right=1, bottom=0.2, top=0.85)
     cax = plt.axes([0, 0.95, 1, 0.05])
@@ -828,6 +805,309 @@ def plot_stacked_bar_predictions():
         ncol=7,
     )
     f.supxlabel(var_names["thermal_sensation"])
+    plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy.png", dpi=300)
+
+
+def plot_stacked_bar_predictions_model():
+    plt.close("all")
+
+    # Stacked boxplot
+    f, axs = plt.subplots(
+        1, len(models_to_test), sharex=True, sharey=True, constrained_layout=True
+    )
+    axs = axs.flatten()
+
+    for ix, pmv in enumerate(models_to_test):
+        var = f"{pmv}_round"
+        df_plot = (
+            df.groupby(var)["thermal_sensation_round"]
+            .value_counts(normalize=True)
+            .unstack("thermal_sensation_round")
+        )
+        df_counts = df.groupby(var)["thermal_sensation_round"].count()
+        if len(df_plot.index) != 7:
+            for x in range(-3, 4):
+                if x in df_plot.index:
+                    continue
+                else:
+                    df_plot = pd.concat(
+                        [
+                            df_plot,
+                            pd.DataFrame(np.nan, index=[x], columns=df_plot.columns),
+                        ],
+                    )
+        if len(df_plot.columns) != 7:
+            for x in range(-3, 4):
+                if x in df_plot.columns:
+                    continue
+                else:
+                    df_plot[x] = np.nan
+        df_plot = df_plot[df_plot.columns.sort_values()]
+        df_plot = df_plot.sort_index()
+        df_plot.plot.bar(stacked=True, color=palette_tsv, ax=axs[ix])
+        axs[ix].set(title=var_names[pmv], xlabel="")
+        handles, labels = axs[ix].get_legend_handles_labels()
+        axs[ix].get_legend().remove()
+        df_match = df_plot.stack()
+        df_match = df_match[
+            df_match.index.get_level_values(0) == df_match.index.get_level_values(1)
+        ]
+        df_match = df_match.to_frame().reset_index()
+        for x in axs[ix].get_xticklabels():
+            try:
+                match = df_match[df_match["thermal_sensation_round"] == float(x._text)][
+                    0
+                ].values[0]
+                count = df_counts[df_counts.index == float(x._text)].values[0]
+                axs[ix].text(
+                    x._x,
+                    0.5,
+                    f"{int(match * 100)}% - #{count}",
+                    va="center",
+                    ha="center",
+                    size=10,
+                    rotation=90,
+                )
+            except IndexError:
+                axs[ix].text(
+                    x._x,
+                    0.5,
+                    f"0 %",
+                    va="center",
+                    ha="center",
+                    size=10,
+                    rotation=90,
+                )
+
+    plt.subplots_adjust(left=0.05, right=1, bottom=0.2, top=0.85)
+    cax = plt.axes([0, 0.95, 1, 0.05])
+    cax.axis("off")
+
+    cax.legend(
+        handles,
+        labels,
+        frameon=False,
+        # mode="expand",
+        # bbox_to_anchor=(0, 1.1, 1, 0.2),
+        loc="upper center",
+        ncol=7,
+    )
+    f.supxlabel("Model prediction")
+    plt.savefig(
+        f"./Manuscript/src/figures/bar_stacked_model_accuracy_model.png", dpi=300
+    )
+
+
+def plot_stacked_bar_predictions_tp():
+    plt.close("all")
+
+    # Stacked boxplot
+    f, axs = plt.subplots(
+        1, len(models_to_test), sharex=True, sharey=True, constrained_layout=True
+    )
+    axs = axs.flatten()
+
+    for ix, model in enumerate(models_to_test):
+        df_plot = df.copy()
+        df_plot[model] = pd.cut(
+            df_plot[model],
+            [-3.5, -0.5, 0.5, 3.5],
+            labels=["warmer", "no change", "cooler"],
+        )
+        df_plot = (
+            df_plot.groupby("thermal_preference")[model]
+            .value_counts(normalize=True)
+            .unstack()
+        )
+        # if len(df_plot.columns) != 7:
+        #     for x in range(-3, 4):
+        #         if x in df_plot.columns:
+        #             continue
+        #         else:
+        #             df_plot[x] = np.nan
+        df_plot = df_plot[df_plot.columns.sort_values(ascending=False)]
+        df_plot.plot.bar(stacked=True, color=palette_tp, ax=axs[ix])
+        axs[ix].set(title=var_names[model], xlabel="")
+        handles, labels = axs[ix].get_legend_handles_labels()
+        axs[ix].get_legend().remove()
+        df_match = df_plot.stack().reset_index()
+        df_match = df_match[df_match["thermal_preference"] == df_match["level_1"]]
+        for x in axs[ix].get_xticklabels():
+            try:
+                match = df_match[df_match["level_1"] == x._text][0].values[0]
+                axs[ix].text(
+                    x._x,
+                    0.5,
+                    f"{int(match * 100)}%",
+                    va="center",
+                    ha="center",
+                    size=10,
+                    rotation=90,
+                )
+            except IndexError:
+                pass
+
+    plt.subplots_adjust(left=0.05, right=1, bottom=0.2, top=0.85)
+    cax = plt.axes([0, 0.95, 1, 0.05])
+    cax.axis("off")
+
+    cax.legend(
+        handles,
+        labels,
+        frameon=False,
+        # mode="expand",
+        # bbox_to_anchor=(0, 1.1, 1, 0.2),
+        loc="upper center",
+        ncol=7,
+    )
+    f.supxlabel(var_names["thermal_preference"])
+    plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy_tp.png", dpi=300)
+
+
+def plot_bias_distribution_whole_db():
+    # plot bias distribution
+    f, axs = plt.subplots(
+        1, len(models_to_test), sharex=True, sharey=True, constrained_layout=True
+    )
+    axs = axs.flatten()
+
+    for ix, model in enumerate(models_to_test):
+        df_plot = df[f"diff_ts_{model}"]
+        axs[ix].hist(df_plot, bins=np.arange(-3, 3, 0.5), color="gray")
+        axs[ix].hist(
+            df_plot[(df_plot >= -0.5) & (df_plot < 0.5)],
+            bins=np.arange(-3, 3, 0.5),
+            color="r",
+        )
+        axs[ix].set(title=var_names[model], ylabel="", xlabel="")
+        mean, std = df_plot.mean().round(2), df_plot.std().round(2)
+        axs[ix].text(0, 9800, f"{mean} ({std})", va="center", ha="center")
+
+    f.supxlabel("Delta between PMV and TSV")
+    plt.savefig(f"./Manuscript/src/figures/hist_discrepancies.png", dpi=300)
+
+
+def plot_bias_distribution_by_building():
+    # plot bias by building
+    plt.close("all")
+    for ix, model in enumerate(models_to_test):
+        color = palette_primary[ix]
+        f, axs = plt.subplots(1, 1, constrained_layout=True)
+        sns.violinplot(
+            x="building_id",
+            y=f"diff_ts_{model}",
+            data=df,
+            ax=axs,
+            color=color,
+            scale="count",
+        )
+        if model == "pmv":
+            good_buildings = df.groupby("building_id")[f"diff_ts_{model}"].median()
+            good_buildings = good_buildings[good_buildings.between(-0.5, 0.5)].index
+        axs.axhline(-0.5, c="r")
+        axs.axhline(+0.5, c="r")
+
+        axs.set(
+            ylabel="building id",
+            ylim=(-2, 2),
+            xlabel="",
+            xticklabels="",
+        )
+        plt.suptitle(model)
+        plt.savefig(f"./Manuscript/src/figures/bias_buildings.png", dpi=300)
+
+
+def plot_bias_distribution_by_contributor():
+    # plot bias by contributor
+    plt.close("all")
+    for ix, model in enumerate(models_to_test):
+        color = palette_primary[ix]
+        f, axs = plt.subplots(1, 1, constrained_layout=True)
+        sns.violinplot(
+            x="contributor",
+            y=f"diff_ts_{model}",
+            data=df,
+            ax=axs,
+            color=color,
+            scale="count",
+        )
+        if model == "pmv":
+            good_buildings = df.groupby("building_id")[f"diff_ts_{model}"].median()
+            good_buildings = good_buildings[good_buildings.between(-0.5, 0.5)].index
+        axs.axhline(-0.5, c="r")
+        axs.axhline(+0.5, c="r")
+
+        contributors = [x._text.split(" ")[1] for x in axs.get_xticklabels()]
+        for i, contributor in enumerate(contributors):
+            axs.text(i - 0.25, -2, contributor, va="center", ha="center", rotation=90)
+
+        axs.set(
+            ylabel="building id",
+            ylim=(-2, 2),
+            xlabel="",
+            xticklabels="",
+        )
+        plt.suptitle(model)
+        plt.savefig(f"./Manuscript/src/figures/bias_contributors.png", dpi=300)
+
+
+def plot_bias_distribution_by_variable():
+    variables = [
+        "ta",
+        "tr",
+        "top",
+        # "t_mot_isd",
+        "vel",
+        "rh",  # todo report pa rather than RH
+        "clo",
+        "met",
+        "thermal_sensation",
+        "thermal_preference",
+        "pmv",
+    ]
+
+    # filter_good_buildings = False
+    plt.close("all")
+    for ix, model in enumerate(models_to_test):
+        color = palette_primary[ix]
+        f, axs = plt.subplots(5, 2, constrained_layout=True, figsize=(8, 10))
+        axs = axs.flatten()
+        for i, var in enumerate(variables):
+            # plot bias distribution
+            ax = axs[i]
+            df_plot = df[[var, f"diff_ts_{model}", "building_id"]].copy().dropna()
+            # if filter_good_buildings:
+            #     df_plot = df_plot[df_plot["building_id"].isin(good_buildings)]
+            if ("thermal" not in var) and ("pmv" not in var):
+                df_plot[var] = pd.cut(df_plot[var], bins=10)
+            if ("thermal_sensation" == var) or ("pmv" == var):
+                df_plot[var] = pd.cut(df_plot[var], bins=np.arange(-3.5, 4.5, 1))
+            # elif "" == var:
+            #     pass
+            sns.violinplot(
+                x=var,
+                y=f"diff_ts_{model}",
+                data=df_plot,
+                ax=ax,
+                color=color,
+                scale="count",
+            )
+            ax.axhline(-0.5, c="r")
+            ax.axhline(+0.5, c="r")
+
+            if "preference" not in var:
+                x_labels = [
+                    round(x, 1)
+                    for x in pd.IntervalIndex(
+                        sorted(df_plot[var].cat.categories.unique())
+                    ).mid
+                ]
+                ax.set(
+                    xticklabels=x_labels,
+                )
+            ax.set(ylabel=var_names[var].split(" ")[-1], ylim=(-2, 2), xlabel="")
+        plt.suptitle(model)
+        plt.savefig(f"./Manuscript/src/figures/bias_{model}.png", dpi=300)
 
 
 if __name__ == "__main__":
@@ -857,6 +1137,7 @@ if __name__ == "__main__":
     var_names = {
         "ta": r"$t_{db}$",
         "tr": r"$\overline{t_{r}}$",
+        "top": r"$t_{o}$",
         "vel": r"$V$",
         "rh": r"RH",
         "clo": r"$I_{cl}$",
@@ -867,7 +1148,7 @@ if __name__ == "__main__":
         "age": "Age (years)",
         "ht": "Height (m)",
         "wt": "Weight (kg)",
-        "t_mot_isd": r"$t_{ormt} ^{\circ}C$",
+        "t_mot_isd": r"$t_{ormt}$",
         "pmv": r"PMV",
         "pmv_round": r"PMV",
         "pmv_ce_round": r"PMV$_{CE}$",
@@ -894,6 +1175,8 @@ if __name__ == "__main__":
     # filter data outside standard applicability limits
     df = importing_filtering_processing(load_preprocessed=True)
 
+    df_meta = pd.read_csv("./Data/db_metadata.csv")
+    df = pd.merge(df, df_meta, on="building_id", how="left")
 
 if __name__ == "__plot__":
 
@@ -903,10 +1186,38 @@ if __name__ == "__plot__":
     # Figure 3
     plot_bar_tp_by_ts()
 
-    # plot model results vs TSV
-    # todo add regression lines info
+    # plot model results vs TSV todo add regression lines info
     plot_bubble_models_vs_tsv()
 
+    # plot model accuracy using bar chart
+    plot_stacked_bar_predictions_ts()
+    plot_stacked_bar_predictions_tp()
+
+    # plot bias distribution
+    plot_bias_distribution_whole_db()
+
+    # plot bias by building
+    plot_bias_distribution_by_building()
+
+    # plot bias by contributor
+    plot_bias_distribution_by_contributor()
+
+    # plot bias by each variable
+    plot_bias_distribution_by_variable()
+
+    # todo calculate f1-score
+    results_f1 = {}
+    for model in models_to_test:
+        df_analysis = df[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
+        x = df_analysis[f"{model}_round"]
+        y = df_analysis[f"thermal_sensation_round"]
+        results_f1[model] = {}
+        for type in ["micro", "macro", "weighted"]:
+            results_f1[model][type] = f1_score(y, x, average=type)
+    df_f1 = pd.DataFrame.from_dict(results_f1)
+    print(df_f1.to_markdown())
+
+if __name__ == "__old_code__":
     # accuracies calculation
     for limit in [3, 2, 1]:
         data = df[df["thermal_sensation_round"].abs() <= limit]
@@ -1067,29 +1378,24 @@ if __name__ == "__plot__":
     plt.tight_layout()
     plt.legend()
 
-    # Figure 2
-    bar_chart(data=df, ind="tsv", show_per=False, figletter="a")
-    bar_chart(
-        data=df,
-        ind="tsv",
-        show_per=False,
-        figletter="a",
-        variables=["pmv_gagge_round", "pmv_set_round"],
-    )
-    bar_chart(
-        data=df,
-        ind="tsv",
-        show_per=False,
-        figletter="a",
-        variables=["pmv_round", "athb_round"],
-    )
-    legend_pmv()
+    # # Old Figure 2
+    # bar_chart(data=df, ind="tsv", show_per=False, figletter="a")
+    # bar_chart(
+    #     data=df,
+    #     ind="tsv",
+    #     show_per=False,
+    #     figletter="a",
+    #     variables=["pmv_gagge_round", "pmv_set_round"],
+    # )
+    # bar_chart(
+    #     data=df,
+    #     ind="tsv",
+    #     show_per=False,
+    #     figletter="a",
+    #     variables=["pmv_round", "athb_round"],
+    # )
+    # legend_pmv()
 
     # Figure 3
     plot_error_prediction(data=df[df.vel > 0.1])
     plot_error_prediction(data=df)
-
-    # Figure 4
-    scatter_plot(data=df[df.vel > 0.1], ind="tsv")
-    # scatter_plot(data=df, ind="pmv")
-    # scatter_plot(data=df, ind="tsv")

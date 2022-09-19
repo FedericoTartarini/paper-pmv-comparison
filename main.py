@@ -13,8 +13,9 @@ from scipy import stats
 from sklearn.metrics import r2_score, mean_absolute_error
 import psychrolib
 import matplotlib.patches as patches
-from pythermalcomfort.models import two_nodes, athb
+from pythermalcomfort.models import two_nodes, athb, pmv, pmv_ppd
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
@@ -23,6 +24,7 @@ from statsmodels.tools import add_constant
 import statsmodels.api as sm
 import pandas as pd
 from sklearn.metrics import f1_score
+import math
 
 warnings.filterwarnings("ignore")
 
@@ -150,18 +152,21 @@ def importing_filtering_processing(load_preprocessed=False):
     )
 
     df_["pmv_gagge"] = two_nodes_results["pmv_gagge"]
-    df_["hb_gagge"] = two_nodes_results["pmv_gagge"] / (
-        0.303 * np.exp(-0.036 * df_["met"] * 58.2) + 0.028
-    )
     df_["pmv_set"] = two_nodes_results["pmv_set"]
-    df_["hb_set"] = two_nodes_results["pmv_set"] / (
-        0.303 * np.exp(-0.036 * df_["met"] * 58.2) + 0.028
+
+    # estimate thermal sensation using toby's model
+    df_["pmv_toby"] = list(
+        pd.cut(
+            df_["ta"],
+            [-90, 15, 18, 20, 25, 27, 30, 90],
+            labels=[-3, -2, -1, 0, 1, 2, 3],
+        )
     )
 
     df_["athb"] = athb(
         tdb=df_.ta,
         tr=df_.tr,
-        vr=df_.vel,
+        vr=df_.vel_r,
         rh=df_.rh,
         met=df_.met,
         t_running_mean=df_.t_mot_isd,
@@ -180,6 +185,16 @@ def importing_filtering_processing(load_preprocessed=False):
         diff_col = f"diff_ts_{model}"
         df_[rounded_col] = df_[model].round()
         df_[diff_col] = df_[["thermal_sensation", model]].diff(axis=1)[model]
+        # calculate the heat balance value
+        if model != "athb":
+            df_[f"{model}_hb"] = df_[model] / (
+                0.303 * np.exp(-0.036 * df_["met"] * 58.15) + 0.028
+            )
+        else:
+            met_adapted = df_["met"] - (0.234 * df_["t_mot_isd"]) / 58.2
+            df_[f"{model}_hb"] = df_[model] / (
+                0.303 * np.exp(-0.036 * met_adapted * 58.15) + 0.028
+            )
 
     df_["thermal_sensation_round"] = df_["thermal_sensation"].round()
     df_["thermal_sensation_round - pmv_ce_round"] = (
@@ -672,11 +687,12 @@ def plot_bubble_models_vs_tsv():
             y=model,
             data=df,
             ax=axs[ix],
-            robust=True,
+            # robust=True,
             ci=None,
             line_kws={"color": "k"},
             scatter_kws={"s": 1},
             scatter=False,
+            lowess=True,
         )
         axs[ix].axvline(0, c="darkgray", ls="--")
         axs[ix].axhline(0, c="darkgray", ls="--")
@@ -771,7 +787,10 @@ def plot_stacked_bar_predictions_ts():
                     df_plot[x] = np.nan
         df_plot = df_plot[df_plot.columns.sort_values()]
         df_plot.plot.bar(stacked=True, color=palette_tsv, ax=axs[ix])
-        axs[ix].set(title=var_names[pmv], xlabel="")
+        accuracy = round(
+            accuracy_score(df[var].fillna(999), df["thermal_sensation_round"]) * 100
+        )
+        axs[ix].set(title=f"{var_names[pmv]} {accuracy}%", xlabel="")
         handles, labels = axs[ix].get_legend_handles_labels()
         axs[ix].get_legend().remove()
         df_match = df_plot.stack().reset_index()
@@ -973,10 +992,12 @@ def plot_bias_distribution_whole_db():
 
     for ix, model in enumerate(models_to_test):
         df_plot = df[f"diff_ts_{model}"]
-        axs[ix].hist(df_plot, bins=np.arange(-3, 3, 0.5), color="gray")
+        interval = 0.5
+        bins_plot = np.arange(-3, 3, interval)
+        axs[ix].hist(df_plot, bins=bins_plot, color="gray")
         axs[ix].hist(
-            df_plot[(df_plot >= -0.5) & (df_plot < 0.5)],
-            bins=np.arange(-3, 3, 0.5),
+            df_plot[(df_plot >= -interval) & (df_plot < interval)],
+            bins=bins_plot,
             color="r",
         )
         axs[ix].set(title=var_names[model], ylabel="", xlabel="")
@@ -1110,6 +1131,19 @@ def plot_bias_distribution_by_variable():
         plt.savefig(f"./Manuscript/src/figures/bias_{model}.png", dpi=300)
 
 
+def table_f1_scores():
+    results_f1 = {}
+    for model in models_to_test:
+        df_analysis = df[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
+        x = df_analysis[f"{model}_round"]
+        y = df_analysis[f"thermal_sensation_round"]
+        results_f1[model] = {}
+        for type in ["micro", "macro", "weighted"]:
+            results_f1[model][type] = f1_score(y, x, average=type)
+    df_f1 = pd.DataFrame.from_dict(results_f1)
+    print(df_f1.to_markdown())
+
+
 if __name__ == "__main__":
 
     plt.close("all")
@@ -1130,6 +1164,7 @@ if __name__ == "__main__":
         "pmv_ce": [-3.49999, 3.5],
         "pmv_set": [-3.49999, 3.5],
         "pmv_gagge": [-3.49999, 3.5],
+        "pmv_toby": [-3.49999, 3.5],
         "rh": [0, 100],
         "pa": [0, 2700],
     }
@@ -1157,6 +1192,7 @@ if __name__ == "__main__":
         "pmv_set_round": r"PMV$_{SET}$",
         "pmv_gagge": r"PMV$_{Gagge}$",
         "pmv_gagge_round": r"PMV$_{Gagge}$",
+        "pmv_toby": r"PMV$_{Toby}$",
         "athb_round": r"ATHB",
         "athb": r"ATHB",
     }
@@ -1170,13 +1206,14 @@ if __name__ == "__main__":
         "met": r"met",
     }
 
-    models_to_test = ["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb"]
+    models_to_test = ["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb", "pmv_toby"]
 
     # filter data outside standard applicability limits
-    df = importing_filtering_processing(load_preprocessed=True)
+    df = importing_filtering_processing(load_preprocessed=False)
 
     df_meta = pd.read_csv("./Data/db_metadata.csv")
     df = pd.merge(df, df_meta, on="building_id", how="left")
+
 
 if __name__ == "__plot__":
 
@@ -1205,17 +1242,37 @@ if __name__ == "__plot__":
     # plot bias by each variable
     plot_bias_distribution_by_variable()
 
-    # todo calculate f1-score
-    results_f1 = {}
-    for model in models_to_test:
-        df_analysis = df[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
-        x = df_analysis[f"{model}_round"]
-        y = df_analysis[f"thermal_sensation_round"]
-        results_f1[model] = {}
-        for type in ["micro", "macro", "weighted"]:
-            results_f1[model][type] = f1_score(y, x, average=type)
-    df_f1 = pd.DataFrame.from_dict(results_f1)
-    print(df_f1.to_markdown())
+    # print Markdown table of f1-scores
+    table_f1_scores()
+
+    plt.close("all")
+    f, axs = plt.subplots(1, 5, constrained_layout=True, sharey=True, sharex=True)
+    for ix, model in enumerate(models_to_test):
+        sns.regplot(
+            x=model,
+            y="set",
+            data=df,
+            scatter_kws={"s": 5, "alpha": 0.5, "color": "lightgray"},
+            # lowess=True,
+            ax=axs[ix],
+        )
+    plt.savefig(f"./Manuscript/src/figures/scatter_set_vs_models.png", dpi=300)
+
+    plt.close("all")
+    f, axs = plt.subplots(1, 5, constrained_layout=True, sharey=True, sharex=True)
+    for ix, model in enumerate(models_to_test):
+        sns.regplot(
+            x=f"{model}_hb",
+            y="thermal_sensation",
+            data=df,
+            scatter_kws={"s": 5, "alpha": 0.5, "color": "lightgray"},
+            ax=axs[ix],
+            # lowess=True,
+            # y_partial="met",
+            ci=None,
+        )
+    plt.savefig(f"./Manuscript/src/figures/scatter_tsv_vs_hb.png", dpi=300)
+
 
 if __name__ == "__old_code__":
     # accuracies calculation
@@ -1243,12 +1300,12 @@ if __name__ == "__old_code__":
 
     # logistic regression models
     plt.figure()
-    sns.boxenplot(df.hb_gagge)
+    sns.boxenplot(df.pmv_gagge_hb)
     print(df.groupby("thermal_preference")["ta"].count())
 
     # gagge heat balance vs thermal sensation
     clf = LogisticRegression(random_state=0).fit(
-        df["hb_gagge"].values.reshape(-1, 1), df["thermal_sensation_round"]
+        df["pmv_gagge_hb"].values.reshape(-1, 1), df["thermal_sensation_round"]
     )
     set_range = np.arange(-60, 60, 0.5)
     prob = clf.predict_proba(set_range.reshape(-1, 1))
@@ -1260,18 +1317,18 @@ if __name__ == "__old_code__":
     plt.legend()
 
     # gagge heat balance vs thermal preference
-    df_dropna = df[["hb_set", "thermal_preference"]].dropna().sample(frac=1)
+    df_dropna = df[["pmv_set_hb", "thermal_preference"]].dropna().sample(frac=1)
     df_log = pd.DataFrame()
     for preference in df_dropna.thermal_preference.unique():
         _df = df_dropna.query("thermal_preference == @preference").head(10000)
         df_log = pd.concat([df_log, _df])
-    print(df_log.groupby("thermal_preference")["hb_set"].count())
+    print(df_log.groupby("thermal_preference")["pmv_set_hb"].count())
     clf = LogisticRegression(
         random_state=0,
-    ).fit(df_log["hb_set"].values.reshape(-1, 1), df_log["thermal_preference"])
+    ).fit(df_log["pmv_set_hb"].values.reshape(-1, 1), df_log["thermal_preference"])
     set_range = np.arange(-60, 60, 0.5)
     prob = clf.predict_proba(set_range.reshape(-1, 1))
-    df["tp_fede"] = clf.predict(df["hb_set"].values.reshape(-1, 1))
+    df["tp_fede"] = clf.predict(df["pmv_set_hb"].values.reshape(-1, 1))
     print(
         df.groupby(["thermal_preference", "tp_fede"])["ta"]
         .count()
@@ -1286,7 +1343,7 @@ if __name__ == "__old_code__":
 
     # gagge heat balance vs thermal preference
     df_dropna = (
-        df[["hb_set", "met", "clo", "t_mot_isd", "thermal_preference"]]
+        df[["pmv_set_hb", "met", "clo", "t_mot_isd", "thermal_preference"]]
         .dropna()
         .sample(frac=1)
     )
@@ -1294,15 +1351,15 @@ if __name__ == "__old_code__":
     for preference in df_dropna.thermal_preference.unique():
         _df = df_dropna.query("thermal_preference == @preference").head(3000)
         df_log = pd.concat([df_log, _df])
-    print(df_log.groupby("thermal_preference")["hb_set"].count())
+    print(df_log.groupby("thermal_preference")["pmv_set_hb"].count())
     clf = LogisticRegression(random_state=0,).fit(
-        df_log[["hb_set", "met", "clo", "t_mot_isd"]].values,
+        df_log[["pmv_set_hb", "met", "clo", "t_mot_isd"]].values,
         df_log["thermal_preference"],
     )
     set_range = np.arange(-60, 60, 0.5)
     prob = clf.predict_proba([[x[0], 1.2, 0.6, 15] for x in set_range.reshape(-1, 1)])
     df_dropna["tp_fede"] = clf.predict(
-        df_dropna[["hb_set", "met", "clo", "t_mot_isd"]].values
+        df_dropna[["pmv_set_hb", "met", "clo", "t_mot_isd"]].values
     )
     print(
         df_dropna.groupby(["thermal_preference", "tp_fede"])["tp_fede"]

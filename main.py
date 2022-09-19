@@ -201,6 +201,23 @@ def importing_filtering_processing(load_preprocessed=False):
         df_["thermal_sensation"] - df_["pmv_ce_round"]
     )
 
+    # estimate thermal sensation as a function of heat balance, met and clothing
+    for model in models_to_test[:-1]:
+        df_reg = df_[
+            [f"{model}_hb", "met", "clo", "thermal_sensation_round", "record_id"]
+        ].dropna()
+        clf = LogisticRegression(random_state=0, class_weight="balanced").fit(
+            df_reg[[f"{model}_hb", "met", "clo"]], df_reg["thermal_sensation_round"]
+        )
+        df_reg[f"lr_hb_{model}"] = clf.predict(df_reg[[f"{model}_hb", "met", "clo"]])
+        df_ = df_.merge(
+            df_reg[[f"lr_hb_{model}", "record_id"]], on="record_id", how="left"
+        )
+        df_[f"lr_hb_{model}_round"] = df_[f"lr_hb_{model}"].round()
+        df_[f"diff_ts_lr_hb_{model}"] = df_[
+            ["thermal_sensation", f"lr_hb_{model}"]
+        ].diff(axis=1)[f"lr_hb_{model}"]
+
     save_var_latex("entries_db_used", df_.shape[0])
     save_var_latex("entries_db_used_v_01", df_[df_.vel > 0.1].shape[0])
 
@@ -627,10 +644,6 @@ def plot_distribution_variable():
     plt.show()
 
     df["const"] = 1
-    df["gender"].value_counts(normalize=True)
-    pd.cut(df["age"], [0, 20, 35, 999]).value_counts(normalize=True)
-    pd.cut(df["t_mot_isd"], [0, 10, 25, 999]).value_counts(normalize=True)
-    df[df.gender.isna()]["const"].count()
     f, axs = plt.subplots(1, 4, figsize=(8, 3))
     for ix, var in enumerate(["age", "ht", "wt", "t_mot_isd"]):
         sns.violinplot(
@@ -663,7 +676,9 @@ def plot_distribution_variable():
 
 def plot_bubble_models_vs_tsv():
     # Scatter thermal_sensation vs pmv prediction
-    f, axs = plt.subplots(1, 5, sharex=True, sharey=True, constrained_layout=True)
+    f, axs = plt.subplots(
+        1, len(models_to_test), sharex=True, sharey=True, constrained_layout=True
+    )
     axs = axs.flatten()
 
     for ix, model in enumerate(models_to_test):
@@ -763,16 +778,22 @@ def plot_bar_tp_by_ts():
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
 
 
-def plot_stacked_bar_predictions_ts():
+def plot_stacked_bar_predictions_ts(hb_models=False):
     plt.close("all")
+
+    fig_name = "bar_stacked_model_accuracy"
+    models = models_to_test
+    if hb_models:
+        models = [f"lr_hb_{x}" for x in models_to_test[:-1]]
+        fig_name = "bar_stacked_model_accuracy_hb"
 
     # Stacked boxplot
     f, axs = plt.subplots(
-        1, len(models_to_test), sharex=True, sharey=True, constrained_layout=True
+        1, len(models), sharex=True, sharey=True, constrained_layout=True
     )
     axs = axs.flatten()
 
-    for ix, pmv in enumerate(models_to_test):
+    for ix, pmv in enumerate(models):
         var = f"{pmv}_round"
         df_plot = (
             df.groupby("thermal_sensation_round")[var]
@@ -824,7 +845,7 @@ def plot_stacked_bar_predictions_ts():
         ncol=7,
     )
     f.supxlabel(var_names["thermal_sensation"])
-    plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
 
 
 def plot_stacked_bar_predictions_model():
@@ -983,14 +1004,21 @@ def plot_stacked_bar_predictions_tp():
     plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy_tp.png", dpi=300)
 
 
-def plot_bias_distribution_whole_db():
+def plot_bias_distribution_whole_db(hb_models=False):
+
+    fig_name = "hist_discrepancies"
+    models = models_to_test
+    if hb_models:
+        models = [f"lr_hb_{x}" for x in models_to_test[:-1]]
+        fig_name = f"{fig_name}_hb"
+
     # plot bias distribution
     f, axs = plt.subplots(
-        1, len(models_to_test), sharex=True, sharey=True, constrained_layout=True
+        1, len(models), sharex=True, sharey=True, constrained_layout=True
     )
     axs = axs.flatten()
 
-    for ix, model in enumerate(models_to_test):
+    for ix, model in enumerate(models):
         df_plot = df[f"diff_ts_{model}"]
         interval = 0.5
         bins_plot = np.arange(-3, 3, interval)
@@ -1005,7 +1033,7 @@ def plot_bias_distribution_whole_db():
         axs[ix].text(0, 9800, f"{mean} ({std})", va="center", ha="center")
 
     f.supxlabel("Delta between PMV and TSV")
-    plt.savefig(f"./Manuscript/src/figures/hist_discrepancies.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
 
 
 def plot_bias_distribution_by_building():
@@ -1143,6 +1171,17 @@ def table_f1_scores():
     df_f1 = pd.DataFrame.from_dict(results_f1)
     print(df_f1.to_markdown())
 
+    results_f1 = {}
+    for model in [f"lr_hb_{x}" for x in models_to_test[:-1]]:
+        df_analysis = df[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
+        x = df_analysis[f"{model}_round"]
+        y = df_analysis[f"thermal_sensation_round"]
+        results_f1[model] = {}
+        for type in ["micro", "macro", "weighted"]:
+            results_f1[model][type] = f1_score(y, x, average=type)
+    df_f1 = pd.DataFrame.from_dict(results_f1)
+    print(df_f1.to_markdown())
+
 
 if __name__ == "__main__":
 
@@ -1186,6 +1225,11 @@ if __name__ == "__main__":
         "t_mot_isd": r"$t_{ormt}$",
         "pmv": r"PMV",
         "pmv_round": r"PMV",
+        "lr_hb_pmv": r"PMV$_{hb}$",
+        "lr_hb_pmv_ce": r"PMV$_{CE,hb}$",
+        "lr_hb_pmv_set": r"PMV$_{SET,hb}$",
+        "lr_hb_pmv_gagge": r"PMV$_{Gagge,hb}$",
+        "lr_hb_athb": r"ATHB$_{hb}$",
         "pmv_ce_round": r"PMV$_{CE}$",
         "pmv_ce": r"PMV$_{CE}$",
         "pmv_set": r"PMV$_{SET}$",
@@ -1217,6 +1261,116 @@ if __name__ == "__main__":
 
 if __name__ == "__plot__":
 
+    # def pmv_jiayu_fed(tdb, tr, vr, rh, met, clo, wme=0):
+    #
+    #     pa = rh * 10 * math.exp(16.6536 - 4030.183 / (tdb + 235))
+    #
+    #     icl = 0.155 * clo  # thermal insulation of the clothing in M2K/W
+    #     m = met * 58.15  # metabolic rate in W/M2
+    #     w = wme * 58.15  # external work in W/M2
+    #     mw = m - w  # internal heat production in the human body
+    #     # calculation of the clothing area factor
+    #     if icl <= 0.078:
+    #         f_cl = 1 + (1.29 * icl)  # ratio of surface clothed body over nude body
+    #     else:
+    #         f_cl = 1.05 + (0.645 * icl)
+    #
+    #     # heat transfer coefficient by forced convection
+    #     hcf = 12.1 * math.sqrt(vr)
+    #     hc = hcf  # initialize variable
+    #     taa = tdb + 273
+    #     tra = tr + 273
+    #     t_cla = taa + (35.5 - tdb) / (3.5 * icl + 0.1)
+    #
+    #     p1 = icl * f_cl
+    #     p2 = p1 * 3.96
+    #     p3 = p1 * 100
+    #     p4 = p1 * taa
+    #     p5 = (308.7 - 0.028 * mw) + (p2 * (tra / 100.0) ** 4)
+    #     xn = t_cla / 100
+    #     xf = t_cla / 50
+    #     eps = 0.00015
+    #
+    #     n = 0
+    #     while abs(xn - xf) > eps:
+    #         xf = (xf + xn) / 2
+    #         hcn = 2.38 * abs(100.0 * xf - taa) ** 0.25
+    #         if hcf > hcn:
+    #             hc = hcf
+    #         else:
+    #             hc = hcn
+    #         xn = (p5 + p4 * hc - p2 * xf ** 4) / (100 + p3 * hc)
+    #         n += 1
+    #         if n > 150:
+    #             raise StopIteration("Max iterations exceeded")
+    #
+    #     tcl = 100 * xn - 273
+    #
+    #     # heat loss diff. through skin
+    #     hl1 = 3.05 * 0.001 * (5733 - (6.99 * mw) - pa)
+    #     # heat loss by sweating
+    #     if mw > 58.15:
+    #         hl2 = 0.42 * (mw - 58.15)
+    #     else:
+    #         hl2 = 0
+    #     # latent respiration heat loss
+    #     hl3 = 1.7 * 0.00001 * m * (5867 - pa)
+    #     # dry respiration heat loss
+    #     hl4 = 0.0014 * m * (34 - tdb)
+    #     # heat loss by radiation
+    #     hl5 = 3.96 * f_cl * (xn ** 4 - (tra / 100.0) ** 4)
+    #     # heat loss by convection
+    #     hl6 = f_cl * hc * (tcl - tdb)
+    #
+    #     ts = 0.303 * math.exp(-0.036 * m) + 0.028
+    #     return mw - hl1 - hl2 - hl3 - hl4 - hl5 - hl6
+    #
+    # plt.close("all")
+    # y_array = []
+    # l_array = []
+    # for t in np.arange(20, 40, 0.1):
+    #     y = -8.471 + 0.33 * t
+    #     met = 0.98
+    #     l = pmv_jiayu_fed(t, t, 0.1, 50, met, 0.6)
+    #     y_array.append(y)
+    #     l_array.append(l)
+    #     # print(t, l)
+    # plt.plot(l_array, y_array, c="g")
+    # y_array = []
+    # l_array = []
+    # for t in np.arange(20, 40, 0.1):
+    #     y = -3.643 + 0.175 * t
+    #     met = 1.56
+    #     l = pmv_jiayu_fed(t, t, 0.2, 50, met, 0.6)
+    #     pmv = l * (0.303 * math.exp(-0.036 * met * 58.12) + 0.028)
+    #     pmv = l * (0.31 * math.exp(-0.04 * met * 58.12) + 0.028)
+    #     y_array.append(y)
+    #     l_array.append(l)
+    #     # print(t, l)
+    # plt.plot(l_array, y_array, c="gray")
+    # # plt.plot([-30, 30], [-2, +2])
+    #
+    # [x for x in df.columns if "_hb" in x]
+    # plt.scatter(y=df["thermal_sensation"], x=df["pmv_hb"], c="gray")
+    # plt.figure()
+    # sns.regplot(
+    #     y=df["pmv_hb"],
+    #     x=df["thermal_sensation"],
+    #     data=df,
+    #     scatter_kws={"s": 5, "alpha": 0.5, "color": "lightgray"},
+    #     lowess=True,
+    # )
+    # plt.tight_layout()
+    #
+    # # logistic regression
+    # from sklearn.linear_model import LogisticRegression
+    #
+    # df_reg = df[["pmv_hb", "met", "clo", "thermal_sensation_round"]].dropna()
+    # clf = LogisticRegression(random_state=0).fit(
+    #     df_reg[["pmv_hb", "met", "clo"]], df_reg["thermal_sensation_round"]
+    # )
+    # clf.predict([[0, 1, 0.6]])
+
     # Figure 1 and 2
     plot_distribution_variable()
 
@@ -1228,10 +1382,12 @@ if __name__ == "__plot__":
 
     # plot model accuracy using bar chart
     plot_stacked_bar_predictions_ts()
+    plot_stacked_bar_predictions_ts(hb_models=True)
     plot_stacked_bar_predictions_tp()
 
     # plot bias distribution
     plot_bias_distribution_whole_db()
+    plot_bias_distribution_whole_db(hb_models=True)
 
     # plot bias by building
     plot_bias_distribution_by_building()

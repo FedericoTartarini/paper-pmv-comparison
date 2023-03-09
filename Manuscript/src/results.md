@@ -1,5 +1,33 @@
 # Summary results
 
+* the PMV model is kind of okay, but the SET or PHS model are even better. We should use them instead of the PMV model.
+* the thermal sensation scale and the PMV results are two different scales and are not comparable. The former is for thermal comfort and the latter is for thermal stress. See w values. See value of w for PMV of 3 or gagges paper.
+```python
+pprint(two_nodes(tdb=35, tr=35, v=0.1, rh=50, met=1.1, clo=0.5))
+{'_set': 34.7,
+ 'et': 35.0,
+ 'pmv_gagge': 3.0,
+ 'pmv_set': 2.9,
+ 'w': 0.5}
+pprint(pmv(tdb=35, tr=35, vr=0.1, rh=50, met=1.1, clo=0.5, standard="ASHRAE"))
+3.3  # also 3.3 with ISO
+```
+![](./figures/PMV and thermal stress.png)
+* I am not sure about the classification issue, precision vs recall and false positive and false negative. SMOTE reduce false negatives at the cost of increasing false positive. Maybe better not to use it.
+* The assumption -1, 0, 1 thermal sensation comfortable is incorrect, see chart comparison thermal preference
+* the database II inherently contain a lot of issues, see simply as a small change in met or clo affects the results. As I show in the COBEE paper
+* Personalized comfort models may be used in operational settings but the SET model should be used in design phase
+* SET cooling effect is not based on any scientific evidence
+* SET is simple enough to calculate that there is no reason to use a simpler model. Shall we make an API?
+* the building type and natural ventilation concept as little impact. If I put you blindfolded in a room you cannot tell the building type in which he is in. If there is an effect only personal comfort models can depict it since basically each one of us see the world with his how eyes and its is hypotalamus that regulates its temperature. People have no clue about building type, it is absurd that we assume they vary their thermal perception based on the building type.
+* it is incorrect to use the dry-bulb temperature as predictor, see chart
+* maybe we should define a new SET in which we also standardize met and clo
+* SET to predict comfort and heat stress
+* create a model that compares SET vs thermal preference, I am not sure SET defines clothing as a function of MET and it is not consistent
+    * a model for thermal preference vs w (skin wettedness) for wanting to be cooler?
+    * a model for thermal preference vs cold signal (vasonctriction) for wanting to be warmer?
+![](./figures/PMV and w as a function of SET.png)
+
 ## Comfort DB overview
 
 The dataset contains mainly:
@@ -22,6 +50,8 @@ Thermal preference can be easily used to predict `hot` or `cold`.
 The great majority of the people who reported to be `slighlty warm` or `slightly cold` wanted to be `cooler` and `warmer`, respectively.
 
 ![](./figures/bar_plot_tp_by_ts.png)
+
+> SMOTE it is used to tweak the model to reduce false negatives at the cost of increasing false positive. For example, we will better detect who is hot but at the same time we will also increase the number of people who are in fact hot but are predicted to be comfortable. SMOTE generally increase recall, but decreases precision. For example a model that always predict hot has a good recall but a low precision.
 
 ## Preliminary PMV model comparison
 
@@ -126,7 +156,7 @@ The following scatter plot illustrates the formulaic error between the SET and t
 Since both the SET and PMV models use the same inputs, the delta is only caused by the difference in the formulation of both models.
 Analysis from Humphreys et al. 2000.
 
-![](./figures/scatter_set_vs_models.png
+![](./figures/scatter_set_vs_models.png)
 
 # Main issue with the PMV
 
@@ -143,8 +173,13 @@ This correlation is assumed to be constant which is already the first main possi
 These data were then used to determine a correlation between PMV and L (heat losses) as a function of metabolic rate.
 
 # TODO
-* check with marcel the output of his model
-* shall we analyse the data by building type?
-* undersampling 500 data point or more, repeat test like dorn paper
 * plot heat losses (L) vs thermal sensation and preference
-* which model should we recommend
+* calculate w for PMV=3
+* PMV model is less accurate than the SET
+* SET cooling effect is not based on any scientific evidence
+* it is better a false negative then a false positive (e.g. if comfortable is classified as hot then we consume more energy and adjust setpoint, if hot is classified as comfortable we do not act on)
+
+# COBEE conference paper
+We simulated how the PMV values vary as a function of an error in the measurement. This was done by randomly selecting 1000 points from a normal distribution (shown in Figure 5) and then using them to calculate the PMV. The Figure 5Figure shows that despite the limited uncertainties in the inputs in approximately 50% of the cases the model predicted a ‘neutral’ thermal sensation while in the other half ‘slightly warm’. This further highlights that binning PMV values may significantly lower its prediction accuracy. Finally in this paper we compared the predicted PMV valuesotes with individual TSV. However, the PMV model was originally designed to predict the average thermal sensation of a group of occupants sharing the same thermal environment, instead of and not individual votes. The Comfort DB, however, does not containscontain detailed information about where the survey was conducted, and consequentlythus, we could not are unable to group people and calculate their average TSV.
+
+![](./figures/COBEE.png

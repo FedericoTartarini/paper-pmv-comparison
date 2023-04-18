@@ -1,6 +1,6 @@
 import matplotlib as mpl
 
-mpl.use("Qt5Agg")  # or can use 'TkAgg', whatever you have/prefer
+# mpl.use("Qt5Agg")  # or can use 'TkAgg', whatever you have/prefer
 
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.pyplot as plt
@@ -79,7 +79,7 @@ palette_primary = [
 ]
 
 
-def save_var_latex(key, value, units=False):
+def save_var_latex(key, value, units=False, round_var=False):
     import csv
 
     dict_var = {}
@@ -93,6 +93,9 @@ def save_var_latex(key, value, units=False):
                 dict_var[row[0]] = row[1]
     except FileNotFoundError:
         pass
+
+    if round_var:
+        value = round(value, round_var)
 
     if units:
         dict_var[key] = f"\\qty{{{value}}}{{{units}}}"
@@ -633,15 +636,41 @@ def plot_distribution_variable():
             xlabel=f"{var_names[var]} ({var_units[var]})",
             ylim=(applicability_limits[var][0], applicability_limits[var][1]),
         )
+        desc = df[var].describe(percentiles=[0.025, 0.25, 0.5, 0.75, 0.975])
         if var == "ta":
             axs[ix].set(
                 ylim=(applicability_limits["tr"][0], applicability_limits["tr"][1]),
             )
         if var == "clo":
             axs[ix].set(yticks=(np.arange(0, 1.8, 0.3)))
+
+        desc = desc.round(2)
+        if var in ["ta", "tr", "rh"]:
+            desc = desc.round(1)
+
+        axs[ix].text(0.5, desc["2.5%"], desc["2.5%"], size="small", c="b", va="center")
+        axs[ix].text(
+            0.5,
+            desc["97.5%"],
+            desc["97.5%"],
+            size="small",
+            c="b",
+            va="center",
+        )
+        axs[ix].text(0.5, desc["50%"], desc["50%"], size="small", c="b", va="center")
     sns.despine(bottom=True, left=True)
     plt.savefig("./Manuscript/src/figures/dist_input_data.png", dpi=300)
     plt.show()
+
+    desc = df[["ta", "tr", "rh", "vel", "clo", "met"]].describe(
+        percentiles=[0.025, 0.25, 0.5, 0.75, 0.975]
+    )
+
+    # save_var_latex("rh_95_perc_min", desc["ta"]["2.5%"], "\\celsius", round_var=1)
+    save_var_latex("rh_95_perc_max", desc["rh"]["97.5%"], "\\percent", round_var=2)
+    save_var_latex("v_95_perc_max", desc["vel"]["97.5%"], "\\m\\per\\sec", round_var=2)
+
+    r2 = r2_score(df.ta, df.tr)
 
     df["const"] = 1
     f, axs = plt.subplots(1, 4, figsize=(8, 3))
@@ -658,6 +687,21 @@ def plot_distribution_variable():
         )
         axs[ix].get_legend().remove()
         axs[ix].set(xlabel=var_names[var], xticks=[], ylabel="")
+        desc = df[var].describe(percentiles=[0.025, 0.25, 0.5, 0.75, 0.975]).round(1)
+
+        axs[ix].text(0.4, desc["2.5%"], desc["2.5%"], size="small", c="b", va="center")
+        axs[ix].text(
+            0.4,
+            desc["97.5%"],
+            desc["97.5%"],
+            size="small",
+            c="b",
+            va="center",
+        )
+        axs[ix].text(0.4, desc["50%"], desc["50%"], size="small", c="b", va="center")
+
+        if var == "t_mot_isd":
+            axs[ix].set(yticks=(np.arange(-30, 50, 10)))
     sns.despine(bottom=True, left=True)
     handles, labels = axs[ix].get_legend_handles_labels()
     f.legend(
@@ -686,16 +730,17 @@ def plot_bubble_models_vs_tsv():
         df_plot = df.copy()
         df_plot["ts_binned"] = pd.cut(
             df["thermal_sensation"],
-            np.arange(-3.5, 4, 0.5),
+            np.arange(-3.75, 4.25, 0.5),
         )
 
-        df_plot["y_binned"] = pd.cut(df[model], np.arange(-3.5, 4, 0.5))
+        df_plot["y_binned"] = pd.cut(df[model], np.arange(-3.75, 4.25, 0.5))
         df_plot = df_plot.groupby(["ts_binned", "y_binned"]).size()
         axs[ix].scatter(
             pd.IntervalIndex(df_plot.index.get_level_values("ts_binned")).mid,
             pd.IntervalIndex(df_plot.index.get_level_values("y_binned")).mid,
             s=df_plot / 20,
             alpha=0.5,
+            c="darkgray",
         )
         sns.regplot(
             x="thermal_sensation",
@@ -754,9 +799,8 @@ def plot_bar_tp_by_ts():
     fig = plt.figure(constrained_layout=True)
     gs = GridSpec(1, 3, figure=fig)
     ax1 = fig.add_subplot(gs[0, :-1])
-    df.groupby(x_var)[y_var].value_counts(normalize=True).unstack(y_var).plot.barh(
-        stacked=True, color=palette_tp, ax=ax1
-    )
+    df_plot = df.groupby(x_var)[y_var].value_counts(normalize=True) * 100
+    df_plot.unstack(y_var).plot.barh(stacked=True, color=palette_tp, ax=ax1)
     ax1.set(xlabel="Percentage (%)", ylabel=var_names[x_var])
     ax1.legend(
         bbox_to_anchor=(0.5, 1.04),
@@ -765,15 +809,15 @@ def plot_bar_tp_by_ts():
         frameon=False,
         ncol=3,
     )
-    ax1.grid(axis="y")
+    ax1.grid(axis="y", ls="--")
     for ix, row in df_count.reset_index().iterrows():
-        ax1.text(1.12, ix, int(row[y_var]), va="center", ha="right")
+        ax1.text(112, ix, int(row[y_var]), va="center", ha="right")
 
     ax2 = fig.add_subplot(gs[0, -1])
     df.groupby(x_var)[x_var].count().plot.bar(color=palette_tsv, ax=ax2)
-    ax2.set(ylabel="", xlabel=var_names[x_var], title="Number of points")
+    ax2.set(ylabel="", xlabel=var_names[x_var], title="Number of votes")
     ax2.yaxis.tick_right()
-    ax2.grid(axis="x")
+    ax2.grid(axis="x", ls="--")
 
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
 
@@ -807,13 +851,15 @@ def plot_stacked_bar_predictions_ts(hb_models=False):
                 else:
                     df_plot[x] = np.nan
         df_plot = df_plot[df_plot.columns.sort_values()]
-        df_plot.plot.bar(stacked=True, color=palette_tsv, ax=axs[ix])
+        df_plot.plot.bar(stacked=True, color=palette_tsv, ax=axs[ix], rot=0)
         accuracy = round(
             accuracy_score(df[var].fillna(999), df["thermal_sensation_round"]) * 100
         )
-        axs[ix].set(title=f"{var_names[pmv]} {accuracy}%", xlabel="")
+        axs[ix].set(xlabel="")
+        axs[ix].set_title(f"{var_names[pmv]} {accuracy}%", y=1.025)
         handles, labels = axs[ix].get_legend_handles_labels()
         axs[ix].get_legend().remove()
+        axs[ix].grid(False)
         df_match = df_plot.stack().reset_index()
         df_match = df_match[df_match["thermal_sensation_round"] == df_match[var]]
         for x in axs[ix].get_xticklabels():
@@ -829,10 +875,18 @@ def plot_stacked_bar_predictions_ts(hb_models=False):
                     rotation=90,
                 )
             except IndexError:
-                pass
+                axs[ix].text(
+                    x._x,
+                    0.5,
+                    f"0 %",
+                    va="center",
+                    ha="center",
+                    size=10,
+                    rotation=90,
+                )
 
     plt.subplots_adjust(left=0.05, right=1, bottom=0.2, top=0.85)
-    cax = plt.axes([0, 0.95, 1, 0.05])
+    cax = plt.axes([0, 0.92, 1, 0.05])
     cax.axis("off")
 
     cax.legend(
@@ -884,7 +938,7 @@ def plot_stacked_bar_predictions_model():
                     df_plot[x] = np.nan
         df_plot = df_plot[df_plot.columns.sort_values()]
         df_plot = df_plot.sort_index()
-        df_plot.plot.bar(stacked=True, color=palette_tsv, ax=axs[ix])
+        df_plot.plot.bar(stacked=True, color=palette_tsv, ax=axs[ix], rot=0)
         axs[ix].set(title=var_names[pmv], xlabel="")
         handles, labels = axs[ix].get_legend_handles_labels()
         axs[ix].get_legend().remove()
@@ -1036,6 +1090,39 @@ def plot_bias_distribution_whole_db(hb_models=False):
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
 
 
+def plot_bias_distribution_by(variable="building_id"):
+    # plot bias by building
+    plt.close("all")
+    for ix, model in enumerate(models_to_test):
+        color = palette_primary[ix]
+        f, axs = plt.subplots(1, 1, constrained_layout=True)
+        sns.violinplot(
+            x=variable,
+            y=f"diff_ts_{model}",
+            data=df,
+            ax=axs,
+            color=color,
+            scale="count",
+        )
+        counts = df.groupby(variable)["const"].count()
+        axs.axhline(-0.5, c="r")
+        axs.axhline(+0.5, c="r")
+
+        labels = [x._text for x in axs.get_xticklabels()]
+        for i, label in enumerate(labels):
+            axs.text(i - 0.25, -2, label[:20], va="center", ha="center", rotation=90)
+            axs.text(i - 0.25, 2, counts[label], va="center", ha="center", rotation=90)
+
+        axs.set(
+            ylabel=variable,
+            ylim=(-2, 2),
+            xlabel="",
+            xticklabels="",
+        )
+        plt.suptitle(model)
+        plt.savefig(f"./Manuscript/src/figures/bias_by_{variable}_{model}.png", dpi=300)
+
+
 def plot_bias_distribution_by_building():
     # plot bias by building
     plt.close("all")
@@ -1170,6 +1257,7 @@ def table_f1_scores():
             results_f1[model][type] = f1_score(y, x, average=type)
     df_f1 = pd.DataFrame.from_dict(results_f1)
     print(df_f1.to_markdown())
+    df_f1.round(2).to_latex("./Manuscript/src/tables/f1.tex")
 
     results_f1 = {}
     for model in [f"lr_hb_{x}" for x in models_to_test[:-1]]:
@@ -1186,9 +1274,21 @@ def table_f1_scores():
 if __name__ == "__main__":
 
     plt.close("all")
+
     sns.set_context("paper")
     mpl.rcParams["figure.figsize"] = [8.0, 3.5]
-    sns.set_theme(style="whitegrid")
+    sns.set_style(
+        "whitegrid",
+        {
+            "grid.color": ".85",
+            "grid.linewidth": "1",
+            "grid.linestyle": "--",
+            "axes.spines.left": False,
+            "axes.spines.bottom": False,
+            "axes.spines.right": False,
+            "axes.spines.top": False,
+        },
+    )
 
     plt.rc("axes.spines", top=False, right=False, left=False)
     plt.rcParams["font.family"] = "sans-serif"
@@ -1250,10 +1350,13 @@ if __name__ == "__main__":
         "met": r"met",
     }
 
-    models_to_test = ["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb", "pmv_toby"]
+    models_to_test = [
+        "pmv",
+        "pmv_ce",
+    ]  # ["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb", "pmv_toby"]
 
     # filter data outside standard applicability limits
-    df = importing_filtering_processing(load_preprocessed=False)
+    df = importing_filtering_processing(load_preprocessed=True)
 
     df_meta = pd.read_csv("./Data/db_metadata.csv")
     df = pd.merge(df, df_meta, on="building_id", how="left")
@@ -1382,18 +1485,25 @@ if __name__ == "__plot__":
 
     # plot model accuracy using bar chart
     plot_stacked_bar_predictions_ts()
-    plot_stacked_bar_predictions_ts(hb_models=True)
-    plot_stacked_bar_predictions_tp()
+    # plot_stacked_bar_predictions_ts(hb_models=True)
+    # plot_stacked_bar_predictions_tp()
 
     # plot bias distribution
     plot_bias_distribution_whole_db()
-    plot_bias_distribution_whole_db(hb_models=True)
+    # plot_bias_distribution_whole_db(hb_models=True)
 
-    # plot bias by building
-    plot_bias_distribution_by_building()
-
-    # plot bias by contributor
-    plot_bias_distribution_by_contributor()
+    # # plot bias by building
+    # plot_bias_distribution_by_building()
+    # plot_bias_distribution_by(variable="building_id")
+    # plot_bias_distribution_by(variable="contributor")
+    # plot_bias_distribution_by(variable="region")
+    # plot_bias_distribution_by(variable="climate")
+    # plot_bias_distribution_by(variable="building_type")
+    # plot_bias_distribution_by(variable="cooling_type")
+    # plot_bias_distribution_by(variable="country")
+    #
+    # # plot bias by contributor
+    # plot_bias_distribution_by_contributor()
 
     # plot bias by each variable
     plot_bias_distribution_by_variable()

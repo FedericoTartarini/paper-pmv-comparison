@@ -13,3 +13,11 @@ entries_db_valid_no_tr,\qty{29}{\percent}
 perc_tsv_neutral,\qty{42}{\percent}
 perc_tsv_hot,\qty{3}{\percent}
 entries_with_tp,\num{41120}
+ta_95_perc_min,\qty{18.5}{\celsius}
+tr_95_perc_min,\qty{18.4}{\celsius}
+ta_95_perc_max,\qty{29.0}{\celsius}
+ta_median,\qty{23.2}{\celsius}
+tr_95_perc_max,\qty{29.5}{\celsius}
+tr_median,\qty{23.6}{\celsius}
+rh_95_perc_max,\qty{71.5}{\percent}
+v_95_perc_max,\qty{0.46}{\m\per\sec}

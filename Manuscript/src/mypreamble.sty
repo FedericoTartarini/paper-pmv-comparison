@@ -11,15 +11,16 @@
 \tikzstyle{decision} = [diamond, aspect=3.5, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=gray!10]
 \tikzstyle{arrow} = [thick,->,>=stealth]
 
-\usepackage{lineno,hyperref}
+\usepackage{lineno}
+\usepackage[hidelinks]{hyperref}
 
 \usepackage[range-phrase=--, range-units=single]{siunitx}
 
-\hypersetup{%
-  colorlinks=false,% hyperlinks will be black
-  linkbordercolor=[rgb]{0.6,0.6,0.6},% hyperlink borders will be red
-  pdfborderstyle={/S/U/W 1}% border style will be underline of width 1pt
-}
+%\hypersetup{%
+%  colorlinks=false,% hyperlinks will be black
+%  linkbordercolor=[rgb]{1,1,1},% hyperlink borders will be red
+%  pdfborderstyle={/S/U/W 1}% border style will be underline of width 1pt
+%}
 
 \urlstyle{same}
 
@@ -72,14 +73,14 @@
 % for math equations
 \usepackage{amsmath}
 
-%% tables
-%\usepackage{caption}
-%\usepackage{csvsimple}
-%\usepackage{booktabs, tabularx, wrapfig}
-%\usepackage{array, ltablex, multirow}
-%\usepackage{placeins}
-%\usepackage{graphicx}
-%\usepackage{subcaption}
+% tables
+\usepackage{caption}
+\usepackage{csvsimple}
+\usepackage{booktabs, tabularx, wrapfig}
+\usepackage{array, ltablex, multirow}
+\usepackage{placeins}
+\usepackage{graphicx}
+\usepackage{subcaption}
 
 \usepackage[nonumberlist,nogroupskip]{glossaries}
 
@@ -87,7 +88,7 @@
 
 \usepackage[printonlyused]{acronym}
 
-\bibliographystyle{elsarticle-num}
+\bibliographystyle{elsarticle-num-names}
 %%%%%%%%%%%%%%%%%%%%%%%
 
 \newcommand\mycite[1]{\citeauthor{#1}~(\citeyear{#1})}

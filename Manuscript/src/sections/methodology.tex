@@ -8,7 +8,7 @@ The \gls{db2} has \var{entries_db_all} independent recordings from various field
 \Ac{tsv} were collected using a \gls{rhrn} survey and environmental parameters were measured and logged in the proximity of the participants when they completed the survey.
 The Comfort DB contains data collected by researchers in cross-sectional field studies that have been published in peer reviewed journals.
  We compared the results obtained by the \ac{pmv} and the \gls{pmv-ce} with the self-reported \ac{tsv}.
-Results were calculated using the function `pythermalcomfort.models.pmv\_ppd' included in pythermalcomfort v2.7.0 a Python package for thermal comfort calculations~\cite{Tartarini2020a}.
+Results were calculated using the function `pythermalcomfort.models.pmv\_ppd' included in pythermalcomfort v2.8.1 a Python package for thermal comfort calculations~\cite{Tartarini2020a}.
 
 \subsection{Data Preparation and Cleaning}\label{subsec:data-processing-and-cleaning}
 Not all researchers logged all the six parameters required to calculate the PMV.\@
@@ -35,14 +35,14 @@ We used these inputs to calculate the \ac{pmv} values.
 Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
 However, since the thermal sensation was measured with at least a seven-point scale we decided also to show entries with $|$\ac{tsv}$|$ or $|$\ac{pmv}$|$ $\leq$ than \num{3.5}.
 
-We used Python to analyse and plot the results.
+We used Python to analyse and visualise the results.
 
 We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \textbf{provide URL} so other users can test different assumptions.  % todo add URL
 
 \subsection{Model Validation}\label{subsec:model-validation}
 The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants sharing the same environment.
-While the \gls{db2} contains data from a sufficiently wide population no information is available on where exactly these data were collected.
-We only have access to building level data and no information about weather a group of occupants was sharing the same thermal environment.
+While the \gls{db2} contains data from a sufficiently wide population no information is available on where and when exactly these data were collected.
+We only have access to building level data and no information about whether a group of occupants was sharing the same thermal environment.
 We, therefore, decided to first group the participants responses by their \ac{tsv} and we determined how many of these votes were correctly labelled by the \ac{pmv} model.
 This approach is useful to perform an overall assessment of the accuracy of the model, but it introduces an error due to the rounding of the \ac{pmv} models output and \ac{tsv} values.
 The latter were sometimes collected using a continuous scale and not a discrete one, in other words they could take any value in the range of \numrange{-3.0}{3.0}.
@@ -53,7 +53,26 @@ These values were then binned using several independent variables (e.g., \ac{tdb
 If the \ac{pmv} formulation is bias-free, the distribution of any batch derived from these differences would have a mean value that was little different from zero.
 The standard deviation would reflect the combined effect of the people's individual differences as well as any errors in the \ac{pmv} formulation~\cite{Humphreys2002}.
 According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned deltas are within \numrange{-0.25}{0.25}.
+Binning data by the independent variables is a significant improvement over grouping the participants responses by their \ac{tsv}.
+This is because the \ac{pmv} model aim is, as previously mentioned, predicting the average thermal sensation of a large group of occupants sharing the same environment and not to correctly predict the average \ac{tsv} of people who reported the same \ac{tsv} vote.
 % todo why not 0.5 since the delta between a PMV of 2.5 and a self-reported vote of either 2 or 3 (the closest points to 2.5) is 0.5?
+
+Finally, we decided to compare the results of the two \ac{pmv} formulations with the results of the two-node model.
+The two-node model was developed by \mycite{GaggeSET} and it uses a more extensive set of equations to solve the heat balance equation depicted in Equation~\ref{eq:heat-balance}.
+We did this by passing as input to the \ac{pmv}, \gls{pmv-ce}, and two-node model a total of \qty{10000} randomly generated set of inputs. 
+Each set of input was generated using the Numpy random uniform function which picks a random value in within a predefined range. 
+We selected the range of each of the 6 input variables needed to calculate the \ac{pmv} to be equal to the 2.5th and 97.5th percentiles for all the input variables contained in the Comfort DB.
+The only exception was for \ac{v} which was randomly selected from this interval \qty{0.1}{\m\per\s} $\leq$ \ac{v} $\leq$ \qty{1}{\m\per\s}, the rationale for this decision was that both the \ac{pmv} and \gls{pmv-ce} models use the same equations for \ac{v} $\leq$ \qty{0.1}{\m\per\s}.
+
+The two-node model, along with other physiological parameters and thermal comfort indices, it outputs the \gls{pmvg} and the amount of heat losses or gains form the body to the surrounding environment.
+Gagge's two-node model is also used by the \gls{pmv-ce} to calculate the \ac{ce}.
+\begin{equation}
+    M - W = C + R + E_{dif} + E_{rsw} + C_{res} + E_{res}\label{eq:heat-balance}
+\end{equation}
+Where \ac{met} minus the external work ($W$) must be dissipated either via sensible or latent heat losses.
+Sensible heat is transferred via conduction, convection and radiation (\ac{c-r} + \ac{c-res}).
+Latent heat loss occurs from the evaporation of sweat (\ac{e-rsw}), moisture diffused through the skin  (\ac{e-dif}), and respiration (\ac{e-res}).
+Since both thermal comfort standard deal with office spaces and moderate thermal environments we omitted the heat storage terms in Equation~\ref{eq:heat-balance}.
 
 \subsection{Performance Metrics}\label{subsec:performance-metrics}
 For classification problems that involve unbalanced dataset the simple accuracy is a misleading metric to use to quantify the performance of a predictive model~\cite{Chawla2005}.

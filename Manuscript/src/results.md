@@ -1,7 +1,7 @@
 # Summary results
 
 * the PMV model is kind of okay, but the SET or PHS model are even better. We should use them instead of the PMV model.
-* the thermal sensation scale and the PMV results are two different scales and are not comparable. The former is for thermal comfort and the latter is for thermal stress. See w values. See value of w for PMV of 3 or gagges paper.
+* the thermal sensation scale and the PMV results are two different scales and are not comparable. The former is for thermal comfort and the latter is for thermal stress. See w values. See value of w for PMV of 3 or Gagge's paper.
 ```python
 pprint(two_nodes(tdb=35, tr=35, v=0.1, rh=50, met=1.1, clo=0.5))
 {'_set': 34.7,

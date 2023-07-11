@@ -16,7 +16,6 @@ from pythermalcomfort.models import (
     athb,
     set_tmp,
     cooling_effect,
-    pmv,
 )
 from scipy import stats
 from scipy.stats import skewtest
@@ -24,6 +23,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import r2_score, mean_absolute_error
+from sklearn.linear_model import LinearRegression
 from itertools import product
 
 warnings.filterwarnings("ignore")
@@ -79,19 +79,7 @@ palette_primary = [
 ]
 
 
-@vectorize(
-    [
-        float64(
-            float64,
-            float64,
-            float64,
-            float64,
-            float64,
-            float64,
-            float64,
-        )
-    ],
-)
+@jit(nopython=True)
 def pmv_ppd_optimized(tdb, tr, vr, rh, met, clo, wme):
     pa = rh * 10 * math.exp(16.6536 - 4030.183 / (tdb + 235))
 
@@ -154,8 +142,9 @@ def pmv_ppd_optimized(tdb, tr, vr, rh, met, clo, wme):
 
     ts = 0.303 * math.exp(-0.036 * m) + 0.028
     _pmv = ts * (mw - hl1 - hl2 - hl3 - hl4 - hl5 - hl6)
+    heat_loss = mw - hl1 - hl2 - hl3 - hl4 - hl5 - hl6
 
-    return _pmv
+    return _pmv, heat_loss
 
 
 def pmv_ppd(tdb, tr, vr, rh, met, clo, wme=0, standard="ISO", **kwargs):
@@ -332,7 +321,9 @@ def pmv_ppd(tdb, tr, vr, rh, met, clo, wme=0, standard="ISO", **kwargs):
     tr = tr - ce
     vr = np.where(ce > 0, 0.1, vr)
 
-    pmv_array = pmv_ppd_optimized(tdb, tr, vr, rh, met, clo, wme)
+    (pmv_array, heat_losses) = np.vectorize(pmv_ppd_optimized, cache=True)(
+        tdb, tr, vr, rh, met, clo, wme
+    )
 
     ppd_array = 100.0 - 95.0 * np.exp(
         -0.03353 * np.power(pmv_array, 4.0) - 0.2179 * np.power(pmv_array, 2.0)
@@ -354,6 +345,7 @@ def pmv_ppd(tdb, tr, vr, rh, met, clo, wme=0, standard="ISO", **kwargs):
     return {
         "pmv": np.around(pmv_array, 2),
         "ppd": np.around(ppd_array, 1),
+        "heat loss": np.around(heat_losses, 2),
     }
 
 
@@ -804,7 +796,7 @@ def two_nodes_optimized(
         pmv_gagge,
         pmv_set,
         disc,
-        t_sens,
+        e_req - e_comfort - e_diff,
     )
 
 
@@ -974,7 +966,7 @@ def two_nodes(
         pmv_gagge,
         pmv_set,
         disc,
-        t_sens,
+        heat_loss,
     ) = np.vectorize(two_nodes_optimized, cache=True)(
         tdb=tdb,
         tr=tr,
@@ -1010,7 +1002,7 @@ def two_nodes(
         "pmv_gagge": pmv_gagge,
         "pmv_set": pmv_set,
         "disc": disc,
-        "t_sens": t_sens,
+        "heat loss": heat_loss,
     }
 
     for key in output.keys():
@@ -2151,26 +2143,26 @@ def plot_bias_distribution_by_contributor():
         plt.savefig(f"./Manuscript/src/figures/bias_contributors.png", dpi=300)
 
 
-def plot_bias_distribution_by_variable():
+def plot_bias_distribution_by_variable_binned():
     variables = [
         "ta",
-        "tr",
-        "top",
+        # "tr",
+        # "top",
         # "t_mot_isd",
         "vel",
-        "rh",  # todo report pa rather than RH
+        # "rh",  # todo report pa rather than RH
         "clo",
         "met",
-        "thermal_sensation",
-        "thermal_preference",
-        "pmv",
+        # "thermal_sensation",
+        # "thermal_preference",
+        # "pmv",
     ]
 
     bins = {
-        "ta": np.arange(17.5, 31.5, 1),
+        "ta": np.arange(18.5, 30.5, 1),
         "tr": np.arange(18.5, 31.5, 1),
         "top": np.arange(17.5, 30.5, 1),
-        "vel": np.arange(-0.05, 0.65, 0.1),
+        "vel": np.arange(-0.05, 0.50, 0.1),
         "rh": np.arange(17.5, 75, 5),
         "clo": np.arange(0.2, 1.5, 0.2),
         "met": np.arange(0.9, 2, 0.2),
@@ -2194,74 +2186,99 @@ def plot_bias_distribution_by_variable():
     #             df_analysis[var] < df_analysis[var].quantile(percentiles_to_show[-1])
     #         ]
 
-    for ix, model in enumerate(models_to_test):
-        color = palette_primary[ix]
-        f, axs = plt.subplots(5, 2, constrained_layout=True, figsize=(8, 10))
-        axs = axs.flatten()
-        for i, var in enumerate(variables):
-            # plot bias distribution
-            ax = axs[i]
+    # for ix, model in enumerate(models_to_test):
+    #     color = palette_primary[ix]
+    f, axs = plt.subplots(2, 2, constrained_layout=True, figsize=(7, 5))
+    axs = axs.flatten()
+    for i, var in enumerate(variables):
+        # plot bias distribution
+        ax = axs[i]
 
-            variable_to_split = "pmv"
+        variable_to_split = "pmv"
 
-            df_plot = (
+        df_plot = pd.DataFrame()
+        for ix, model in enumerate(models_to_test):
+            df_model = (
                 df_analysis[[var, f"diff_ts_{model}", "building_id", variable_to_split]]
                 .copy()
                 .dropna()
             )
-            df_plot = df_plot.loc[:, ~df_plot.columns.duplicated()].copy()
-            # exclude categories with very little data
-            if var != "thermal_preference":
-                df_plot = df_plot[
-                    df_plot[var] > df_plot[var].quantile(percentiles_to_show[0])
+            df_model["model"] = model
+            df_model.rename(columns={f"diff_ts_{model}": "diff_ts"}, inplace=True)
+            df_plot = pd.concat(
+                [
+                    df_plot,
+                    df_model,
                 ]
-                df_plot = df_plot[
-                    df_plot[var] < df_plot[var].quantile(percentiles_to_show[-1])
-                ]
-
-                # if filter_good_buildings:
-                #     df_plot = df_plot[df_plot["building_id"].isin(good_buildings)]
-                df_plot[var] = pd.cut(df_plot[var], bins=bins[var])
-
-            try:
-                df_plot[variable_to_split] = pd.cut(
-                    df_plot[variable_to_split], bins=bins[variable_to_split]
-                )
-            except TypeError:
-                pass
-            df_plot["neutral"] = 1
-            range_to_keep = [-1, 0, 1]
-            range_to_keep = [0]
-            df_plot.loc[
-                pd.Index(df_plot[variable_to_split]).isin(range_to_keep), "neutral"
-            ] = 0
-            sns.violinplot(
-                x=var,
-                y=f"diff_ts_{model}",
-                data=df_plot,
-                ax=ax,
-                color=color,
-                scale="count",
-                # split=True,
-                # hue="neutral",
-                inner="quartile",
             )
-            ax.axhline(-0.5, c="r")
-            ax.axhline(+0.5, c="r")
+        df_plot = df_plot.loc[:, ~df_plot.columns.duplicated()].copy()
+        # exclude categories with very little data
+        if var != "thermal_preference":
+            df_plot = df_plot[
+                df_plot[var] > df_plot[var].quantile(percentiles_to_show[0])
+            ]
+            df_plot = df_plot[
+                df_plot[var] < df_plot[var].quantile(percentiles_to_show[-1])
+            ]
 
-            if "preference" not in var:
-                x_labels = [
-                    round(x, 1)
-                    for x in pd.IntervalIndex(
-                        sorted(df_plot[var].cat.categories.unique())
-                    ).mid
-                ]
-                ax.set(
-                    xticklabels=x_labels,
-                )
-            ax.set(ylabel=var_names[var].split(" ")[-1], ylim=(-2, 2), xlabel="")
-        plt.suptitle(model)
-        plt.savefig(f"./Manuscript/src/figures/bias_{model}.png", dpi=300)
+            # if filter_good_buildings:
+            #     df_plot = df_plot[df_plot["building_id"].isin(good_buildings)]
+            df_plot[var] = pd.cut(df_plot[var], bins=bins[var])
+
+        # try:
+        #     df_plot[variable_to_split] = pd.cut(
+        #         df_plot[variable_to_split], bins=bins[variable_to_split]
+        #     )
+        # except TypeError:
+        #     pass
+        # df_plot["neutral"] = 1
+        # range_to_keep = [-1, 0, 1]
+        # range_to_keep = [0]
+        # df_plot.loc[
+        #     pd.Index(df_plot[variable_to_split]).isin(range_to_keep), "neutral"
+        # ] = 0
+        sns.violinplot(
+            x=var,
+            y="diff_ts",
+            data=df_plot,
+            ax=ax,
+            # color=color,
+            # width=(
+            #     df_plot.groupby(var)["diff_ts"].count() / df_plot.shape[0]
+            # ).values,
+            split=True,
+            hue="model",
+            inner="quartile",
+            palette="viridis",
+        )
+        ax.get_legend().remove()
+        ax.axhline(-0.5, c="r")
+        ax.axhline(+0.5, c="r")
+
+        if "preference" not in var:
+            x_labels = [
+                round(x, 1) if "ta" != var else int(x)
+                for x in pd.IntervalIndex(
+                    sorted(df_plot[var].cat.categories.unique())
+                ).mid
+            ]
+            ax.set(
+                xticklabels=x_labels,
+            )
+        ax.set(ylabel=var_names[var].split(" ")[-1], ylim=(-2, 2), xlabel="")
+
+    handles, labels = axs[ix].get_legend_handles_labels()
+    f.legend(
+        handles=handles,
+        labels=labels,
+        bbox_to_anchor=(0.5, 1.03),
+        loc="upper center",
+        # borderaxespad=0,
+        frameon=False,
+        ncol=3,
+    )
+    plt.suptitle(model)
+    plt.savefig(f"./Manuscript/src/figures/bias_models.png", dpi=300)
 
 
 def table_f1_scores():
@@ -2292,7 +2309,7 @@ def table_f1_scores():
 # plt.close("all")
 # plot_bias_distribution_by_variable()
 
-if __name__ == "__main___":
+if __name__ == "__main__":
 
     sns.set_context("paper")
     mpl.rcParams["figure.figsize"] = [8.0, 3.5]
@@ -2527,7 +2544,7 @@ if __name__ == "__plot__":
     # plot_bias_distribution_by_contributor()
 
     # plot bias by each variable
-    plot_bias_distribution_by_variable()
+    plot_bias_distribution_by_variable_binned()
 
     # print Markdown table of f1-scores
     table_f1_scores()
@@ -2745,155 +2762,173 @@ if __name__ == "__old_code__":
     plot_error_prediction(data=df)
 
 
-# todo add chart showing the heat losses PMV vs PMV ce
-tdb, tr, v, clo, met = 25, 43, 1, 0.5, 3
-print(
-    pmv_ppd(
-        tdb=tdb,
-        tr=tr,
-        vr=v,
-        rh=71,
-        met=met,
-        clo=clo,
-        limit_inputs=False,
-        standard="ashrae",
-    )
-)
-print(
-    pmv_ppd(
-        tdb=tdb,
-        tr=tr,
-        vr=v,
-        rh=71,
-        met=met,
-        clo=clo,
-        limit_inputs=False,
-        standard="iso",
-    )
-)
-print(set_tmp(tdb=tdb, tr=tr, v=v, rh=71, met=met, clo=clo, limit_inputs=False))
-print(cooling_effect(tdb=tdb, tr=tr, vr=v, rh=71, met=met, clo=clo))
-print(cooling_effect(tdb=tdb, tr=tr, vr=v, rh=71, met=met - 1, clo=clo))
+if __name__ == "__testing_pmv_set_agreement__":
 
-pmv_ppd(tdb=22, tr=43, vr=3, rh=71, met=3, clo=0.29, limit_inputs=False, standard="iso")
-set_tmp(tdb=22, tr=43, v=0.1, rh=71, met=3, clo=0.29, limit_inputs=False)
-# todo also describe the issue below. If I increase the mean radiant temperature above 27 then the cooling effect is 0 since it cannot be calculated
-cooling_effect(tdb=22, tr=22, vr=3, rh=71, met=3, clo=0.5)
-cooling_effect(tdb=22, tr=22, vr=3, rh=71, met=1, clo=0.5)
+    number_combinations = 5000
+    # todo change the values below programmatically rather than a static input
+    combinations = {
+        "tdb": np.random.uniform(size=number_combinations, low=18.5, high=29),
+        "tr": np.random.uniform(size=number_combinations, low=18.4, high=29.5),
+        "rh": np.random.uniform(size=number_combinations, low=21, high=72),
+        "v": np.random.uniform(size=number_combinations, low=0.1, high=1),
+        "met": np.random.uniform(size=number_combinations, low=1, high=1.9),
+        "clo": np.random.uniform(size=number_combinations, low=0.3, high=1.31),
+    }
+    df_comb = pd.DataFrame(combinations)
+    print(pd.DataFrame(combinations).describe().T[["min", "max"]])
 
-number_combinations = 10000
-combinations = {
-    "tdb": np.random.uniform(size=number_combinations, low=20, high=30),
-    "tr": np.random.uniform(size=number_combinations, low=20, high=40),
-    "rh": np.random.uniform(size=number_combinations, low=10, high=80),
-    "v": np.random.uniform(size=number_combinations, low=0.15, high=2),
-    "met": np.random.uniform(size=number_combinations, low=1, high=3),
-    "clo": np.random.uniform(size=number_combinations, low=0.5, high=1),
-}
-df_comb = pd.DataFrame(combinations)
-print(pd.DataFrame(combinations).describe().T[["min", "max"]])
-# combinations = list(
-#     product(
-#         np.arange(20, 30, 2),
-#         np.arange(20, 40, 3),
-#         np.arange(2, 100, 20),
-#         np.arange(0.1, 2, 0.2),
-#         np.arange(1, 3, 0.5),
-#         np.arange(0.5, 1.2, 0.2),
-#     )
-# )
-# df_comb = pd.DataFrame(combinations, columns=["tdb", "tr", "rh", "v", "met", "clo"])
-for standard in ["iso", "ashrae"]:
-    df_comb[f"pmv_{standard}"] = pmv(
+    for standard in ["iso", "ashrae"]:
+        df_comb[f"pmv_{standard}"] = pmv(
+            tdb=df_comb["tdb"],
+            tr=df_comb["tr"],
+            vr=df_comb["v"],
+            rh=df_comb["rh"],
+            met=df_comb["met"],
+            clo=df_comb["clo"],
+            limit_inputs=False,
+            standard=standard,
+        )
+        df_comb[f"pmv_{standard}_hl"] = pmv_ppd(
+            tdb=df_comb["tdb"],
+            tr=df_comb["tr"],
+            vr=df_comb["v"],
+            rh=df_comb["rh"],
+            met=df_comb["met"],
+            clo=df_comb["clo"],
+            limit_inputs=False,
+            standard=standard,
+        )["heat loss"]
+    results = two_nodes(
         tdb=df_comb["tdb"],
         tr=df_comb["tr"],
-        vr=df_comb["v"],
+        v=df_comb["v"],
         rh=df_comb["rh"],
         met=df_comb["met"],
         clo=df_comb["clo"],
         limit_inputs=False,
-        standard=standard,
     )
-results = two_nodes(
-    tdb=df_comb["tdb"],
-    tr=df_comb["tr"],
-    v=df_comb["v"],
-    rh=df_comb["rh"],
-    met=df_comb["met"],
-    clo=df_comb["clo"],
-    limit_inputs=False,
-)
-df_comb["pmv_set"] = results["pmv_set"]
-df_comb["pmv_gagge"] = results["pmv_gagge"]
-df_comb["pmv_delta"] = df_comb["pmv_iso"] - df_comb["pmv_ashrae"]
-df_comb["pmv_ashrae_gagge"] = df_comb["pmv_ashrae"] - df_comb["pmv_gagge"]
-df_comb["pmv_iso_gagge"] = df_comb["pmv_iso"] - df_comb["pmv_gagge"]
-df_comb["pmv_ashrae_set"] = df_comb["pmv_ashrae"] - df_comb["pmv_set"]
-df_comb["pmv_iso_set"] = df_comb["pmv_iso"] - df_comb["pmv_set"]
-plt.close("all")
+    df_comb["pmv_set"] = results["pmv_set"]
+    df_comb["pmv_gagge"] = results["pmv_gagge"]
+    df_comb["two_node_hl"] = results["heat loss"]
+    df_comb["pmv_delta"] = df_comb["pmv_iso"] - df_comb["pmv_ashrae"]
+    df_comb["pmv_ashrae_gagge"] = df_comb["pmv_ashrae"] - df_comb["pmv_gagge"]
+    df_comb["pmv_iso_gagge"] = df_comb["pmv_iso"] - df_comb["pmv_gagge"]
+    df_comb["pmv_ashrae_set"] = df_comb["pmv_ashrae"] - df_comb["pmv_set"]
+    df_comb["pmv_iso_set"] = df_comb["pmv_iso"] - df_comb["pmv_set"]
+    df_comb["hl_set_iso"] = df_comb["two_node_hl"] - df_comb["pmv_iso_hl"]
+    df_comb["hl_set_ashrae"] = df_comb["two_node_hl"] - df_comb["pmv_ashrae_hl"]
+    plt.close("all")
 
-f, (ax1, ax2) = plt.subplots(2, 1, sharex=True, sharey=True, constrained_layout=True)
-sns.kdeplot(df_comb, x="pmv_iso_set", color="red", ax=ax1, label="iso")
-sns.kdeplot(df_comb, x="pmv_ashrae_set", color="blue", ax=ax1, label="ashrae")
-ax1.set(title="comparison with pmv set")
-ax1.legend()
-sns.kdeplot(df_comb, x="pmv_iso_gagge", color="red", ax=ax2, label="iso")
-sns.kdeplot(df_comb, x="pmv_ashrae_gagge", color="blue", ax=ax2, label="ashrae")
-ax2.set(title="comparison with pmv gagge")
-ax2.legend()
-sns.despine()
-
-f, axs = plt.subplots(
-    len(["tdb", "tr", "rh", "v", "met", "clo"]),
-    1,
-    sharex=True,
-    constrained_layout=True,
-    figsize=(7, 7),
-)
-for ix, var in enumerate(["tdb", "tr", "rh", "v", "met", "clo"]):
-    sns.kdeplot(
+    sns.set_palette("viridis", 2)
+    f, ax = plt.subplots(1, 1, figsize=(7, 4))
+    ax.axis("equal")
+    sns.regplot(
         df_comb,
-        x="pmv_iso_gagge",
-        y=var,
-        color="red",
-        ax=axs[ix],
-        label="iso",
-    )
-    sns.kdeplot(
-        df_comb,
-        x="pmv_ashrae_gagge",
-        y=var,
-        color="blue",
-        ax=axs[ix],
+        x="pmv_gagge",
+        y="pmv_ashrae",
         label="ashrae",
+        scatter_kws={"s": 1},
+        lowess=True,
     )
-    axs[ix].axvline(0)
-axs[0].legend()
-axs[0].set(xlim=(-1.5, 1.5))
-sns.despine()
-
-f, axs = plt.subplots(
-    len(["tdb", "tr", "rh", "v", "met", "clo"]),
-    1,
-    sharex=True,
-    constrained_layout=True,
-    figsize=(7, 7),
-)
-for ix, var in enumerate(["tdb", "tr", "rh", "v", "met", "clo"]):
-    sns.kdeplot(df_comb, x="pmv_iso_set", y=var, color="red", ax=axs[ix], label="iso")
-    sns.kdeplot(
-        df_comb, x="pmv_ashrae_set", y=var, color="blue", ax=axs[ix], label="ashrae"
+    sns.regplot(
+        df_comb,
+        x="pmv_gagge",
+        y="pmv_iso",
+        label="iso",
+        scatter_kws={"s": 1},
+        lowess=True,
     )
-    axs[ix].axvline(0)
-axs[0].legend()
-axs[0].set(xlim=(-1.5, 1.5))
-sns.despine()
+    plt.plot([-2, 2], [-2, 2], c="k")
+    limits = (-2, 2)
+    ax.set(ylim=limits, xlim=limits, xlabel=r"PMV$_{two-node}$", ylabel=r"PMV")
+    plt.annotate(
+        r"R$^2_{ASHRAE}$"
+        + f"={r2_score(df_comb['pmv_gagge'], df_comb['pmv_ashrae']):.2f}"
+        + r" - R$^2_{ISO}$"
+        + f"={r2_score(df_comb['pmv_gagge'], df_comb['pmv_iso']):.2f}",
+        (0, 2.0),
+        ha="center",
+        va="bottom",
+    )
+    plt.legend()
+    sns.despine(left=True, bottom=True)
+    plt.legend(frameon=False)
+    plt.tight_layout()
+    plt.savefig(f"./Manuscript/src/figures/pmv_two_node_comparison.png", dpi=300)
 
-for var in ["tdb", "tr", "rh", "v", "met", "clo"]:
-    plt.figure()
-    df_comb["cut"] = pd.cut(df_comb[var], 4)
-    sns.kdeplot(df_comb, x="pmv_iso_gagge", hue="cut", palette="winter")
-    sns.kdeplot(df_comb, x="pmv_ashrae_gagge", hue="cut", palette="autumn")
-# for var in ["tdb", "tr", "rh", "v", "met", "clo"]:
-#     plt.figure()
-#     sns.kdeplot(df_comb, x="pmv_delta", hue=var)
+    f, (ax1) = plt.subplots(1, 1, sharex=True, sharey=True, constrained_layout=True)
+    sns.kdeplot(df_comb, x="hl_set_iso", color="red", ax=ax1, label="iso")
+    sns.kdeplot(df_comb, x="hl_set_ashrae", color="blue", ax=ax1, label="ashrae")
+    ax1.set(title="comparison with pmv set")
+    ax1.legend()
+    sns.despine()
+
+    f, (ax1, ax2) = plt.subplots(
+        2, 1, sharex=True, sharey=True, constrained_layout=True
+    )
+    sns.kdeplot(df_comb, x="pmv_iso_set", color="red", ax=ax1, label="iso")
+    sns.kdeplot(df_comb, x="pmv_ashrae_set", color="blue", ax=ax1, label="ashrae")
+    ax1.set(title="comparison with pmv set")
+    ax1.legend()
+    sns.kdeplot(df_comb, x="pmv_iso_gagge", color="red", ax=ax2, label="iso")
+    sns.kdeplot(df_comb, x="pmv_ashrae_gagge", color="blue", ax=ax2, label="ashrae")
+    ax2.set(title="comparison with pmv gagge")
+    ax2.legend()
+    sns.despine()
+
+    f, axs = plt.subplots(
+        len(["tdb", "tr", "rh", "v", "met", "clo"]),
+        1,
+        sharex=True,
+        constrained_layout=True,
+        figsize=(7, 7),
+    )
+    for ix, var in enumerate(["tdb", "tr", "rh", "v", "met", "clo"]):
+        sns.kdeplot(
+            df_comb,
+            x="pmv_iso_gagge",
+            y=var,
+            color="red",
+            ax=axs[ix],
+            label="iso",
+        )
+        sns.kdeplot(
+            df_comb,
+            x="pmv_ashrae_gagge",
+            y=var,
+            color="blue",
+            ax=axs[ix],
+            label="ashrae",
+        )
+        axs[ix].axvline(0)
+    axs[0].legend()
+    axs[0].set(xlim=(-3, 3))
+    sns.despine()
+
+    f, axs = plt.subplots(
+        len(["tdb", "tr", "rh", "v", "met", "clo"]),
+        1,
+        sharex=True,
+        constrained_layout=True,
+        figsize=(7, 7),
+    )
+    for ix, var in enumerate(["tdb", "tr", "rh", "v", "met", "clo"]):
+        sns.kdeplot(
+            df_comb, x="pmv_iso_set", y=var, color="red", ax=axs[ix], label="iso"
+        )
+        sns.kdeplot(
+            df_comb, x="pmv_ashrae_set", y=var, color="blue", ax=axs[ix], label="ashrae"
+        )
+        axs[ix].axvline(0)
+    axs[0].legend()
+    axs[0].set(xlim=(-3, 3))
+    sns.despine()
+
+    for var in ["tdb", "tr", "rh", "v", "met", "clo"]:
+        plt.figure()
+        df_comb["cut"] = pd.cut(df_comb[var], 4)
+        sns.kdeplot(df_comb, x="pmv_iso_gagge", hue="cut", palette="winter")
+        sns.kdeplot(df_comb, x="pmv_ashrae_gagge", hue="cut", palette="autumn")
+    # for var in ["tdb", "tr", "rh", "v", "met", "clo"]:
+    #     plt.figure()
+    #     sns.kdeplot(df_comb, x="pmv_delta", hue=var)

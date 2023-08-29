@@ -53,6 +53,8 @@ palette_tsv = [
 ]
 
 # sns.palplot(palette_tsv)
+# sns.palplot(palette_tp)
+# sns.palplot(palette_primary)
 
 palette_primary = [
     "#FFBA22",
@@ -1564,7 +1566,9 @@ def plot_distribution_variable():
     f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(8, 3))
 
     for ix, var in enumerate(["ta", "tr", "rh", "vel", "clo", "met"]):
-        sns.boxenplot(y=var, data=df, ax=axs[ix], color="lightgray")
+        sns.boxenplot(
+            y=var, data=df, ax=axs[ix], color="#FDB515", showfliers=False, linewidth=0.5
+        )
         axs[ix].set(
             ylabel="",
             xlabel=f"{var_names[var]} ({var_units[var]})",
@@ -1579,19 +1583,22 @@ def plot_distribution_variable():
             axs[ix].set(yticks=(np.arange(0, 1.8, 0.3)))
 
         desc = desc.round(2)
-        if var in ["ta", "tr", "rh"]:
+        if var in ["ta", "tr", "rh", "met", "clo"]:
             desc = desc.round(1)
+        if var in ["rh"]:
+            desc = desc.astype(int)
 
-        axs[ix].text(0.5, desc["2.5%"], desc["2.5%"], size="small", c="b", va="center")
+        text_color = "#00B0Da"
+        axs[ix].text(0.5, desc["2.5%"], desc["2.5%"], c=text_color, va="center")
         axs[ix].text(
             0.5,
             desc["97.5%"],
             desc["97.5%"],
-            size="small",
-            c="b",
+            c=text_color,
             va="center",
         )
-        axs[ix].text(0.5, desc["50%"], desc["50%"], size="small", c="b", va="center")
+        axs[ix].text(0.5, desc["50%"], desc["50%"], c=text_color, va="center")
+
     sns.despine(bottom=True, left=True)
     plt.savefig("./Manuscript/src/figures/dist_input_data.png", dpi=300)
     plt.show()
@@ -1609,44 +1616,31 @@ def plot_distribution_variable():
     df["const"] = 1
     f, axs = plt.subplots(1, 4, figsize=(8, 3))
     for ix, var in enumerate(["age", "ht", "wt", "t_mot_isd"]):
-        sns.violinplot(
-            y=var,
-            x="const",
-            data=df,
-            ax=axs[ix],
-            hue="gender",
-            split=True,
-            inner="quartile",
-            palette="viridis",
+        sns.boxenplot(
+            y=var, data=df, ax=axs[ix], color="#FDB515", showfliers=False, linewidth=0.5
         )
-        axs[ix].get_legend().remove()
         axs[ix].set(xlabel=var_names[var], xticks=[], ylabel="")
+        if var == "age":
+            axs[ix].set(ylim=(10, 100))
+        if var == "ht":
+            axs[ix].set(ylim=(1.1, 2))
+        if var == "wt":
+            axs[ix].set(ylim=(30, 140))
         desc = df[var].describe(percentiles=[0.025, 0.25, 0.5, 0.75, 0.975]).round(1)
 
-        axs[ix].text(0.4, desc["2.5%"], desc["2.5%"], size="small", c="b", va="center")
-        axs[ix].text(
-            0.4,
-            desc["97.5%"],
-            desc["97.5%"],
-            size="small",
-            c="b",
-            va="center",
-        )
-        axs[ix].text(0.4, desc["50%"], desc["50%"], size="small", c="b", va="center")
+        # axs[ix].text(0.45, desc["2.5%"], desc["2.5%"], c=text_color, va="center")
+        # axs[ix].text(
+        #     0.45,
+        #     desc["97.5%"],
+        #     desc["97.5%"],
+        #     c=text_color,
+        #     va="center",
+        #     )
+        # axs[ix].text(0.45, desc["50%"], desc["50%"], c=text_color, va="center")
 
         if var == "t_mot_isd":
             axs[ix].set(yticks=(np.arange(-30, 50, 10)))
     sns.despine(bottom=True, left=True)
-    handles, labels = axs[ix].get_legend_handles_labels()
-    f.legend(
-        handles=handles,
-        labels=labels,
-        bbox_to_anchor=(0.5, 1.03),
-        loc="upper center",
-        # borderaxespad=0,
-        frameon=False,
-        ncol=3,
-    )
     plt.tight_layout()
     plt.savefig("./Manuscript/src/figures/dist_other_data.png", dpi=300)
     plt.show()
@@ -2306,8 +2300,116 @@ def table_f1_scores():
     print(df_f1.to_markdown())
 
 
-# plt.close("all")
-# plot_bias_distribution_by_variable()
+def pmv_jiayu_fed(tdb, tr, vr, rh, met, clo, wme=0):
+
+    pa = rh * 10 * math.exp(16.6536 - 4030.183 / (tdb + 235))
+
+    icl = 0.155 * clo  # thermal insulation of the clothing in M2K/W
+    m = met * 58.15  # metabolic rate in W/M2
+    w = wme * 58.15  # external work in W/M2
+    mw = m - w  # internal heat production in the human body
+    # calculation of the clothing area factor
+    if icl <= 0.078:
+        f_cl = 1 + (1.29 * icl)  # ratio of surface clothed body over nude body
+    else:
+        f_cl = 1.05 + (0.645 * icl)
+
+    # heat transfer coefficient by forced convection
+    hcf = 12.1 * math.sqrt(vr)
+    hc = hcf  # initialize variable
+    taa = tdb + 273
+    tra = tr + 273
+    t_cla = taa + (35.5 - tdb) / (3.5 * icl + 0.1)
+
+    p1 = icl * f_cl
+    p2 = p1 * 3.96
+    p3 = p1 * 100
+    p4 = p1 * taa
+    p5 = (308.7 - 0.028 * mw) + (p2 * (tra / 100.0) ** 4)
+    xn = t_cla / 100
+    xf = t_cla / 50
+    eps = 0.00015
+
+    n = 0
+    while abs(xn - xf) > eps:
+        xf = (xf + xn) / 2
+        hcn = 2.38 * abs(100.0 * xf - taa) ** 0.25
+        if hcf > hcn:
+            hc = hcf
+        else:
+            hc = hcn
+        xn = (p5 + p4 * hc - p2 * xf**4) / (100 + p3 * hc)
+        n += 1
+        if n > 150:
+            raise StopIteration("Max iterations exceeded")
+
+    tcl = 100 * xn - 273
+
+    # heat loss diff. through skin
+    hl1 = 3.05 * 0.001 * (5733 - (6.99 * mw) - pa)
+    # heat loss by sweating
+    if mw > 58.15:
+        hl2 = 0.42 * (mw - 58.15)
+    else:
+        hl2 = 0
+    # latent respiration heat loss
+    hl3 = 1.7 * 0.00001 * m * (5867 - pa)
+    # dry respiration heat loss
+    hl4 = 0.0014 * m * (34 - tdb)
+    # heat loss by radiation
+    hl5 = 3.96 * f_cl * (xn**4 - (tra / 100.0) ** 4)
+    # heat loss by convection
+    hl6 = f_cl * hc * (tcl - tdb)
+
+    ts = 0.303 * math.exp(-0.036 * m) + 0.028
+    return mw - hl1 - hl2 - hl3 - hl4 - hl5 - hl6
+
+    plt.close("all")
+    y_array = []
+    l_array = []
+    for t in np.arange(20, 40, 0.1):
+        y = -8.471 + 0.33 * t
+        met = 0.98
+        l = pmv_jiayu_fed(t, t, 0.1, 50, met, 0.6)
+        y_array.append(y)
+        l_array.append(l)
+        # print(t, l)
+    plt.plot(l_array, y_array, c="g")
+    y_array = []
+    l_array = []
+    for t in np.arange(20, 40, 0.1):
+        y = -3.643 + 0.175 * t
+        met = 1.56
+        l = pmv_jiayu_fed(t, t, 0.2, 50, met, 0.6)
+        pmv = l * (0.303 * math.exp(-0.036 * met * 58.12) + 0.028)
+        pmv = l * (0.31 * math.exp(-0.04 * met * 58.12) + 0.028)
+        y_array.append(y)
+        l_array.append(l)
+        # print(t, l)
+    plt.plot(l_array, y_array, c="gray")
+    # plt.plot([-30, 30], [-2, +2])
+
+    [x for x in df.columns if "_hb" in x]
+    plt.scatter(y=df["thermal_sensation"], x=df["pmv_hb"], c="gray")
+    plt.figure()
+    sns.regplot(
+        y=df["pmv_hb"],
+        x=df["thermal_sensation"],
+        data=df,
+        scatter_kws={"s": 5, "alpha": 0.5, "color": "lightgray"},
+        lowess=True,
+    )
+    plt.tight_layout()
+
+    # logistic regression
+    from sklearn.linear_model import LogisticRegression
+
+    df_reg = df[["pmv_hb", "met", "clo", "thermal_sensation_round"]].dropna()
+    clf = LogisticRegression(random_state=0).fit(
+        df_reg[["pmv_hb", "met", "clo"]], df_reg["thermal_sensation_round"]
+    )
+    clf.predict([[0, 1, 0.6]])
+
 
 if __name__ == "__main__":
 
@@ -2328,6 +2430,7 @@ if __name__ == "__main__":
 
     plt.rc("axes.spines", top=False, right=False, left=False)
     plt.rcParams["font.family"] = "sans-serif"
+    plt.rcParams["font.size"] = 8.8
 
     applicability_limits = {
         "ta": [10, 30],
@@ -2355,10 +2458,10 @@ if __name__ == "__main__":
         "thermal_sensation": "Thermal Sensation Vote (TSV)",
         "thermal_sensation_round": "Thermal Sensation Vote (TSV)",
         "thermal_preference": "Thermal Preference Vote (TPV)",
-        "age": "Age (years)",
+        "age": "Age (year)",
         "ht": "Height (m)",
         "wt": "Weight (kg)",
-        "t_mot_isd": r"$t_{ormt}$",
+        "t_mot_isd": r"$t_{ormt}$" + r" $(^{\circ}$C)",
         "pmv": r"PMV",
         "pmv_round": r"PMV",
         "lr_hb_pmv": r"PMV$_{hb}$",
@@ -2401,116 +2504,6 @@ if __name__ == "__main__":
 
 
 if __name__ == "__plot__":
-
-    # def pmv_jiayu_fed(tdb, tr, vr, rh, met, clo, wme=0):
-    #
-    #     pa = rh * 10 * math.exp(16.6536 - 4030.183 / (tdb + 235))
-    #
-    #     icl = 0.155 * clo  # thermal insulation of the clothing in M2K/W
-    #     m = met * 58.15  # metabolic rate in W/M2
-    #     w = wme * 58.15  # external work in W/M2
-    #     mw = m - w  # internal heat production in the human body
-    #     # calculation of the clothing area factor
-    #     if icl <= 0.078:
-    #         f_cl = 1 + (1.29 * icl)  # ratio of surface clothed body over nude body
-    #     else:
-    #         f_cl = 1.05 + (0.645 * icl)
-    #
-    #     # heat transfer coefficient by forced convection
-    #     hcf = 12.1 * math.sqrt(vr)
-    #     hc = hcf  # initialize variable
-    #     taa = tdb + 273
-    #     tra = tr + 273
-    #     t_cla = taa + (35.5 - tdb) / (3.5 * icl + 0.1)
-    #
-    #     p1 = icl * f_cl
-    #     p2 = p1 * 3.96
-    #     p3 = p1 * 100
-    #     p4 = p1 * taa
-    #     p5 = (308.7 - 0.028 * mw) + (p2 * (tra / 100.0) ** 4)
-    #     xn = t_cla / 100
-    #     xf = t_cla / 50
-    #     eps = 0.00015
-    #
-    #     n = 0
-    #     while abs(xn - xf) > eps:
-    #         xf = (xf + xn) / 2
-    #         hcn = 2.38 * abs(100.0 * xf - taa) ** 0.25
-    #         if hcf > hcn:
-    #             hc = hcf
-    #         else:
-    #             hc = hcn
-    #         xn = (p5 + p4 * hc - p2 * xf ** 4) / (100 + p3 * hc)
-    #         n += 1
-    #         if n > 150:
-    #             raise StopIteration("Max iterations exceeded")
-    #
-    #     tcl = 100 * xn - 273
-    #
-    #     # heat loss diff. through skin
-    #     hl1 = 3.05 * 0.001 * (5733 - (6.99 * mw) - pa)
-    #     # heat loss by sweating
-    #     if mw > 58.15:
-    #         hl2 = 0.42 * (mw - 58.15)
-    #     else:
-    #         hl2 = 0
-    #     # latent respiration heat loss
-    #     hl3 = 1.7 * 0.00001 * m * (5867 - pa)
-    #     # dry respiration heat loss
-    #     hl4 = 0.0014 * m * (34 - tdb)
-    #     # heat loss by radiation
-    #     hl5 = 3.96 * f_cl * (xn ** 4 - (tra / 100.0) ** 4)
-    #     # heat loss by convection
-    #     hl6 = f_cl * hc * (tcl - tdb)
-    #
-    #     ts = 0.303 * math.exp(-0.036 * m) + 0.028
-    #     return mw - hl1 - hl2 - hl3 - hl4 - hl5 - hl6
-    #
-    # plt.close("all")
-    # y_array = []
-    # l_array = []
-    # for t in np.arange(20, 40, 0.1):
-    #     y = -8.471 + 0.33 * t
-    #     met = 0.98
-    #     l = pmv_jiayu_fed(t, t, 0.1, 50, met, 0.6)
-    #     y_array.append(y)
-    #     l_array.append(l)
-    #     # print(t, l)
-    # plt.plot(l_array, y_array, c="g")
-    # y_array = []
-    # l_array = []
-    # for t in np.arange(20, 40, 0.1):
-    #     y = -3.643 + 0.175 * t
-    #     met = 1.56
-    #     l = pmv_jiayu_fed(t, t, 0.2, 50, met, 0.6)
-    #     pmv = l * (0.303 * math.exp(-0.036 * met * 58.12) + 0.028)
-    #     pmv = l * (0.31 * math.exp(-0.04 * met * 58.12) + 0.028)
-    #     y_array.append(y)
-    #     l_array.append(l)
-    #     # print(t, l)
-    # plt.plot(l_array, y_array, c="gray")
-    # # plt.plot([-30, 30], [-2, +2])
-    #
-    # [x for x in df.columns if "_hb" in x]
-    # plt.scatter(y=df["thermal_sensation"], x=df["pmv_hb"], c="gray")
-    # plt.figure()
-    # sns.regplot(
-    #     y=df["pmv_hb"],
-    #     x=df["thermal_sensation"],
-    #     data=df,
-    #     scatter_kws={"s": 5, "alpha": 0.5, "color": "lightgray"},
-    #     lowess=True,
-    # )
-    # plt.tight_layout()
-    #
-    # # logistic regression
-    # from sklearn.linear_model import LogisticRegression
-    #
-    # df_reg = df[["pmv_hb", "met", "clo", "thermal_sensation_round"]].dropna()
-    # clf = LogisticRegression(random_state=0).fit(
-    #     df_reg[["pmv_hb", "met", "clo"]], df_reg["thermal_sensation_round"]
-    # )
-    # clf.predict([[0, 1, 0.6]])
 
     # Figure 1 and 2
     plot_distribution_variable()

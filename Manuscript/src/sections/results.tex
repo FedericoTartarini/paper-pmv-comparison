@@ -6,7 +6,9 @@
 While the \ac{db2} contains \var{entries_db_all} data points, only \var{entries_db_used} entries met the inclusion criteria listed in the Methodology section.
 The distribution of the six input variables used to calculate the PMV indices is visualized in Figure~\ref{fig:dist_input_data}.
 The 2.5th, 50th (median), and 97.5th percentiles are shown in blue.
-% todo: remove the gridlines or marker them very short; remove outliers or make the line very thin; keep one decimal for clo values; remove decimal point for RH; annotation font should be the same as the label and same size, change only the color; You can use black or blue (HEX: 003262, RGB (0, 50, 98)) for the chart; one decimal for met not two; the chart is a bit dense of information
+% TODO:
+%  remove the gridlines or marker them very short
+%  the chart is a bit dense of information
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/dist_input_data}
@@ -25,15 +27,18 @@ This lack of data in the \ac{db2} is particularly relevant for \ac{v}.
 The \ac{pmv} and \ac{pmv-ce} only differ when the value of \ac{v} $\geq$ \qty{0.1}{\m\per\s}, however, the median value in the \ac{db2} was \qty{0.08}{\m\per\s} suggesting that most of the data points were collected in buildings with low air movement.
 Consequently, we could not reliably test the accuracy of the \ac{pmv} formulations for values of \ac{v} $\geq$ \var{v_95_perc_max}.
 
-Figure~\ref{fig:dist_other_data} shows the distribution of age, height, weight, and running mean outdoor temperature grouped by sex.
+Figure~\ref{fig:dist_other_data} shows the distribution of age, height, weight, and running mean outdoor temperature.
 Less than half (\num{23300}) of the total entries have information about the participant's sex and are almost equally distributed among males \qty{52}{\percent} and females.
-Men were significantly heavier and taller than females.
 Ages are not normally distributed, the same is true for the running mean outdoor temperature.
 About half of the participants (\qty{52}{\percent}) were aged between \num{20} and \num{35} years old, and only \qty{2.5}{\percent} were older than 60.
 This limits our analysis to young adults and does not allow us to determine the accuracy of the \ac{pmv} and \ac{pmv-ce} models in predicting thermal sensation for children or older adults.
 The \ac{db2} does not contain information about the health status of the participants.
 Approximately \qty{56}{\percent} of the running mean outdoor temperature values where between \qtyrange{10}{25}{\celsius}.
-% todo: check that the colours are distinguishable for color blind and change them since I am using the same color palette to differentiate PMV and PMVCE; same comments as previous chart; use a boxen plot and have 4 for men and 4 for women. Tormt is missing the unit; age unot should be year. This figure can be merged with figure 2 because it is a visualization of the database. I would use blue (HEX: 003262, RGB (0, 50, 98)) and gold (HEX: FDB515, RGB (253, 181, 21)) as color because blue and green could be confounded by colorblind people. To be more consisten in the paper, I would use the letter value plots for this and the figure in section 3.3.2
+% todo:
+%  I merged men and women since not considering sex difference in the paper.
+%  This figure can be merged with figure 2 because it is a visualization of the database.
+%  To be more consisten in the paper, I would use the letter value plots for this and the figure in section 3.3.2
+% remove the gridlines or marker them very short;
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/dist_other_data}

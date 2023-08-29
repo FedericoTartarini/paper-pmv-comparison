@@ -1,6 +1,6 @@
 \begin{frontmatter}
 
-    \title{PMV: which formulation should you use the ISO 7730:2005 or ASHRAE 55--2020?}
+    \title{PMV: Which formulation should you use the ISO 7730:2005 or ASHRAE 55:2020?}
 
     \author[label1,label2]{Federico Tartarini\corref{mycorrespondingauthor}}
     \ead{federicotartarini@berkeley.edu}
@@ -13,28 +13,27 @@
     \cortext[mycorrespondingauthor]{Corresponding author}
 
     \begin{abstract}
-        The primary objectives of buildings is to shelter people from the elements and provide a comfortable thermal environment.
-        The \ac{pmv} model was therefore developed by Fanger more than 50 years ago to predict the thermal sensation of a large group of occupants sharing the same thermal environment.
-        This should enable its users to determine the optimal temperature range to be maintained indoors to satisfy the great majority of the occupants.
+        The \ac{pmv} model was developed by Fanger more than 50 years ago to predict the mean thermal sensation of a group of people. 
+        It is based on a heat balance model of the human body.
 
-        The \ac{pmv} has seen widespread adoption and is and has been used by practitioners to design and operate buildings and by scientists to predict thermal sensation.
-        It is still currently used in its original form in the \gls{7730} despite the fact that several research studies have highlighted that the \ac{pmv} model has a low prediction accuracy, especially when it tries to predict the thermal sensation of people who are not thermally neutral.
-        To compensate for that, several other formulations have been proposed, one of which one is currently used in the \gls{55}.
-        Being the \gls{7730} and \gls{55} the most widely used Standards worldwide, this is a source of confusion for users who find it difficult to decide which model to use.
+        \gls{55} states that the model can be used to determine ``the combinations of indoor thermal environmental factors and personal factors that will produce satisfactory thermal environmental conditions for a majority of the occupants within the space''.
 
-        We aim to solve this problem by comparing the accuracy of the two main \ac{pmv} formulations, currently being used a reference in the above-mentioned standard, against \var{entries_db_used} thermal sensation votes collected in buildings.
-        We found that the \gls{pmv-ce} is not more accurate than the original \ac{pmv} in predicting thermal neutrality, despite its increased complexity and computational resources need to calculate the results.
-        Most importantly the bias of the \gls{pmv-ce} model was grater (a higher number is negative) than the \ac{pmv} when we only analysed the entries with \ac{v}$\geq$\qty{0.1}{\m\per\sec}.
+        The \ac{pmv} has seen widespread adoption and has been used by professionals to design and operate buildings and by researchers to predict thermal sensation.
+        It is still currently used in its original form in the \gls{7730} although it has a low prediction accuracy, especially outside thermal neutrality.
+        Several other formulations have been proposed to compensate for its limitations, one of which is currently used in the \gls{55}.
+        \gls{7730} and \gls{55} are the most widely used Standards worldwide, and their differences are a source of confusion for users who find it difficult to decide which model to use.
 
-        The \ac{pmv} and \gls{pmv-ce} accuracy were XX\% and YY\% for $\mid$\ac{pmv}$\mid \leq 2$ and XX\% and YY\% for $\mid$\ac{pmv}$\mid \leq 1$, respectively.
-        Neither PMV model could accurately predict ‘cold’, ‘cool’, ‘warm’, or ‘hot’ thermal sensations.
-        Consequently, the PMV should only be used in conditions close to neutrality within the range $\mid$\ac{pmv}$\mid \leq 1$, and we suggest considering reducing the applicability limit of the Standards.
+        We aim to solve this problem by comparing the accuracy of the two main \ac{pmv} formulations, against \var{entries_db_used} thermal sensation votes collected in buildings.
+        We found that the \ac{pmv-ce} has the same accuracy as the original \ac{pmv} in predicting thermal neutrality, despite its increased complexity and computational resources needed to calculate the results.
+        Surprisingly, the bias of the \ac{pmv-ce} model was greater (a higher number is negative) than the \ac{pmv} when we only analyzed the entries with \ac{v}$\geq$\qty{0.1}{\m\per\sec}.
 
-         We open-sourced the source code we used to to analyse the data.
+        The \ac{pmv} and \ac{pmv-ce} accuracy were XX\% and YY\% for $\mid$\ac{pmv}$\mid \leq 2$ and XX\% and YY\% for $\mid$\ac{pmv}$\mid \leq 1$, respectively.
+        Neither PMV model could accurately predict `cold’, `cool’, `warm’, or `hot’ thermal sensations.
+        Consequently, the PMV should only be used in conditions close to neutrality within the range $\mid$\ac{pmv}$\mid \leq 1$, and we suggest reducing the applicability limit of the Standards to this range.
     \end{abstract}
 
     \begin{keyword}
-        Personal thermal comfort model \sep Ecological momentary assessment \sep Skin temperature \sep Machine learning \sep Internet of Things (IoT)
+        Thermal comfort model \sep ISO 7730 \sep ASHRAE 55 \sep Thermal sensation \sep Accuracy
     \end{keyword}
 
 \end{frontmatter}

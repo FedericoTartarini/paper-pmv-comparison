@@ -1,86 +1,73 @@
-%! Author = sbbfti
-%! Date = 10/06/2020
-
-
 \section{Methodology}\label{sec:methodology}
-
-The \gls{db2} has \var{entries_db_all} independent recordings from various field investigations throughout the world, and it is the largest of its kind~\cite{FoldvaryLicina2018, db2dryad}.
-\Ac{tsv} were collected using a \gls{rhrn} survey and environmental parameters were measured and logged in the proximity of the participants when they completed the survey.
-The Comfort DB contains data collected by researchers in cross-sectional field studies that have been published in peer reviewed journals.
- We compared the results obtained by the \ac{pmv} and the \gls{pmv-ce} with the self-reported \ac{tsv}.
+The \ac{db2} has \var{entries_db_all} independent recordings from various field investigations throughout the world, and it is the largest of its kind~\cite{FoldvaryLicina2018, db2dryad}.
+\Ac{tsv} were collected using a right-here-right-now survey and environmental parameters were measured and logged in the proximity of participants when they completed the survey.
+The \ac{db2} only contains data collected by researchers in cross-sectional field studies that have been published in peer-reviewed journals.
+ We compared the results obtained by the \ac{pmv} and the \ac{pmv-ce} with the self-reported \ac{tsv}.
 Results were calculated using the function `pythermalcomfort.models.pmv\_ppd' included in pythermalcomfort v2.8.1 a Python package for thermal comfort calculations~\cite{Tartarini2020a}.
 
 \subsection{Data Preparation and Cleaning}\label{subsec:data-processing-and-cleaning}
-Not all researchers logged all the six parameters required to calculate the PMV.\@
+Not all researchers logged all the six parameters needed to calculate the \ac{pmv} and \ac{pmv-ce}.
 We, therefore, decided to remove all entries that did not have any of the following variables: \ac{tdb}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv}.
-These constraints filtered out approximately \var{entries_db_valid} of the data in the Comfort DB.\@
+These constraints filtered out approximately \var{entries_db_valid} votes.
 We decided to keep entries that did not have \ac{tr}.
-Since \ac{tr} is a required input in the \ac{pmv} model, it was calculated using the following equation: $2 t_{o} – t_{db}$.
-Alternatively, if \ac{to} was not available we assumed \ac{tr} equal to \ac{tdb}.
+However, since \ac{tr} is a required input in the \ac{pmv} model, it was calculated using the following equation: $2 t_{o} – t_{db}$.
+Alternatively, if the \ac{to} was not available for that entry we assumed \ac{tr} = \ac{tdb}.
 We are aware that these assumptions may introduce an error, but removing samples without \ac{tr} would cause an additional \var{entries_db_valid_no_tr} drop in the data used to compare the models.
 There is also evidence that in many conditions is possible to assume \ac{tr} equal to \ac{tdb} without committing a major error~\cite{Dawe2020}.
 
-Both the \gls{55} and \gls{7730} specify a set of applicability limits, we hence filtered out those data points which did not meet the inclusion criteria of both Standards.
-The rationale is that the model accuracy should only be tested in within its applicability limits.
+Both the \gls{55} and \gls{7730} specify a set of applicability limits, we hence filtered out those data points that did not meet the inclusion criteria of both Standards.
+The rationale is that the models' accuracy should only be tested within their applicability ranges.
 The limits we used are as follows:
-\qty{10}{\celsius} $\leq$ \ac{tdb} $\leq$ \qty{30}{\celsius},
-\qty{10}{\celsius} $\leq$ \ac{tr} $\leq$ \qty{40}{\celsius},
-\qty{0}{\m\per\s} $\leq$ \ac{v} $\leq$ \qty{1}{\m\per\s},
-\qty{0}{clo} $\leq$ \ac{clo} $\leq$ \qty{1.5}{clo},
-0 Pa $\leq$ water vapour partial pressure $\leq$ 2000 Pa,
-and \qty{1}{met} $\leq$ \ac{met} $\leq$ \qty{4}{met}.
+\num{10}~$\leq$~\ac{tdb}~$\leq$~\qty{30}{\celsius},
+\num{10}~$\leq$~\ac{tr}~$\leq$~\qty{40}{\celsius},
+\num{0}~$\leq$~\ac{v}~$\leq$~\qty{1}{\m\per\s},
+\num{0}~$\leq$~\ac{clo}~$\leq$~\qty{1.5}{clo},
+\num{0}~$\leq$~water vapour partial pressure~$\leq$~\qty{2000}{\pascal},
+and \num{1}~$\leq$~\ac{met}~$\leq$~\qty{4}{met}.
 We then calculated the adjusted total clothing insulation and relative airspeed as required by both Standards.
-We used these inputs to calculate the \ac{pmv} values.
+We used these inputs to calculate the \ac{pmv} and \ac{pmv-ce} values.
 
 Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
-However, since the thermal sensation was measured with at least a seven-point scale we decided also to show entries with $|$\ac{tsv}$|$ or $|$\ac{pmv}$|$ $\leq$ than \num{3.5}.
-
+However, since the thermal sensation was measured with at least a seven-point scale we decided also to show entries with $|$\ac{tsv}$|$ or $|$\ac{pmv}$|$~$\leq$~\num{3}.
 We used Python to analyse and visualise the results.
-
-We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \textbf{provide URL} so other users can test different assumptions.  % todo add URL
+We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \textbf{provide URL} so other users can test different assumptions.  
+% todo add URL
 
 \subsection{Model Validation}\label{subsec:model-validation}
-The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants sharing the same environment.
-While the \gls{db2} contains data from a sufficiently wide population no information is available on where and when exactly these data were collected.
-We only have access to building level data and no information about whether a group of occupants was sharing the same thermal environment.
-We, therefore, decided to first group the participants responses by their \ac{tsv} and we determined how many of these votes were correctly labelled by the \ac{pmv} model.
-This approach is useful to perform an overall assessment of the accuracy of the model, but it introduces an error due to the rounding of the \ac{pmv} models output and \ac{tsv} values.
-The latter were sometimes collected using a continuous scale and not a discrete one, in other words they could take any value in the range of \numrange{-3.0}{3.0}.
-To remove this rounding error, we then went on subtracted the \ac{tsv} value from the respective \ac{pmv} value.
-These deltas quantify the success of the model in predicting \ac{tsv}.
-However, on their own are a low precision estimate of the overall accuracy of the model~\cite{Humphreys2002}.
-These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{rh}).
-If the \ac{pmv} formulation is bias-free, the distribution of any batch derived from these differences would have a mean value that was little different from zero.
-The standard deviation would reflect the combined effect of the people's individual differences as well as any errors in the \ac{pmv} formulation~\cite{Humphreys2002}.
-According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned deltas are within \numrange{-0.25}{0.25}.
-Binning data by the independent variables is a significant improvement over grouping the participants responses by their \ac{tsv}.
-This is because the \ac{pmv} model aim is, as previously mentioned, predicting the average thermal sensation of a large group of occupants sharing the same environment and not to correctly predict the average \ac{tsv} of people who reported the same \ac{tsv} vote.
+The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants and it is applied from a singly occupied zone to an area with several hundred people.
+While the \ac{db2} contains data from a sufficiently wide population no information is available on where and when exactly these data were collected.
+We only have access to building-level data and no information about whether a group of occupants was sharing the same thermal environment.
+We grouped the participants' responses by their \ac{tsv} and we determined how many of these votes were correctly labelled by the \ac{pmv} and \ac{pmv-ce} models.
+This approach is useful for performing an overall assessment of the accuracy of the models, but it introduces an error due to the rounding of both the \ac{pmv}, \ac{pmv-ce}, and \ac{tsv} values.
+The latter were sometimes collected using a continuous scale and not a discrete one, in other words, they could take any value in the range from -3.0 to 3.0.
+
+To remove this rounding error, we subtracted the \ac{tsv} value from the \ac{pmv} and \ac{pmv-ce} values.
+These differences, aka bias, quantify the success of the model in predicting \ac{tsv}.
+However, on their own are a low-precision estimate of the overall accuracy of the model~\cite{Humphreys2002}.
+These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{v}).
+If the \ac{pmv} or \ac{pmv-ce} formulations are bias-free, the distribution of any batch derived from these differences would have a mean value that is zero.
+The standard deviation would reflect the combined effect of the people's individual differences as well as any errors in formulation or in the data collection method (accuracy or precision of the instrumentation used)~\cite{Humphreys2002}.
+According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between -0.25 and 0.25.
+Binning data by the independent variables is a significant improvement over grouping the participants' responses by their \ac{tsv}.
+This is because the \ac{pmv} model aim is, as previously mentioned, to predict the average thermal sensation of a large group of occupants sharing the same environment and not to correctly predict the average \ac{tsv} of people who reported the same \ac{tsv} vote, but where in different locations and moments of the year and day.
 % todo why not 0.5 since the delta between a PMV of 2.5 and a self-reported vote of either 2 or 3 (the closest points to 2.5) is 0.5?
 
-Finally, we decided to compare the results of the two \ac{pmv} formulations with the results of the two-node model.
-The two-node model was developed by \mycite{GaggeSET} and it uses a more extensive set of equations to solve the heat balance equation depicted in Equation~\ref{eq:heat-balance}.
-We did this by passing as input to the \ac{pmv}, \gls{pmv-ce}, and two-node model a total of \qty{10000} randomly generated set of inputs. 
-Each set of input was generated using the Numpy random uniform function which picks a random value in within a predefined range. 
-We selected the range of each of the 6 input variables needed to calculate the \ac{pmv} to be equal to the 2.5th and 97.5th percentiles for all the input variables contained in the Comfort DB.
-The only exception was for \ac{v} which was randomly selected from this interval \qty{0.1}{\m\per\s} $\leq$ \ac{v} $\leq$ \qty{1}{\m\per\s}, the rationale for this decision was that both the \ac{pmv} and \gls{pmv-ce} models use the same equations for \ac{v} $\leq$ \qty{0.1}{\m\per\s}.
-
-The two-node model, along with other physiological parameters and thermal comfort indices, it outputs the \gls{pmvg} and the amount of heat losses or gains form the body to the surrounding environment.
-Gagge's two-node model is also used by the \gls{pmv-ce} to calculate the \ac{ce}.
-\begin{equation}
-    M - W = C + R + E_{dif} + E_{rsw} + C_{res} + E_{res}\label{eq:heat-balance}
-\end{equation}
-Where \ac{met} minus the external work ($W$) must be dissipated either via sensible or latent heat losses.
-Sensible heat is transferred via conduction, convection and radiation (\ac{c-r} + \ac{c-res}).
-Latent heat loss occurs from the evaporation of sweat (\ac{e-rsw}), moisture diffused through the skin  (\ac{e-dif}), and respiration (\ac{e-res}).
-Since both thermal comfort standard deal with office spaces and moderate thermal environments we omitted the heat storage terms in Equation~\ref{eq:heat-balance}.
+Finally, we decided to compare the results of \ac{pmv} and \ac{pmv-ce} formulations with the \ac{pmvg} calculated by the two-node model.
+The two-node model was developed by \mycite{GaggeSET} and it uses a more accurate set of equations to solve the heat balance equation.
+We compared the \ac{pmv} and \ac{pmv-ce} results to the \ac{pmvg} since Gagge's two-node model is used by the \ac{pmv-ce} to calculate the \ac{ce}.
+Hence, in principle, the results of the \ac{pmv-ce} model should closely match the \ac{pmvg} values.
+We did this by passing as input to the \ac{pmv}, \ac{pmv-ce}, and two-node models the same set of \num{10000} randomly generated set of inputs. 
+Each set of inputs was sampled assuming a random uniform distribution within a predefined range. 
+We selected the range of each of the 6 input variables needed to calculate the \ac{pmv} to be equal to the 2.5th and 97.5th percentiles for all the input variables contained in the \ac{db2}.
+The only exception was for the range of \ac{v} that was randomly selected from this interval \qty{0.1}{\m\per\s}~$\leq$~\ac{v}~$\leq$~\qty{1}{\m\per\s}.
+The rationale for this decision was that both the \ac{pmv} and \ac{pmv-ce} models use the same equations for \ac{v}~$\leq$~\qty{0.1}{\m\per\s}.
 
 \subsection{Performance Metrics}\label{subsec:performance-metrics}
-For classification problems that involve unbalanced dataset the simple accuracy is a misleading metric to use to quantify the performance of a predictive model~\cite{Chawla2005}.
-We, therefore, decided to use the F1 score when determining the performance of the \ac{pmv} in predicting the \ac{tsv} reported by a participant.
-The F1 score can be interpreted as a harmonic mean of the precision and recall, where an F1 score reaches its best value at 1 and worst score at 0.
-Precision (also called positive predictive value) is the fraction of relevant instances among the retrieved instances, while recall (also known as sensitivity) is the fraction of relevant instances that were retrieved.
-The F1-micro score calculate metrics globally by counting the total true positives, false negatives and false positives.
-The F1-macro calculate metrics for each label, and find their unweighted mean.
-The F1-weighted calculate metrics for each label, and find their average weighted by support (the number of true instances for each label).
-This alters ‘macro’ to account for label imbalance; it can result in an F-score that is not between precision and recall.
-% todo descibe also the other metrics we used like R2
+Simple accuracy can be a misleading metric to use to quantify the performance of a classification predictive model that involves an unbalanced dataset~\cite{Chawla2005}.
+We then used the F1 score when determining the performance of the \ac{pmv} and \ac{pmv-ce} in predicting the \ac{tsv} reported by a participant.
+The F1 score is the harmonic mean of the precision and sensitivity, where an F1 score reaches its best value at 1 and the worst score at 0.
+Precision (also called positive predictive value) is the ratio of true positive overall positive results obtained from the test, while sensitivity (also known as recall or true positive rate) is the ratio of true positive over all the actual positive cases.
+The F1-micro score calculates metrics globally by counting the total true positives, false negatives and false positives.
+The F1-macro calculate metrics for each label and find their unweighted mean.
+The F1-weighted calculate metrics for each label and find their average weighted by support (the number of true instances for each label).
+% todo describe also the other metrics we used like R2

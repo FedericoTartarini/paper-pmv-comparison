@@ -2,157 +2,188 @@
 %! Date = 10/06/2020
 \section{Results and Discussion}\label{sec:results}
 
-\subsection{Comfort DB overview}\label{subsec:comfort-db-overview}
-While the \gls{db2} contains \var{entries_db_all}, only a total of \var{entries_db_used} entries met the inclusion criteria listed in the Methodology Section.
-The distribution of the six input variables used to calculate the PMV indices is depicted in Figure~\ref{fig:dist_input_data}.
-
+\subsection{\ac{db2} overview}\label{subsec:comfort-db-overview}
+While the \ac{db2} contains \var{entries_db_all} data points, only \var{entries_db_used} entries met the inclusion criteria listed in the Methodology section.
+The distribution of the six input variables used to calculate the PMV indices is visualized in Figure~\ref{fig:dist_input_data}.
+The 2.5th, 50th (median), and 97.5th percentiles are shown in blue.
+% todo: remove the gridlines or marker them very short; remove outliers or make the line very thin; keep one decimal for clo values; remove decimal point for RH; annotation font should be the same as the label and same size, change only the color; You can use black or blue (HEX: 003262, RGB (0, 50, 98)) for the chart; one decimal for met not two; the chart is a bit dense of information
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/dist_input_data}
-    \caption{Distribution of the input variables used to calculate the \ac{pmv} values.
-    The text in blue is showing the the 2.5th, 50th (median), and 97.5th percentiles.
-    The data are shown using boxen-plots (letter-value plots).
-    They depict the median as the centerline and each successive level outward contains half of the remaining data.}
+    \caption{Distribution of the input variables used to calculate the \ac{pmv} and \ac{pmv-ce} values.
+    The text in blue is showing the 2.5th, 50th (median), and 97.5th percentiles.
+    The data are shown using boxen plots (letter-value plots).
+    They depict the median as the center-line and each successive level outward contains half of the remaining data.}
     \label{fig:dist_input_data}
 \end{figure*}
+The input data distributions are far from uniformity (equal density) across the Standards' applicability ranges.
+We were not able to determine the accuracy of the \ac{pmv} and \ac{pmv-ce} formulations for inputs that were lower than the 2.5th and 97.5th percentiles, since we only had a limited number of data points beyond those values.
+For example, only 2.5\% of the available dataset had a \ac{tdb} $\leq$ than \var{ta_95_perc_min}, this may consequently be an issue since both thermal comfort Standards' applicability limits extend to \qty{10}{\celsius}.
+This can be explained by the fact that only a few buildings in the world operate at \ac{tdb} lower than this value.
+This is because an indoor \ac{tdb} lower than \var{ta_95_perc_min} would be deemed to be unsatisfactory by a great number of occupants~\cite{iso7730}.
+This lack of data in the \ac{db2} is particularly relevant for \ac{v}.
+The \ac{pmv} and \ac{pmv-ce} only differ when the value of \ac{v} $\geq$ \qty{0.1}{\m\per\s}, however, the median value in the \ac{db2} was \qty{0.08}{\m\per\s} suggesting that most of the data points were collected in buildings with low air movement.
+Consequently, we could not reliably test the accuracy of the \ac{pmv} formulations for values of \ac{v} $\geq$ \var{v_95_perc_max}.
 
-Figure~\ref{fig:dist_input_data} also depicts the 2.5th, 50th (median), and 97.5th percentiles for all the input variables.
-We were not able to determine the accuracy of the \ac{pmv} formulations for inputs which were lower than the 2.5th and 97.5th percentiles, since we only had a limited number of datapoints beyond those limits.
-Moreover, the distribution of these data was not uniform across the Standard's applicability ranges.
-For example, only 2.5\% of the available dataset had a \ac{tdb} $\leq$ than \var{ta_95_perc_min}.
-This can be explained by the fact that only few buildings across the globe have operate at \ac{tdb} lower than this value.
-Which would be deemed to be unsatisfactory by a great number of occupants.
-Consequently, we were not able to validate the accuracy of both formulations beyond these limits, despite the fact that both thermal comfort Standards applicability limits extend to \qty{10}{\celsius}.
-This lack of data is particularly relevant for \ac{v}.
-The \ac{pmv} and \gls{pmv-ce} only differ when the value of \ac{v} exceeds \qty{0.1}{\m\per\sec}, however, due to the fact that most of the entries in the \gls{db2} were collected in buildings with low air movement we could not reliably test the accuracy of the \ac{pmv} formulations for values of \ac{v} higher than \var{v_95_perc_max}.
-
-Figure~\ref{fig:dist_other_data} shows the distribution of the age, height, weight, and running mean outdoor temperature grouped by sex.
-Less than half (\num{23300}) of the total entries had information about the participant's sex.
-Out of those data were almost equally distributed among male \qty{52}{\percent} and females.
+Figure~\ref{fig:dist_other_data} shows the distribution of age, height, weight, and running mean outdoor temperature grouped by sex.
+Less than half (\num{23300}) of the total entries have information about the participant's sex and are almost equally distributed among males \qty{52}{\percent} and females.
+Men were significantly heavier and taller than females.
 Ages are not normally distributed, the same is true for the running mean outdoor temperature.
 About half of the participants (\qty{52}{\percent}) were aged between \num{20} and \num{35} years old, and only \qty{2.5}{\percent} were older than 60.
-This limits our analysis to healthy adults, and does not allow us to determine the accuracy of the \ac{pmv} model in predicting thermal sensation for children or older adults.
+This limits our analysis to young adults and does not allow us to determine the accuracy of the \ac{pmv} and \ac{pmv-ce} models in predicting thermal sensation for children or older adults.
+The \ac{db2} does not contain information about the health status of the participants.
 Approximately \qty{56}{\percent} of the running mean outdoor temperature values where between \qtyrange{10}{25}{\celsius}.
-Men were significantly heavier and taller than females.
+% todo: check that the colours are distinguishable for color blind and change them since I am using the same color palette to differentiate PMV and PMVCE; same comments as previous chart; use a boxen plot and have 4 for men and 4 for women. Tormt is missing the unit; age unot should be year. This figure can be merged with figure 2 because it is a visualization of the database. I would use blue (HEX: 003262, RGB (0, 50, 98)) and gold (HEX: FDB515, RGB (253, 181, 21)) as color because blue and green could be confounded by colorblind people. To be more consisten in the paper, I would use the letter value plots for this and the figure in section 3.3.2
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/dist_other_data}
     \caption{Distribution of age, height, weight, and running mean outdoor temperature.
     The data are grouped by sex.
-    The text in blue is showing the the 2.5th, 50th (median), and 97.5th percentiles.}
+    The text in blue is showing the 2.5th, 50th (median), and 97.5th percentiles.}
     \label{fig:dist_other_data}
 \end{figure*}
 The percentage of \ac{tpv} grouped by each \ac{tsv} is shown on the left side of Figure~\ref{fig:bar_plot_tp_by_ts}.
 Only \var{entries_with_tp} entries had information about both \ac{tsv} and \ac{tpv}.
-Thus, on the right we show a bar chart depicting the distribution of all the \ac{tsv} votes, we have used in the analysis.
-The \gls{db2} in respect to the \ac{tsv} is unbalanced.
+Thus, on the right, we show a bar chart depicting the distribution of all the \ac{tsv} votes, we analyzed in the paper.
+The \ac{tsv} is unbalanced. 
 Approximately \var{perc_tsv_neutral} of all the entries have a \ac{tsv} of `Neutral'.
 While less than \var{perc_tsv_hot} of the total sample of participants reported to be either `Hot' or `Cold'.
+% todo I really do not like this color, they are misleading. If someone want to be "warmer", then it should be shown as blue. I suggest to use the color pallet (figure 3) that Micheal used in the BCA paper. 
+% todo TSV report words not numbers.
+% todo TSV chart the color here should not match the one on the thermal preference scale given that it is a different question. For example, a TSV=3 is red, like people that wants to be warmer, meaning that they are cold. Even with the inversion of the color palette, we cannot imply that TSV=3 mease wanted to be cooler. What about TSV=1, maybe people want no changer or cooler or warmer. Difficult to assume. Better to use two independet color schemes. 
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bar_plot_tp_by_ts}
     \caption{The left Figure shows the percentage of \ac{tpv} for each thermal sensation vote.
     The numbers on the right side of each bar show the number of points for each \ac{tsv}.
     The right figure shows the total number of data points grouped by \ac{tsv}.
-    Each bin in the Figure of the right has more data points than in the Figure on the left since information about the occupants \ac{tpv} were not always available.}
+    Each bin in the right figure has more data points than in the left figure since less data on \ac{tpv} were available.}
     \label{fig:bar_plot_tp_by_ts}
 \end{figure*}
-In thermal comfort research it is generally assumed that people who are `slightly warm' or `slightly cool' are thermally comfortable.
-However, in the \gls{db2} more than \qty{50}{\percent} of participants who were either `slightly warm' or `slightly cool' wanted to be `cooler' or `warmer', respectively.
-This finding challenges the above assumption.
-This result suggests that the use of the thermal preference scale is better suited to determine how people perceive their thermal environment.
-The \ac{tpv} clearly allows to determine whether participants would take action or not to modify their current thermal environment.
-The \ac{tsv}, on the contrary, is ambiguous and does not allow to determine which actions should be taken to increase thermal comfort conditions for occupants.
+
+In thermal comfort research, it is generally assumed that people who are `slightly warm' or `slightly cool' are thermally comfortable.
+However, in the \ac{db2} more than \qty{50}{\percent} of participants who were either `slightly warm' or `slightly cool' wanted to be `cooler' or `warmer', respectively.
+This finding challenges the above assumption. 
+Assuming that `slightly warm' or `slightly cool' is comfortable leads to under-counting thermal discomfort.
+This result highlights one of the major limitations of the \ac{tsv} scale and suggests that the thermal preference scale is better suited to determine how people perceive their thermal environment.
+The \ac{tpv} more clearly allows an HVAC system to decide whether to change or not the thermal environment. 
+On the contrary, the \ac{tsv} is ambiguous and does not allow determining if an action should be taken to increase the participant's thermal comfort.
 
 \subsection{Comparison of PMV accuracy in predicting thermal sensation}\label{subsec:model-accuracy-comparison-in-predicting-thermal-sensation}
-The \ac{pmv} was developed with the primary aim of predicting \ac{tsv}, consequently, in this Section we are reporting the prediction accuracy of different \ac{pmv} formulations.
-
+The \ac{pmv} was developed with the primary aim of predicting \ac{tsv}, consequently, we are here comparing the prediction accuracy of the two formulations.
+% todo Use the words, not the numbers. Please use the color pallet from Toby's paper. It is hard to notice that these are two distint graph because the legend is moving accross. I suggest to move the legend above and have a thin grey line to separate the two group, another option would be to add a light grey background for the two PMV and show that they are distinct. 
+% todo Move the percentage, on top and move it horizontally.
+% todo remove the white space between the boxes (horizontal lines)
+% todo TSV use words not numbers
+% todo Move this also above the figure, over each column. I would also add the term. Overall accuracy  PMV = 33%
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy}
-    \caption{}
+    \caption{The calculated \ac{pmv} value is grouped by the \ac{tsv} value reported by the participants. 
+    The number of data points in each bin of the two charts is the same and this allows us to compare the accuracy of both models.
+    The overall prediction accuracy is shown above the chart while the model accuracy of predicting participants grouped by their \ac{tsv} is overlayed over each bar. 
+    A random model, randomly selecting a thermal sensation vote would have an overall accuracy of \qty{14}{\percent}}
     \label{fig:bar_stacked_model_accuracy}
 \end{figure*}
-
-Being \ac{tsv} the value reported by participants (i.e., ground truth) we grouped participants responses by \ac{tsv} and reported the simple accuracy of the different \ac{pmv} formulations in Figure~\ref{fig:bar_stacked_model_accuracy}.
-In other words, all \ac{pmv} formulations underestimated the conditions at which participants are thermally dissatisfied with their environment.
-The overall accuracy of the \gls{pmv-ce} and \ac{pmv} were \qty{34}{\percent} and \qty{33}{\percent}, respectively.
-Being the classification problem unbalanced the simple accuracy is not an optimal metric to rate the model prediction accuracy since a default strategy of guessing the majority class would lead to a high overall model accuracy.
-A model that would have predicted always `neutral' would have achieved an overall accuracy of \var{perc_tsv_neutral}, which is the number of participants who voted \ac{tsv}=0.
-For this reason in Table~\ref{tab:f1} we report the F1-scores for all the models.
-The F1-macro score which is free from label imbalance depicts that the accuracy of both models across all metrics is marginally better to random guessing (i.e., \qty{14.3}{\percent}).
-
+Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figure~\ref{fig:bar_stacked_model_accuracy} we grouped participants' responses by \ac{tsv} and reported the simple accuracy of the different \ac{pmv} formulations over each sub-figure.
+Both \ac{pmv} formulations underestimated the conditions at which participants are thermally dissatisfied with their environment.
+The overall accuracy of the \ac{pmv} and \ac{pmv-ce} were \qty{33}{\percent} and \qty{34}{\percent}, respectively.
+Being the classification problem unbalanced, the simple accuracy is not an optimal metric to rate the model prediction accuracy since a default strategy of guessing the majority class would lead to a high overall model accuracy.
+A model that would have always predicted `neutral' would have achieved an overall accuracy of \var{perc_tsv_neutral}, the number of participants who voted \ac{tsv}=0.
+For this reason, in Table~\ref{tab:f1}, we report the F1-scores for all the models.
+The F1-macro score, which is free from label imbalance, depicts that the accuracy of both models across all metrics is marginally better than random guessing (i.e., \qty{14}{\percent}).
+% todo in the table I should also report the F1 scores if I filter out some of the TSV. The PMV model should only be used in the range -2 and 2 so at least we should report also the results in this range.
 \begin{table}[htb!]
     \centering
     \input{tables/f1.tex}
-    \caption{F1-score for the \ac{pmv} and \gls{pmv-ce} models.}
+    \caption{F1-score for the \ac{pmv} and \ac{pmv-ce} models.}
     \label{tab:f1}
 \end{table}
 
-Moreover, while the \gls{pmv-ce} was specifically developed to more accurately estimate latent and sensible heat losses from the skin to the environment.
-Our results show that neither formulations can correctly classify participants who reported to be either `warm' or `hot' and the \gls{pmv-ce} is less accurate than the \ac{pmv} in predicting people who were `slightly warm'.
-Both models had an accuracy lower than \qty{1}{\percent} when predicting wither `warm', `hot', or `cold'.
-This value is significantly lower and worse than random guessing.
+The \ac{pmv-ce} was specifically developed to more accurately estimate latent and sensible heat losses from the skin to the environment when air movement is used.
+However, our results show that the \ac{pmv-ce} is less accurate than the \ac{pmv} in predicting people who were `slightly warm'.
+Both models had an accuracy lower than \qty{1}{\percent} when predicting either `warm', `hot', or `cold'.
+This value is significantly lower and worse than random guessing, this is very concerning because this means that the models are actively misleading the users.
+The low prediction accuracy of both model formulations, coupled with the lack of data in the extremes of the applicability limits of the models, may suggest that the models' applicability limits should be revisited.
+Based on the results, we suggest that the Standards applicability limits could be reduced to the following range \qty{18}{\celsius}~$\leq$~\ac{tdb}~$\leq$~\qty{30}{\celsius} and \qty{10}{\celsius}~$\leq$~\ac{tr}~$\leq$~\qty{30}{\celsius} (instead of \qty{10}{\celsius}~$\leq$~\ac{tdb}~$\leq$~\qty{30}{\celsius} and \qty{10}{\celsius}~$\leq$~\ac{tr}~$\leq$~\qty{40}{\celsius}),  until more data are collected. 
 
-The low prediction accuracy of both models formulations coupled with the lack of data in the extremes of the applicability limits of the models, may suggest that the models applicability limits should be revisited and perhaps limited.
-For example, Standards applicability limits could be limited to \qty{18}{\celsius} $\leq$ \ac{tdb} $\leq$ \qty{30}{\celsius} until more data are collected or the \ac{pmv} formulation is changed to better predict people who vote at the extremes of the thermal sensation scale.
+Grouping the results into discrete categories introduces rounding errors since some participants reported \ac{tsv} on a continuous scale and the \ac{pmv} value is a continuous variable.
+To compensate for this we plotted the \ac{pmv} and \ac{pmv-ce} values as a function of \ac{tsv} in Figure~\ref{fig:bubble_models_vs_tsv} and we plotted a \ac{lowess} curve.
+% todo I would not use grey for the data, it is too similar to the gridlines. A light color is fine, light brown (depending on the color pallet used in the rest of the paper) could work. The regression line could be done even thicker. Be more explicit in the graph of what is measured and what is calculated. The Y axis should be labeled as PMV
 
-Grouping the results into discrete categories introduces rounding errors since some participants reported \ac{tsv} on a continuous scale and the \ac{pmv} value is a continuous variables.
-To compensate for this we plotted the \ac{pmv} values as a function of \ac{tsv} in Figure~\ref{fig:bubble_models_vs_tsv} and we plotted a lowess curve.
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bubble_models_vs_tsv}
-    \caption{}
+    \caption{The \ac{lowess} curve shows the relationship between the raw \ac{pmv} and \ac{tsv} data.
+    Raw data were then binned and a bubble chart is superimposed over the regression curve to aid the visualization of a large dataset.}
     \label{fig:bubble_models_vs_tsv}
 \end{figure*}
-The curve is calculated using the individual data and not the binned data.
-We binned the data only to aid the visualization of a large dataset.
-If the model is to accurately predict the thermal sensation of people, the regression line should pass through the origin of the cartesian plane and a slope of 1.
-As depicted in Figure~\ref{fig:bar_stacked_model_accuracy}, while the regression line does not intercept is not zero, the intercepts for the \ac{pmv} is \qty{-0.23} and for the \gls{pmv-ce} is \qty{-0.24}.
+The curve, in the Figure, is calculated using the individual data and not the binned data.
+We binned the data to aid the visualization of a large dataset.
+If the model is to accurately predict the thermal sensation of people, the regression line should pass through the origin of the cartesian plane and have a slope of 1.
+The intercepts for the \ac{pmv} is \qty{-0.23} and for the \ac{pmv-ce} is \qty{-0.24} which means that the model has a bias of less than one-quarter of a thermal sensation interval. 
+The intercept is close to 0 and this is aligned with the results shown above that the model can predict people who reported to be neutral \qty{55}{\percent} and \qty{58}{\percent} of the times.
+Both \ac{pmv} formulations always underpredicted the thermal sensation of people who reported to be on the extremes of the \ac{tsv}; the slope of the curve was significantly lower than 1.
+We discuss in detail in sub-Section~\ref{subsec:sources-of-error} which factors may be the underlying cause of these errors.
+
+The intended aim of the \ac{pmv} model is not to accurately predict each individual thermal response from participants.
+The \ac{pmv} model was developed to predict the average thermal sensation of an undefined large group of occupants sharing the same environment.
+Consequently, while the above-mentioned analysis is needed to compare for the same sample size in each thermal sensation group the \ac{pmv} and \ac{pmv-ce} accuracies, it focuses primarily on comparing individual \ac{tsv} to \ac{pmv}. 
+This type of analysis does not conclusively disprove the inefficacy of the \ac{pmv} models in predicting the average thermal sensation of a large group of occupants.
+This was already done in \mycite{Cheung2019}, where they grouped people based on the same thermal environment (same \ac{pmv} ranges), not the same thermal sensation vote as we did here, and then quantified how many times the \ac{pmv} model correctly predicted \ac{tsv}. 
+They found that the accuracy of \ac{pmv} in predicting \ac{tsv} was only \qty{34}{\percent} \mycite{Cheung2019}. 
 
 \subsection{Model Bias}\label{sec:model-bias}
 \subsubsection{Model Overall Bias}\label{subsec:model-overall-bias}
-As previously mentioned in the Methodology section, the aim of the \ac{pmv} model is not to accurately predict each individual thermal response form participants.
-The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants sharing the same environment.
-Consequently, while the above-mentioned analysis is informative in understanding the overall prediction error of the \ac{pmv} model it does compare individual \ac{tsv} to \ac{pmv}, hence it has some limitations, and it does not conclusively disprove the inefficacy of the \ac{pmv} model in predicting the average thermal sensation of a large group of occupants.
-
-We calculated the overall bias of the model as previously done by \mycite{Humphreys2002} by subtracting the \ac{pmv} model prediction from the self-reported \ac{tsv}.
+We calculated the overall bias of the model as previously done by \mycite{Humphreys2002} by subtracting the \ac{pmv} and  \ac{pmv-ce} models prediction from the self-reported \ac{tsv}.
 Results are presented in Figure~\ref{fig:hist_discrepancies}.
-Overall both the \ac{pmv} and \gls{pmv-ce} models appear to be free from serius bias.
-However, the \gls{pmv-ce} had a higher bias than the \ac{pmv} when using the full dataset, the summary statistics are shown in Figure~\ref{fig:hist_discrepancies}.
-The median bias of the \ac{pmv} model reduced to \var{bias_median_pmv_0.2} from \var{bias_median_pmv_0} when we only included those datapoints with \ac{v} higher than \qty{0.2}{\m\per\s}.
-While the opposite is true for the \gls{pmv-ce}, the median bias increased to \var{bias_median_pmv_ce_0.2} from \var{bias_median_pmv_ce_0}.
-
+% todo You need to check of the four distibution are normally distributed, if so, report mean and SD, if not report median and IQR, no need to report all of them. I guess that Pswetest is an indication of this, so, for the entire dataset it seems that it is not sufficiently normally distributed, so report only median and IQR. The Pswetest This index is not reported, explained, and interpreted in the paper. I would like to have these figure a bit longer in the Y-axis. they are kind of squized. The word "delta" does not mean difference. So, I suggest to use "diffference" or just show the equation Bias=PMVi-TSVi. 1) Can this chart be transformed in a letter value plot? The Caption is missing
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/hist_discrepancies}
     \caption{}
     \label{fig:hist_discrepancies}
-\end{figure*}
+\end{figure*} 
+Overall both the \ac{pmv} and \ac{pmv-ce} models have a median bias lower than half of a thermal sensation interval.
+Figure~\ref{fig:hist_discrepancies} contains the summary statistics, and the results highlight that the \ac{pmv-ce} had a higher bias than the \ac{pmv} when using the entire dataset.
+The two models only differ when \ac{v} exceeds \qty{0.1}{\m\per\s}; we also calculated the bias of the model, including data points with \ac{v} higher than \qty{0.2}{\m\per\s} since above this value the differences in the outputs of the two models are more pronounced.
+We set the limit to \qty{0.2}{\m\per\s} and not a higher value since, as previously shown in Figure~\ref{fig:dist_input_data}, we could only reliably test the accuracy of the models up to \ac{v} of \var{v_95_perc_max}.
+We did not use \qty{0.1}{\m\per\s} as a threshold because the original difference between the two models was \qty{0.2}{\m\per\s}.
+The effect of air movement is perceptible only when the airspeed is sufficiently high to disrupt the body's thermal plume (xxx).
+The threshold in the standard was reduced to \qty{0.1}{\m\per\s} to simplify the usability and achieve one threshold for all the air speeds.
+The results show that the median bias of the \ac{pmv} model reduced to \var{bias_median_pmv_0.2} from \var{bias_median_pmv_0}, meaning that at higher speed the \ac{pmv} model improved.
+Surprisingly, we found that the median bias for the \ac{pmv-ce} increased to \var{bias_median_pmv_ce_0.2} from \var{bias_median_pmv_ce_0}.
+These are worrying results since the \ac{pmv-ce} model claims to have a higher accuracy at higher values of \ac{v}, but this is not what was found from this data.
+As far as we could find, there is no published paper proving a higher accuracy of the \ac{pmv-ce} compared to the \ac{pmv} model. 
+The \ac{pmv-ce} has lower accuracy while making the code more complex and computationally intensive to run.
 
-\subsubsection{Model Bias as Function of Independent Variables, Thermal Sensation, Thermal Preference, and PMV}\label{subsec:model-bias-variable}
-In the previous section we presented the overall bias of the two \ac{pmv} formulations.
-We then went on determining how the bias varied as a function of \ac{tdb}, \ac{v}, \ac{met}, and \ac{clo}.
+\subsubsection{Model Bias as Function of Four Input Variables}\label{subsec:model-bias-variable}
+In the previous section, we presented the overall bias of the two \ac{pmv} formulations.
+We then went on to determine how the bias varied as a function of \ac{tdb}, \ac{v}, \ac{met}, and \ac{clo}.
 Figure~\ref{fig:dist_input_data} shows the results.
-In each sub-figure we have binned the results into discrete intervals of equal width and the x-axis tick label is the center value of the bin interval. %and the width of the violin plot is linearly proportional to the number of points in that specific bin.
-In each sub-figure, we kept data only above and below the 2.5th and 97.5th percentiles.
+In each sub-figure, we have binned the results into discrete intervals of equal width, and the x-axis tick label is the center value of the interval. 
+The width of the violin plot is not proportional to the number of points in that specific bin.
+% todo This figure needs a lot of improvements. 1) I would use the letter-value (or boxplot), they may be easier to interpret, provide less info and could be aligned with the first figure (in particular if  The actual density distribution it is not adding much value. 2) The color for PMV and PMV_CE must be the same in the entire paper. 3) The y-label should be moved to the x-label and the y-label should explicit. I would remove the decimal values and show only the five integers -2, -1, 0, 1 and 2. 4) How is possible to have a velocity "centered" at 0? I would remove the red lines. If you want to underline the -0.5 and 0.5 range, then we should use the same strategy also for figure 7. The fact that you change graph time in the paper, it makes more difficult to interpret without adding a substantial amount of value. 
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bias_models}
     \caption{}
     \label{fig:bias_models}
 \end{figure*}
-The results depict that across the four input variables the use of the \gls{pmv-ce} model did not improve the bias of the model.
-On the contrary, the bias of the \gls{pmv-ce} diverged more from 0 as the value of \ac{v} increased.
-This outcome is particularly negative since the \gls{pmv-ce} was specifically developed to be more accurate than the \ac{pmv} at high airspeed.
-These results are in agreement with those presented in the previous section.
+The results depict that the use of the \ac{pmv-ce} model did not improve the bias of the \ac{pmv} results across all four input variables.
+On the contrary, the bias of the \ac{pmv-ce} diverged more from 0 as the value of \ac{v} increased.
+These results are in agreement with those presented in the previous section and depict that the correction applied by the \ac{pmv-ce} model worsens the results. 
 
-\subsection{Comparison between the \ac{pmv} formulations wih the two-node model}\label{subsec:comparison-between-the-ac{pmv}-formulations-wih-the-two-node-model}
-We then finally compared how the results of the \ac{pmv} and \gls{pmv-ce} compared with the results of the two-node model.
-Figure~\ref{fig:pmv_two_node_comparison} was generated by calculating the \ac{pmv} using a combination of 5000 randomly generated sets inputs and using these to calculate the \ac{pmv} and \gls{pmv-ce} (y-axis), and the respective \gls{pmvg} value (x-axis).
-The Figure also shows the locally weighted linear regression (LOWESS) curve.
-The results of the \ac{pmv} model had a higher agreement with the results of the two-node model, in particularly for \gls{pmvg} $\geq$ \qty{0.5}{\m\per\s}.
-Depicting the failure of the \gls{pmv-ce} model in achieving a greater achievement with the two-node model, despite using it in the backend to calculate the cooling effect.
+\subsection{Comparison between the PMV formulations with the two-node model}\label{subsec:comparison-between-the-pmv-formulations-wih-the-two-node-model}
+We compared how the results of the \ac{pmv} and \ac{pmv-ce} perform against the results of the two-node model because xxxx.
+Figure~\ref{fig:pmv_two_node_comparison} was generated by calculating the three \ac{pmv} values using the same combination of \num{10000} randomly generated sets inputs.
+The \ac{pmv} and \ac{pmv-ce} were then plotted on the y-axis while the \ac{pmvg} value was on the x-axis.
+The Figure also shows the \ac{lowess} curves that are used to visualize the prevailing data trend.
+The results of the \ac{pmv} model had a higher agreement than those obtained with the \ac{pmv-ce} model for \ac{pmvg} $\geq$ \qty{0.5}{\m\per\s}.
+These results show the \ac{pmv-ce} is less similar to the \ac{pmvg} model than the \ac{pmv}, despite using it in the backend to calculate the cooling effect.
+This is also an unexpected result and we will discuss why this may be in the following paragraph. 
+% todo When a figure report how well a variable is predicted, for example x-measured vs x-predicted, the graph must be a square, otherwise it is visually skewed. 1) I suggest to use the words instead of numbers for PMV 2) We should be consistent with the PMV naming we used (do not use ASHRAE and ISO here) 3) why both models are far from Gagge for PMV<0, both model in general produce a cooler feeling than PMVgagge, we should explain why if we keep this paper. 
+
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/pmv_two_node_comparison}
@@ -160,52 +191,58 @@ Depicting the failure of the \gls{pmv-ce} model in achieving a greater achieveme
     \label{fig:pmv_two_node_comparison}
 \end{figure*}
 
-\subsection{Sources of Error}\label{sec:sources-of-error}
-While the scope of this manuscript is solely to compare the two \ac{pmv} formulations and determine which of the two is more accurate and should be used in thermal comfort standards.
-In this section we are trying to identify some of the main reasons of why we observed in the predictive accuracy of the \ac{pmv} and \gls{pmv-ce} models when compared against the \ac{tsv} available in the \gls{db2}.
+\subsection{Sources of Error}\label{subsec:sources-of-error}
+In this Section, we identify some of the main reasons that could explain the difference in the results from the two \ac{pmv} models when compared against the \ac{tsv} available in the \ac{db2}.
+Moreover, we tried to explain why we observed that the \ac{pmv-ce} model has a lower accuracy than the \ac{pmv} in predicting thermal sensation.
+The issues are not reported in order of importance and more research is needed to determine how to improve the overall accuracy of the \ac{pmv} model.
 
 \paragraph{Lack of Data}
-As previously mentioned several times the \ac{pmv} model aim to predict the average thermal sensation of a large group of occupants sharing the same environment.
-First, the term `large' is vague and it leads to confusion since it is not clear what is the minimum number of people required, is it 2, 5, 10, or more?
-Secondly, the data contained in the \gls{db2} do not contain information on where and when the thermal sensation votes where recorded and consequently we could not appropriately validate the accuracy of the model since in most of the analysis we ended up comparing single \ac{tsv} with the \ac{pmv} model output.
-The only exception to this is when we assessed the overall model bias.
+T.
 
 \paragraph{Heat Balance Equation and Calculation of the PMV value}
- The \ac{pmv} model uses simplified heat balance equations to estimate the heat loss and gains from the human body to its surrounding environment.
-This in itself is a possible source of error since the model consider the human body to be a cilinder with constant width all uniformly covered with clothing were the heat is all generated in its core.
-This is great simplification since it ignores the fact that different parts of the body may not be covered by clothing, the metabolic heat generation is not uniform, it ignores vasoconstriction and vasodilation, and most importantly it fundamentally assumes that the human body is never in thermal neutrality.
-This is clearly not the case, since the human body in most conditions observed indoors in commercial buildings is capable of maintaining a constant core temperature.
-The \ac{pmv} model then maps the heat loss or gains, which are a proxi to the thermal stress that the human body has to undergone to maintain a constant internal temperature to a \ac{pmv} value which should represent a \ac{tsv} vote.
-Fanger created this equation based on a few experimental data collected in a laboratory, and despite the growing body of literature this equation was never updated.
-Moreover, the heat losses and gains are mapped equally to a thermal sensation vote, disregarding that the human body does not have the same ability to compensate for warm and cold conditions.
-It is, therefore, not surprising to observe that the \ac{pmv} model has an acceptable accuracy in determining when people are `neutral` which is equivalent to a \ac{pmv} of 0 and the body is dissipating all the internal metabolic heat production trough conduction, convection, or radiation.
-On the other hand the model is not capble of identifying people at either extremes of the \ac{tsv} scale.
-These people most likely were exposed to compensable conditions, which in other words means that their core temperature remain constant.
-However, their body either used vasocontriction to compensate for the heat losses, or a combination of vasodilation and sweating to compensate for heat gains.
-More research is need to determine whether the inacuracy of the model is related to either or a combination of the following factors: i) assuming that the heat lossess/gains estimated by the \ac{pmv} should represent the thermal stress the body has to udertake to compensate for unsatisfactory thermal comfort conditions is not correct;
-ii) the relationship between the heat lossess/gains and thermal stress is different from the one assumed by Fanger;
-iii) heat losses and gains correlation to thermal stress is not not the same and two equations should be used;
-iv) the mapping of the \ac{pmv} to the \ac{tsv} uses a different anchor from what participants use in reporting thermal sensation.
-For example, while the \ac{pmv} model may assume that a score of 3 signify the change between a compensable set of conditions to an uncompensable one, e.g., their skin wettedness reaches the max value ($w_{max}$).
-Participants in commercial buildings may, on the contrary, deem the environment to by `Hot' as soon as they start sweating, or in technical words their skin wettedness crosses a critical threshold which is only a fraction of $w_{max}$.
-It is likely that a combination of the above mentioned factors play a role, but only the latter has gained more momentum in the literature which led to development of several \ac{pmv} where the final value was multipled by a constant generally lower than one.
-While few of these indices tried to change the intercept.
+The \ac{pmv} model uses simplified heat balance equations to estimate the heat loss and gains from the human body to its surrounding environment.
+This is a possible source of error since the model considers the human body to be a cylinder with constant width all uniformly covered with clothing where the heat is all generated in its core.
+This is a great simplification since it ignores, for example, the fact that different parts of the body may not be covered by clothing, the metabolic heat generation is not uniform, the mass-to-surface ratios are not constant, and it ignores vasoconstriction and vasodilation.
+However, the \ac{pmv} model erroneously assumes that the human body, aside from some edge cases, is either losing or gaining heat from its surrounding environment.
+This is not the case, since the human body in most conditions observed indoors activates control strategies to maintain a constant core temperature.
+Moreover, the \ac{pmv} model has been developed based on the assumption of steady-state heat transfer, however, this never precisely occurs since the human thermoregulatory system is always actively engaged to ensure a stable core temperature.
+
+The \ac{pmv} model uses the overall heat losses or gains, which are only a proxy to the thermal stress that the human body has to undergo to maintain a constant internal temperature, to a \ac{pmv} value which should represent a \ac{tsv} vote.
+Fanger created this equation based on a few experimental data collected in a laboratory, and despite the growing body of literature, this equation was never updated~\cite{Fanger1970}.
+In the \ac{pmv} model the heat losses and gains are mapped using constant coefficients to a thermal sensation vote, disregarding the fact that the human body does not have the same ability to compensate for warm and cold conditions.
+
+It is, therefore, not surprising to observe that the \ac{pmv} model has an `acceptable' accuracy in determining when people are `neutral`.
+This is equivalent to no heat losses or gains (i.e., \ac{pmv}=0) which means that the body is dissipating all the internal metabolic heat production through conduction, convection, or radiation without needing to thermoregulate using sweating, shivering, vasoconstriction, vasodilation, behavioral adjustments, and non-shivering thermogenesis.
+On the other hand, the model cannot correctly predict the thermal sensation of people who report being outside the three central thermal sensation votes (slightly cool, neutral and slightly warm).
+We showed that people tend to be closer to neutrality than what the models predicted (see figure XXX), this is an indication that they were exposed to compensable thermal conditions. Therefore, the models' inability to account for these regulatory mechanisms is a fundamental limitation.
+
+To continue using the \ac{pmv} model beyond an absolute value of 1, more research is needed to determine whether the inaccuracy of the model is related to either or a combination of the following factors and if those sources of inaccuracy can be reduced: 
+i) the assumption that the heat losses/gains estimated by the \ac{pmv} are correlated to the thermoregulatory response that the body has to undertake to compensate for unsatisfactory thermal comfort conditions;
+ii) the correlation coefficients used by Fanger to link the heat losses/gains and thermal stress are constant and not xxx;
+iii) the regression coefficient between heat losses and heat gains and thermal stress are not the same for the heat losses and gains and two different equations should be used;
+iv) the anchors used by the \ac{pmv} model are different from those used by participants in reporting their thermal sensation.
+For example, while the \ac{pmv} model may assume that a score of 3 (hot) signifies the change between a compensable set of conditions to an un-compensable one, e.g., their skin wettedness reaches the max value ($w_{max}$), as suggested by Gagge's in his manuscript~\cite{GaggeSET}.
+Participants in commercial buildings may, on the contrary, deem the environment to be `Hot' as soon as they start sweating and their \ac{w} crosses a critical threshold which is only a fraction of $w_{max}$.
+
+It is likely that a combination of all the above-mentioned factors plays a role in explaining the discrepancies between the \ac{pmv} model and the self-reported \ac{tsv}.
+The fourth hypothesis has gained significant momentum in the literature which led to the development of several \ac{pmv} formulations that apply correction factors to the final \ac{pmv} result without changing the underlying equation~\cite{Yao2022, Toftum2002}
 
 \paragraph{Measurement Errors}
-While all the data contained in the \gls{db2} have been published in peer-reviewed manuscript measurements errors are inevitably present in the dataset.
-This is due to the accuracy of the instrumentation used, the placement of the instrumentation, and the estimation of clothing, and activity using reference tables.
-In an ideal scenario, errors may be random and would cancel out and not affect the overall bias of the model but only the standard deviation of the error, however, this may not always be the case, for example if a researchers often underestimated the clothing insulation of participants or their activity levels.
+All the data contained in the \ac{db2} have been published in peer-reviewed manuscripts, however, measurement errors are inevitably present in the dataset.
+This is due to the fact that all measurement instrumentation is not always calibrated before use, the uncertainty of the measurements may be large, the placement of the instrumentation may not be in the near proximity of the participant, and estimating clothing and metabolic rates from tables is a complex and prone to error task.
+In an ideal scenario, errors would be random and would cancel out, not significantly affecting the overall bias of the model but only affecting the standard deviation of the error~\cite{Humphreys2002}.
+However, this may not always be the case, for example, if a researcher often underestimated the clothing insulation of participants or their activity levels.
 
 \paragraph{Thermal Sensation Scale}
-One minor but not negligible source of error is the use of a discrete scale to assess thermal sensation.
-Most of the \ac{tsv} in the \gls{db2} were collected using a discrete scale while the \ac{pmv} output is continuous.
-For example, even if the model was 100~\% accurate and the estimated \ac{pmv} values was \num{2.5} the person could only report to be `warm (+2)' or `hot (+3)'.
-% talk also about the research we published with Marcel and how participants perceive the thermal sensation scale
+One minor but not negligible source of error is using a discrete scale to assess thermal sensation (most of the \ac{tsv} in the \ac{db2} were collected using a discrete scale) while the \ac{pmv} output is continuous.
+For example, even if the model was 100~\% accurate and the estimated \ac{pmv} value was \num{2.5} the person could only report being `warm (+2)' or `hot (+3)'.
+Using a continuous, may in principle be a more robust approach and align with the output but \mycite{schweiker2019scales} showed that the distances between the anchors are not constant ~\cite{schweiker2019scales, schweiker2020evaluating}. 
+They also showed that the \ac{tsv}'s assumption of its independence from contextual factors such as climate, season and language is flawed~\cite{schweiker2019scales, schweiker2020evaluating}.
+An alternative solution would be to transform the \ac{pmv} output to an ordinal and categorical seven-point scale. 
 
-\paragraph{Thermal Sensation Scale}
-Errors are also caused by the fact that the \ac{pmv} model is an approximation of a highly complex system (the human body and mind) which interacts with the surrounding environment.
-Fanger could not, therefore, include all the factors that contribute to the comfort vote and some of them have been omitted.
-Finally, it should be noted that the \ac{pmv} model has been developed considering based on the assumption of steady-state heat transfer, however, this never precisely occurs since the human thermo regulatory system is always actively engaged to ensure a stable core temperature.
-However, as \mycite{Humphreys2002} note, these approximations and errors present in the \ac{pmv} model, if the model is accurate, should combine to produce a quasi-random error in the prediction.
-This would increase the standard deviation of the delta between the \ac{tsv} and \ac{pmv}, but if the model is sound, they should produce a negligible bias~\cite{Humphreys2002}.
-On the other hand, if the model is neither accurate nor representative of the real system a significant bias will arise.
+% \paragraph{Other neglected factors}
+% Errors are also caused by the fact that the \ac{pmv} model is an approximation of a highly complex system (the human body and mind) that interacts with the surrounding environment.
+% Fanger could not, therefore, include all the factors that contribute to the comfort vote and some of them have been omitted.
+
+% todo write a paragraph trying to find the reason why the PMV CE model is less accurate.
+% todo write a paragraph about what we recommend for ASHRAE 55

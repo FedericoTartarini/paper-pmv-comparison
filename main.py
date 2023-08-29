@@ -1602,7 +1602,7 @@ def plot_distribution_variable():
 
     # save_var_latex("rh_95_perc_min", desc["ta"]["2.5%"], "\\celsius", round_var=1)
     save_var_latex("rh_95_perc_max", desc["rh"]["97.5%"], "\\percent", round_var=2)
-    save_var_latex("v_95_perc_max", desc["vel"]["97.5%"], "\\m\\per\\sec", round_var=2)
+    save_var_latex("v_95_perc_max", desc["vel"]["97.5%"], "\\m\\per\\s", round_var=2)
 
     r2 = r2_score(df.ta, df.tr)
 
@@ -2764,7 +2764,7 @@ if __name__ == "__old_code__":
 
 if __name__ == "__testing_pmv_set_agreement__":
 
-    number_combinations = 5000
+    number_combinations = 10000
     # todo change the values below programmatically rather than a static input
     combinations = {
         "tdb": np.random.uniform(size=number_combinations, low=18.5, high=29),

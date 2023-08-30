@@ -53,9 +53,10 @@ Thus, on the right, we show a bar chart depicting the distribution of all the \a
 The \ac{tsv} is unbalanced. 
 Approximately \var{perc_tsv_neutral} of all the entries have a \ac{tsv} of `Neutral'.
 While less than \var{perc_tsv_hot} of the total sample of participants reported to be either `Hot' or `Cold'.
-% todo I really do not like this color, they are misleading. If someone want to be "warmer", then it should be shown as blue. I suggest to use the color pallet (figure 3) that Micheal used in the BCA paper. 
-% todo TSV report words not numbers.
-% todo TSV chart the color here should not match the one on the thermal preference scale given that it is a different question. For example, a TSV=3 is red, like people that wants to be warmer, meaning that they are cold. Even with the inversion of the color palette, we cannot imply that TSV=3 mease wanted to be cooler. What about TSV=1, maybe people want no changer or cooler or warmer. Difficult to assume. Better to use two independet color schemes. 
+% todo:
+%  FT - I like my original colour more
+%  SS - TSV chart the color here should not match the one on the thermal preference scale given that it is a different question. For example, a TSV=3 is red, like people that wants to be warmer, meaning that they are cold. Even with the inversion of the color palette, we cannot imply that TSV=3 mease wanted to be cooler. What about TSV=1, maybe people want no changer or cooler or warmer. Difficult to assume. Better to use two independet color schemes.
+%  FT - then also Michael color scheme is wrong since we cannot assume that someone that want to be warm must be cold, they could be already slightly warm but at the same time they may want to be warmed.
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bar_plot_tp_by_ts}
@@ -76,11 +77,10 @@ On the contrary, the \ac{tsv} is ambiguous and does not allow determining if an 
 
 \subsection{Comparison of PMV accuracy in predicting thermal sensation}\label{subsec:model-accuracy-comparison-in-predicting-thermal-sensation}
 The \ac{pmv} was developed with the primary aim of predicting \ac{tsv}, consequently, we are here comparing the prediction accuracy of the two formulations.
-% todo Use the words, not the numbers. Please use the color pallet from Toby's paper. It is hard to notice that these are two distint graph because the legend is moving accross. I suggest to move the legend above and have a thin grey line to separate the two group, another option would be to add a light grey background for the two PMV and show that they are distinct. 
-% todo Move the percentage, on top and move it horizontally.
-% todo remove the white space between the boxes (horizontal lines)
-% todo TSV use words not numbers
-% todo Move this also above the figure, over each column. I would also add the term. Overall accuracy  PMV = 33%
+% todo:
+%  We can use Toby's or Michael but not both, even, though I like mine more
+%  It is hard to notice that these are two distint graph because the legend is moving accross.
+%  and have a thin grey line to separate the two group, another option would be to add a light grey background for the two PMV and show that they are distinct.
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy}

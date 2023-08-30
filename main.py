@@ -42,6 +42,11 @@ palette_tp = [
     "#60E693",
     "#FF362B",
 ]
+palette_tp = [
+    "#C40025",
+    "#008D3D",
+    "#0067B2",
+]
 palette_tsv = [
     "#2C45FE",
     "#4F96FF",
@@ -1728,7 +1733,9 @@ def plot_bar_tp_by_ts():
     gs = GridSpec(1, 3, figure=fig)
     ax1 = fig.add_subplot(gs[0, :-1])
     df_plot = df.groupby(x_var)[y_var].value_counts(normalize=True) * 100
-    df_plot.unstack(y_var).plot.barh(stacked=True, color=palette_tp, ax=ax1)
+    df_plot.unstack(y_var).plot.barh(
+        stacked=True, color=palette_tp, ax=ax1, linewidth=0
+    )
     ax1.set(xlabel="Percentage (%)", ylabel=var_names[x_var])
     ax1.legend(
         bbox_to_anchor=(0.5, 1.04),
@@ -1737,15 +1744,28 @@ def plot_bar_tp_by_ts():
         frameon=False,
         ncol=3,
     )
+    ax1.grid()
     ax1.grid(axis="y", ls="--")
     for ix, row in df_count.reset_index().iterrows():
         ax1.text(112, ix, int(row[y_var]), va="center", ha="right")
 
     ax2 = fig.add_subplot(gs[0, -1])
-    df.groupby(x_var)[x_var].count().plot.bar(color=palette_tsv, ax=ax2)
+    df.groupby(x_var)[x_var].count().plot.bar(color=palette_tsv, ax=ax2, linewidth=0)
     ax2.set(ylabel="", xlabel=var_names[x_var], title="Number of votes")
+    ax2.set_xticklabels(
+        [
+            "Cold",
+            "Cool",
+            "Sl. Cool",
+            "Neutral",
+            "Sl. Warm",
+            "Warm",
+            "Hot",
+        ],
+    )
     ax2.yaxis.tick_right()
-    ax2.grid(axis="x", ls="--")
+    ax2.grid()
+    ax2.grid(axis="y", ls="--")
 
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
 
@@ -1760,9 +1780,7 @@ def plot_stacked_bar_predictions_ts(hb_models=False):
         fig_name = "bar_stacked_model_accuracy_hb"
 
     # Stacked boxplot
-    f, axs = plt.subplots(
-        1, len(models), sharex=True, sharey=True, constrained_layout=True
-    )
+    f, axs = plt.subplots(1, len(models), sharex=True, sharey=True)
     axs = axs.flatten()
 
     for ix, pmv in enumerate(models):
@@ -1779,15 +1797,18 @@ def plot_stacked_bar_predictions_ts(hb_models=False):
                 else:
                     df_plot[x] = np.nan
         df_plot = df_plot[df_plot.columns.sort_values()]
-        df_plot.plot.bar(stacked=True, color=palette_tsv, ax=axs[ix], rot=0)
+        df_plot.plot.bar(
+            stacked=True, color=palette_tsv, ax=axs[ix], rot=0, linewidth=0
+        )
         accuracy = round(
             accuracy_score(df[var].fillna(999), df["thermal_sensation_round"]) * 100
         )
         axs[ix].set(xlabel="")
-        axs[ix].set_title(f"{var_names[pmv]} {accuracy}%", y=1.025)
+        axs[ix].set_title(f"Overall accuracy {var_names[pmv]} {accuracy}%")
         handles, labels = axs[ix].get_legend_handles_labels()
         axs[ix].get_legend().remove()
         axs[ix].grid(False)
+
         df_match = df_plot.stack().reset_index()
         df_match = df_match[df_match["thermal_sensation_round"] == df_match[var]]
         for x in axs[ix].get_xticklabels():
@@ -1795,38 +1816,51 @@ def plot_stacked_bar_predictions_ts(hb_models=False):
                 match = df_match[df_match[var] == float(x._text)][0].values[0]
                 axs[ix].text(
                     x._x,
-                    0.5,
+                    1.025,
                     f"{int(match * 100)}%",
                     va="center",
                     ha="center",
-                    size=10,
-                    rotation=90,
                 )
             except IndexError:
                 axs[ix].text(
                     x._x,
-                    0.5,
+                    1.025,
                     f"0 %",
                     va="center",
                     ha="center",
-                    size=10,
-                    rotation=90,
                 )
+        axs[ix].set_xticklabels(
+            [
+                "Cold",
+                "Cool",
+                "Sl. Cool",
+                "Neutral",
+                "Sl. Warm",
+                "Warm",
+                "Hot",
+            ],
+        )
 
-    plt.subplots_adjust(left=0.05, right=1, bottom=0.2, top=0.85)
-    cax = plt.axes([0, 0.92, 1, 0.05])
+    plt.subplots_adjust(left=0.05, right=1, bottom=0.15, top=0.85)
+    f.supxlabel(var_names["thermal_sensation"])
+    cax = plt.axes([0, 0.95, 1, 0.05])
     cax.axis("off")
 
     cax.legend(
         handles,
-        labels,
+        [
+            "Cold",
+            "Cool",
+            "Sl. Cool",
+            "Neutral",
+            "Sl. Warm",
+            "Warm",
+            "Hot",
+        ],
         frameon=False,
-        # mode="expand",
-        # bbox_to_anchor=(0, 1.1, 1, 0.2),
         loc="upper center",
         ncol=7,
     )
-    f.supxlabel(var_names["thermal_sensation"])
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
 
 

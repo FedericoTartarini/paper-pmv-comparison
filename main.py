@@ -1409,7 +1409,7 @@ def scatter_plot(data, ind="tsv", x_jitter=0):
             va="center",
         )
 
-        color = "#FDB515"
+        color = "#53626F"
         if model == "pmv":
             color = "#3B7EA1"
 
@@ -1459,7 +1459,7 @@ def plot_error_prediction(data):
         split=True,
         hue="model",
         inner="quartile",
-        palette=["#3B7EA1", "#FDB515"],
+        palette=["#3B7EA1", "#53626F"],
     )
     acceptable_error = 0.5
     axs.fill_between(
@@ -1496,7 +1496,7 @@ def plot_error_prediction(data):
     axs.legend(
         handles=[
             patches.Patch(color="#3B7EA1", label="PMV"),
-            patches.Patch(color="#FDB515", label="PMV$_{CE}$"),
+            patches.Patch(color="#53626F", label="PMV$_{CE}$"),
         ],
         frameon=False,
         loc=1,
@@ -1572,7 +1572,7 @@ def plot_distribution_variable():
 
     for ix, var in enumerate(["ta", "tr", "rh", "vel", "clo", "met"]):
         sns.boxenplot(
-            y=var, data=df, ax=axs[ix], color="#FDB515", showfliers=False, linewidth=0.5
+            y=var, data=df, ax=axs[ix], color="#53626F", showfliers=False, linewidth=0.5
         )
         axs[ix].set(
             ylabel="",
@@ -1622,7 +1622,7 @@ def plot_distribution_variable():
     f, axs = plt.subplots(1, 4, figsize=(8, 3))
     for ix, var in enumerate(["age", "ht", "wt", "t_mot_isd"]):
         sns.boxenplot(
-            y=var, data=df, ax=axs[ix], color="#FDB515", showfliers=False, linewidth=0.5
+            y=var, data=df, ax=axs[ix], color="#53626F", showfliers=False, linewidth=0.5
         )
         axs[ix].set(xlabel=var_names[var], xticks=[], ylabel="")
         if var == "age":
@@ -1652,6 +1652,7 @@ def plot_distribution_variable():
 
 
 def plot_bubble_models_vs_tsv():
+    plt.close("all")
     # Scatter thermal_sensation vs pmv prediction
     f, axs = plt.subplots(
         1, len(models_to_test), sharex=True, sharey=True, constrained_layout=True
@@ -1673,23 +1674,22 @@ def plot_bubble_models_vs_tsv():
             pd.IntervalIndex(df_plot.index.get_level_values("y_binned")).mid,
             s=df_plot / 20,
             alpha=0.5,
-            c="darkgray",
+            c="#53626F",
         )
         sns.regplot(
             x="thermal_sensation",
             y=model,
             data=df,
             ax=axs[ix],
-            # robust=True,
             ci=None,
-            line_kws={"color": "k"},
-            scatter_kws={"s": 1},
+            line_kws={"color": "k", "linewidth": 2},
             scatter=False,
             lowess=True,
         )
         axs[ix].axvline(0, c="darkgray", ls="--")
         axs[ix].axhline(0, c="darkgray", ls="--")
         axs[ix].set(title=var_names[model], ylabel="", xlabel="")
+    axs[0].set(ylabel="PMV value")
     f.supxlabel(var_names["thermal_sensation"])
 
     plt.savefig(f"./Manuscript/src/figures/bubble_models_vs_tsv.png", dpi=300)
@@ -2030,7 +2030,12 @@ def plot_bias_distribution_whole_db(hb_models=False):
 
     # plot bias distribution
     f, axes = plt.subplots(
-        2, len(models), sharex=True, sharey="row", constrained_layout=True
+        2,
+        len(models),
+        sharex=True,
+        sharey="row",
+        constrained_layout=True,
+        figsize=(7, 4.5),
     )
 
     for row, v in enumerate([0, 0.2]):
@@ -2070,7 +2075,7 @@ def plot_bias_distribution_whole_db(hb_models=False):
             )
             axs[ix].grid(axis="x")
 
-    f.supxlabel("Delta between PMV and TSV")
+    f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
 
 

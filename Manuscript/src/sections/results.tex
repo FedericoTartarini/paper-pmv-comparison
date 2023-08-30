@@ -97,7 +97,9 @@ Being the classification problem unbalanced, the simple accuracy is not an optim
 A model that would have always predicted `neutral' would have achieved an overall accuracy of \var{perc_tsv_neutral}, the number of participants who voted \ac{tsv}=0.
 For this reason, in Table~\ref{tab:f1}, we report the F1-scores for all the models.
 The F1-macro score, which is free from label imbalance, depicts that the accuracy of both models across all metrics is marginally better than random guessing (i.e., \qty{14}{\percent}).
-% todo in the table I should also report the F1 scores if I filter out some of the TSV. The PMV model should only be used in the range -2 and 2 so at least we should report also the results in this range.
+% todo:
+%  in the table I should also report the F1 scores if I filter out some of the TSV.
+%  The PMV model should only be used in the range -2 and 2 so at least we should report also the results in this range.
 \begin{table}[htb!]
     \centering
     \input{tables/f1.tex}
@@ -114,7 +116,8 @@ Based on the results, we suggest that the Standards applicability limits could b
 
 Grouping the results into discrete categories introduces rounding errors since some participants reported \ac{tsv} on a continuous scale and the \ac{pmv} value is a continuous variable.
 To compensate for this we plotted the \ac{pmv} and \ac{pmv-ce} values as a function of \ac{tsv} in Figure~\ref{fig:bubble_models_vs_tsv} and we plotted a \ac{lowess} curve.
-% todo I would not use grey for the data, it is too similar to the gridlines. A light color is fine, light brown (depending on the color pallet used in the rest of the paper) could work. The regression line could be done even thicker. Be more explicit in the graph of what is measured and what is calculated. The Y axis should be labeled as PMV
+% todo:
+%  Be more explicit in the graph of what is measured and what is calculated.
 
 \begin{figure*}[htb!]
     \centering
@@ -133,7 +136,7 @@ We discuss in detail in sub-Section~\ref{subsec:sources-of-error} which factors 
 
 The intended aim of the \ac{pmv} model is not to accurately predict each individual thermal response from participants.
 The \ac{pmv} model was developed to predict the average thermal sensation of an undefined large group of occupants sharing the same environment.
-Consequently, while the above-mentioned analysis is needed to compare for the same sample size in each thermal sensation group the \ac{pmv} and \ac{pmv-ce} accuracies, it focuses primarily on comparing individual \ac{tsv} to \ac{pmv}. 
+Consequently, while the above-mentioned analysis is needed to compare for the same sample size in each thermal sensation group the \ac{pmv} and \ac{pmv-ce} accuracies, it focuses primarily on comparing individual \ac{tsv} to \ac{pmv}.
 This type of analysis does not conclusively disprove the inefficacy of the \ac{pmv} models in predicting the average thermal sensation of a large group of occupants.
 This was already done in \mycite{Cheung2019}, where they grouped people based on the same thermal environment (same \ac{pmv} ranges), not the same thermal sensation vote as we did here, and then quantified how many times the \ac{pmv} model correctly predicted \ac{tsv}. 
 They found that the accuracy of \ac{pmv} in predicting \ac{tsv} was only \qty{34}{\percent} \mycite{Cheung2019}. 
@@ -142,7 +145,12 @@ They found that the accuracy of \ac{pmv} in predicting \ac{tsv} was only \qty{34
 \subsubsection{Model Overall Bias}\label{subsec:model-overall-bias}
 We calculated the overall bias of the model as previously done by \mycite{Humphreys2002} by subtracting the \ac{pmv} and  \ac{pmv-ce} models prediction from the self-reported \ac{tsv}.
 Results are presented in Figure~\ref{fig:hist_discrepancies}.
-% todo You need to check of the four distibution are normally distributed, if so, report mean and SD, if not report median and IQR, no need to report all of them. I guess that Pswetest is an indication of this, so, for the entire dataset it seems that it is not sufficiently normally distributed, so report only median and IQR. The Pswetest This index is not reported, explained, and interpreted in the paper. I would like to have these figure a bit longer in the Y-axis. they are kind of squized. The word "delta" does not mean difference. So, I suggest to use "diffference" or just show the equation Bias=PMVi-TSVi. 1) Can this chart be transformed in a letter value plot? The Caption is missing
+% todo:
+%  You need to check of the four distibution are normally distributed, if so, report mean and SD, if not report median and IQR, no need to report all of them.
+%  I guess that Pswetest is an indication of this, so, for the entire dataset it seems that it is not sufficiently normally distributed, so report only median and IQR.
+%  The Pswetest This index is not reported, explained, and interpreted in the paper.
+%  Can this chart be transformed in a letter value plot?
+%  The Caption is missing
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/hist_discrepancies}

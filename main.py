@@ -14,7 +14,6 @@ from matplotlib.gridspec import GridSpec
 from pythermalcomfort import p_sat_torr, check_standard_compliance_array
 from pythermalcomfort.models import (
     athb,
-    set_tmp,
     cooling_effect,
 )
 from scipy import stats
@@ -23,8 +22,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import r2_score, mean_absolute_error
-from sklearn.linear_model import LinearRegression
-from itertools import product
 
 warnings.filterwarnings("ignore")
 
@@ -1730,24 +1727,50 @@ def plot_bar_tp_by_ts():
         "\\percent",
     )
     fig = plt.figure(constrained_layout=True)
-    gs = GridSpec(1, 3, figure=fig)
+    gs = GridSpec(1, 3, figure=fig, wspace=0.15)
     ax1 = fig.add_subplot(gs[0, :-1])
     df_plot = df.groupby(x_var)[y_var].value_counts(normalize=True) * 100
     df_plot.unstack(y_var).plot.barh(
         stacked=True, color=palette_tp, ax=ax1, linewidth=0
     )
+    for ix, row in df_plot.unstack(y_var).round(0).reset_index(drop=True).iterrows():
+        x_shift = 0
+        print(ix)
+        for el in row:
+            print(el)
+            if el > 3:
+                ax1.text(
+                    x_shift + el / 2,
+                    ix,
+                    f"{int(el)}%",
+                    c="white",
+                    ha="center",
+                    va="center",
+                )
+            x_shift += el
     ax1.set(xlabel="Percentage (%)", ylabel=var_names[x_var])
     ax1.legend(
-        bbox_to_anchor=(0.5, 1.04),
+        bbox_to_anchor=(0.5, 0.975),
         loc="lower center",
         borderaxespad=0,
         frameon=False,
         ncol=3,
     )
     ax1.grid()
-    ax1.grid(axis="y", ls="--")
+    ax1.grid(axis="x", ls="--")
+    ax1.set_yticklabels(
+        [
+            "Cold",
+            "Cool",
+            "Sl. Cool",
+            "Neutral",
+            "Sl. Warm",
+            "Warm",
+            "Hot",
+        ],
+    )
     for ix, row in df_count.reset_index().iterrows():
-        ax1.text(112, ix, int(row[y_var]), va="center", ha="right")
+        ax1.text(102, ix, int(row[y_var]), va="center", ha="left")
 
     ax2 = fig.add_subplot(gs[0, -1])
     df.groupby(x_var)[x_var].count().plot.bar(color=palette_tsv, ax=ax2, linewidth=0)

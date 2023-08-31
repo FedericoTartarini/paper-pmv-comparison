@@ -13,6 +13,7 @@ numpy = "*"
 psychrolib = "*"
 tabulate = "*"
 scikit-learn = "*"
+jinja2 = "*"
 
 [dev-packages]
 

@@ -1,9 +1,17 @@
-\begin{tabular}{lrr}
+\begin{tabular}{lccc}
 \toprule
-{} &   pmv &  pmv\_ce \\
+ & PMV & PMV$_{CE}$ & Dataset \\
 \midrule
-micro    &  0.34 &    0.34 \\
-macro    &  0.15 &    0.16 \\
-weighted &  0.30 &    0.30 \\
+micro & 0.34 & 0.34 & \multirow{3}{*}{All data} \\
+macro & 0.15 & 0.16 &  \\
+weighted & 0.30 & 0.30 &  \\
+\specialrule{.01em}{.05em}{.05em}
+micro & 0.32 & 0.33 & \multirow{3}{*}{\ac{v} $\geq$ \qty{0.2}{\m\per\s}} \\
+macro & 0.17 & 0.18 &  \\
+weighted & 0.31 & 0.31 &  \\
+\specialrule{.01em}{.05em}{.05em}
+micro & 0.34 & 0.34 & \multirow{3}{*}{$\lvert \textrm{PMV}\lvert \leq 2$} \\
+macro & 0.15 & 0.15 &  \\
+weighted & 0.30 & 0.30 &  \\
 \bottomrule
 \end{tabular}

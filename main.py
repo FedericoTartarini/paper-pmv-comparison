@@ -1793,10 +1793,10 @@ def plot_bar_tp_by_ts():
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
 
 
-def plot_stacked_bar_predictions_ts(hb_models=False):
+def plot_stacked_bar_predictions_ts(hb_models=False, v_min=0):
     plt.close("all")
 
-    fig_name = "bar_stacked_model_accuracy"
+    fig_name = f"bar_stacked_model_accuracy_{v_min}"
     models = models_to_test
     if hb_models:
         models = [f"lr_hb_{x}" for x in models_to_test[:-1]]
@@ -1808,8 +1808,9 @@ def plot_stacked_bar_predictions_ts(hb_models=False):
 
     for ix, pmv in enumerate(models):
         var = f"{pmv}_round"
+        df_v = df[df["vel"] >= v_min]
         df_plot = (
-            df.groupby("thermal_sensation_round")[var]
+            df_v.groupby("thermal_sensation_round")[var]
             .value_counts(normalize=True)
             .unstack(var)
         )
@@ -1821,10 +1822,10 @@ def plot_stacked_bar_predictions_ts(hb_models=False):
                     df_plot[x] = np.nan
         df_plot = df_plot[df_plot.columns.sort_values()]
         df_plot.plot.bar(
-            stacked=True, color=palette_tsv, ax=axs[ix], rot=0, linewidth=0
+            stacked=True, color=palette_tsv, ax=axs[ix], rot=0, linewidth=0, width=0.85
         )
         accuracy = round(
-            accuracy_score(df[var].fillna(999), df["thermal_sensation_round"]) * 100
+            accuracy_score(df_v[var].fillna(999), df_v["thermal_sensation_round"]) * 100
         )
         axs[ix].set(xlabel="")
         axs[ix].set_title(f"Overall accuracy {var_names[pmv]} {accuracy}%")
@@ -1865,25 +1866,28 @@ def plot_stacked_bar_predictions_ts(hb_models=False):
         )
 
     plt.subplots_adjust(left=0.05, right=1, bottom=0.15, top=0.85)
-    f.supxlabel(var_names["thermal_sensation"])
     cax = plt.axes([0, 0.95, 1, 0.05])
     cax.axis("off")
 
-    cax.legend(
-        handles,
-        [
-            "Cold",
-            "Cool",
-            "Sl. Cool",
-            "Neutral",
-            "Sl. Warm",
-            "Warm",
-            "Hot",
-        ],
-        frameon=False,
-        loc="upper center",
-        ncol=7,
-    )
+    if v_min == 0:
+        cax.legend(
+            handles,
+            [
+                "Cold",
+                "Cool",
+                "Sl. Cool",
+                "Neutral",
+                "Sl. Warm",
+                "Warm",
+                "Hot",
+            ],
+            frameon=False,
+            loc="upper center",
+            ncol=7,
+        )
+    else:
+        f.supxlabel(var_names["thermal_sensation"])
+
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
 
 
@@ -2338,17 +2342,36 @@ def plot_bias_distribution_by_variable_binned():
 
 
 def table_f1_scores():
-    results_f1 = {}
-    for model in models_to_test:
-        df_analysis = df[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
-        x = df_analysis[f"{model}_round"]
-        y = df_analysis[f"thermal_sensation_round"]
-        results_f1[model] = {}
-        for type in ["micro", "macro", "weighted"]:
-            results_f1[model][type] = f1_score(y, x, average=type)
-    df_f1 = pd.DataFrame.from_dict(results_f1)
-    print(df_f1.to_markdown())
-    df_f1.round(2).to_latex("./Manuscript/src/tables/f1.tex")
+    conditions_to_report = [
+        ("vel", 0),
+        ("vel", 0.2),
+        ("pmv", 2),
+    ]
+    df_final = pd.DataFrame()
+    for condition in conditions_to_report:
+        results_f1 = {}
+        if condition[0] == "vel":
+            df_table = df[df[condition[0]] >= condition[1]]
+        elif condition[0] == "pmv":
+            df_table = df[(-condition[1] <= df["pmv"]) & (df["pmv"] <= condition[1])]
+        for model in models_to_test:
+            df_analysis = (
+                df_table[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
+            )
+            x = df_analysis[f"{model}_round"]
+            y = df_analysis[f"thermal_sensation_round"]
+            results_f1[model] = {}
+            for type in ["micro", "macro", "weighted"]:
+                results_f1[model][type] = f1_score(y, x, average=type)
+        df_f1 = pd.DataFrame.from_dict(results_f1)
+        df_f1 = df_f1.rename(columns=var_names)
+        df_f1["condition"] = f"{condition}"
+        df_final = pd.concat([df_final, df_f1])
+    print(df_final.to_markdown())
+    df_final.to_latex(
+        "./Manuscript/src/tables/f1.tex",
+        float_format="{:.2f}".format,
+    )
 
     results_f1 = {}
     for model in [f"lr_hb_{x}" for x in models_to_test[:-1]]:
@@ -2577,7 +2600,8 @@ if __name__ == "__plot__":
     plot_bubble_models_vs_tsv()
 
     # plot model accuracy using bar chart
-    plot_stacked_bar_predictions_ts()
+    plot_stacked_bar_predictions_ts(v_min=0)
+    plot_stacked_bar_predictions_ts(v_min=0.2)
     # plot_stacked_bar_predictions_ts(hb_models=True)
     # plot_stacked_bar_predictions_tp()
 

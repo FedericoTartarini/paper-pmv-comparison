@@ -87,11 +87,20 @@ The \ac{pmv} was developed with the primary aim of predicting \ac{tsv}, conseque
 %  and have a thin grey line to separate the two group, another option would be to add a light grey background for the two PMV and show that they are distinct.
 \begin{figure*}[htb!]
     \centering
-    \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy}
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy_0}
+        \caption{All data}
+     \end{subfigure}
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy_0.2}
+        \caption{Only data with \ac{v} $\geq$ \qty{0.2}{\m\per\s}}
+     \end{subfigure}
     \caption{The calculated \ac{pmv} value is grouped by the \ac{tsv} value reported by the participants. 
     The number of data points in each bin of the two charts is the same and this allows us to compare the accuracy of both models.
     The overall prediction accuracy is shown above the chart while the model accuracy of predicting participants grouped by their \ac{tsv} is overlayed over each bar. 
-    A random model, randomly selecting a thermal sensation vote would have an overall accuracy of \qty{14}{\percent}}
+    A random model, randomly selecting a thermal sensation vote would have an overall accuracy of \qty{14}{\percent}.}
     \label{fig:bar_stacked_model_accuracy}
 \end{figure*}
 Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figure~\ref{fig:bar_stacked_model_accuracy} we grouped participants' responses by \ac{tsv} and reported the simple accuracy of the different \ac{pmv} formulations over each sub-figure.

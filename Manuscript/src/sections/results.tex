@@ -175,7 +175,7 @@ Figure~\ref{fig:hist_discrepancies} contains the summary statistics, and the res
 The two models only differ when \ac{v} exceeds \qty{0.1}{\m\per\s}; we also calculated the bias of the model, including data points with \ac{v} higher than \qty{0.2}{\m\per\s} since above this value the differences in the outputs of the two models are more pronounced.
 We set the limit to \qty{0.2}{\m\per\s} and not a higher value since, as previously shown in Figure~\ref{fig:dist_input_data}, we could only reliably test the accuracy of the models up to \ac{v} of \var{v_95_perc_max}.
 We did not use \qty{0.1}{\m\per\s} as a threshold because the original difference between the two models was \qty{0.2}{\m\per\s}.
-The effect of air movement is perceptible only when the airspeed is sufficiently high to disrupt the body's thermal plume (xxx).
+The effect of air movement is perceptible only when the airspeed is sufficiently high to disrupt the body's thermal plume~\cite{zukowska_impact_2012}.
 The threshold in the standard was reduced to \qty{0.1}{\m\per\s} to simplify the usability and achieve one threshold for all the air speeds.
 The results show that the median bias of the \ac{pmv} model reduced to \var{bias_median_pmv_0.2} from \var{bias_median_pmv_0}, meaning that at higher speed the \ac{pmv} model improved.
 Surprisingly, we found that the median bias for the \ac{pmv-ce} increased to \var{bias_median_pmv_ce_0.2} from \var{bias_median_pmv_ce_0}.
@@ -187,8 +187,8 @@ The \ac{pmv-ce} has lower accuracy while making the code more complex and comput
 In the previous section, we presented the overall bias of the two \ac{pmv} formulations.
 We then went on to determine how the bias varied as a function of \ac{tdb}, \ac{v}, \ac{met}, and \ac{clo}.
 Figure~\ref{fig:dist_input_data} shows the results.
-In each sub-figure, we have binned the results into discrete intervals of equal width, and the x-axis tick label is the center value of the interval. 
-The width of the violin plot is not proportional to the number of points in that specific bin.
+In each sub-figure, we have binned the results into discrete intervals of equal width, and the x-axis tick label is the center value of the interval.
+All the violin plots have the same area to aid visualization, despite the fact that the number of points in each bin is not constant.
 % todo This figure needs a lot of improvements. 1) I would use the letter-value (or boxplot), they may be easier to interpret, provide less info and could be aligned with the first figure (in particular if  The actual density distribution it is not adding much value. 2) The color for PMV and PMV_CE must be the same in the entire paper. 3) The y-label should be moved to the x-label and the y-label should explicit. I would remove the decimal values and show only the five integers -2, -1, 0, 1 and 2. 4) How is possible to have a velocity "centered" at 0? I would remove the red lines. If you want to underline the -0.5 and 0.5 range, then we should use the same strategy also for figure 7. The fact that you change graph time in the paper, it makes more difficult to interpret without adding a substantial amount of value. 
 \begin{figure*}[htb!]
     \centering

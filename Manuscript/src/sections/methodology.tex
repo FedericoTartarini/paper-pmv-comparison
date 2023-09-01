@@ -28,13 +28,12 @@ We then calculated the adjusted total clothing insulation and relative airspeed 
 We used these inputs to calculate the \ac{pmv} and \ac{pmv-ce} values.
 
 Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
-However, since the thermal sensation was measured with at least a seven-point scale we decided also to show entries with $|$\ac{tsv}$|$ or $|$\ac{pmv}$|$~$\leq$~\num{3.5}.
+However, since the thermal sensation was measured with at least a seven-point scale and the \ac{pmv} has no upper or lower boundary we decided keep the data that felt within the following ranges $|$\ac{tsv}$|$~$\leq$~\num{3} or $|$\ac{pmv}$|$~$\leq$~\num{3.5}.
 We used Python to analyse and visualise the results.
-We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \textbf{provide URL} so other users can test different assumptions.  
-% todo add URL
+We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \url{https://github.com/FedericoTartarini/paper-pmv-comparison} so other users can test different assumptions.
 
 \subsection{Model Validation}\label{subsec:model-validation}
-The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants and it is applied from a singly occupied zone to an area with several hundred people.
+The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants, and it is applied from a singly occupied zone to an area with several hundred people.
 We grouped the participants' responses by their \ac{tsv} and we determined how many of these votes were correctly labelled by the \ac{pmv} and \ac{pmv-ce} models.
 This approach is useful for performing an overall assessment of the accuracy of the models, but it introduces an error due to the rounding of both the \ac{pmv}, \ac{pmv-ce}, and \ac{tsv} values.
 The latter were sometimes collected using a continuous scale and not a discrete one, in other words, they could take any value in the range from -3.0 to 3.0.
@@ -45,11 +44,13 @@ However, on their own are a low-precision estimate of the overall accuracy of th
 These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{v}).
 If the \ac{pmv} or \ac{pmv-ce} formulations are bias-free, the distribution of any batch derived from these differences would have a mean value that is zero.
 The standard deviation would reflect the combined effect of the people's individual differences as well as any errors in formulation or in the data collection method (accuracy or precision of the instrumentation used)~\cite{Humphreys2002}.
-According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between -0.25 and 0.25.
-% todo we need to specify that we used the range 0.5 to cover the whole scale, this could potentially be an error up to 17% but is needed not to leave gaps, since thermal sensation is measured ordinally.
+According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between \num{-0.25} and \num{0.25}.
+However, we believe that this range is too narrow since \ac{tsv} is measured using an ordinal scale of integers while the output of the \ac{pmv} model is continuous.
+Consequently, we expanded the range to \num{-.5} and \num{0.5}.
+Thi is needed to ensure that each \ac{pmv} value can be matched to a \ac{tsv}.
+We are aware that an error of \num{.5} is approximately \qty{7}{\percent} of the total range and ideally we would want to have the \ac{pmv} to have a higher precision, however, this is a necessary limitation introduced by the low resolution of the \ac{tsv} scale.
 Binning data by the independent variables is a significant improvement over grouping the participants' responses by their \ac{tsv}.
-This is because the \ac{pmv} model aim is, as previously mentioned, to predict the average thermal sensation of a large group of occupants sharing the same environment and not to correctly predict the average \ac{tsv} of people who reported the same \ac{tsv} vote, but where in different locations and moments of the year and day.
-% todo why not 0.5 since the delta between a PMV of 2.5 and a self-reported vote of either 2 or 3 (the closest points to 2.5) is 0.5?
+This is because the \ac{pmv} model aim is, as previously mentioned, to predict the average thermal sensation of a large group of occupants and not to correctly predict each individual \ac{tsv} of people who reported the same \ac{tsv} vote and where in different locations and moments of the year and day.
 
 Finally, we decided to compare the results of \ac{pmv} and \ac{pmv-ce} formulations with the \ac{pmvg} calculated by the two-node model.
 The two-node model was developed by \mycite{GaggeSET} and it uses a more accurate set of equations to solve the heat balance equation.

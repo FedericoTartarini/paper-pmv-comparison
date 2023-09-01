@@ -1,25 +1,26 @@
 \section{Introduction}\label{sec:introduction}
 In 1970, Fanger~\cite{Fanger1970} developed the \ac{pmv} model, which is now incorporated into the \gls{7730} Standard~\cite{iso7730} in its original form.
-% todo also mention the other standards that use the PMV The PMV index has been widely used in national and international standards and guidance ASHRAE 55 [4], EN 15251 (new version EN 16798 [5]) [6], ISO 7730 [1], CIBSE Guide A [7] and GB/T 50785 [110] as shown in  Table 5. This sentence is from Yao 2022.
 The \ac{pmv} model has been widely used worldwide by researchers and practitioners.
 It is the most extensively used thermal comfort index for estimating thermal sensation.
+%ASHRAE's defines the \ac{pmv} as ``an index that predicts the mean value of the thermal sensation votes (self-reported perceptions) of a large group of persons on a sensation scale expressed from –3 to +3 corresponding to the categories ``cold,'' ``cool,'' ``slightly cool,'' ``neutral,'' ``slightly warm,'' ``warm,'' and ``hot.''~\cite{ashrae552023}.
 A search within the article title, abstract, and keyword on Scopus with the search term ``predicted mean vote'' returns approximately 1600 documents.
 Out of those 1082 are scientific peer-reviewed articles published in the research area of engineering, environmental science, social sciences, and energy.
 This highlights this model's extensive adoption and use among the scientific community.
 
 To this date, the \ac{pmv} still remains to be the most utilized thermal comfort model even though several studies have highlighted that the \ac{pmv} has low accuracy in predicting thermal sensation votes~\cite{Cheung2019, Yao2022, kim2019thermal, tartarini2018thermal, Humphreys2002, doherty_evaluation_1988}.
 
-To overcome the accuracy concerns, in particular when high air speed is used to cool people, the \gls{55} Standard uses a modified version of the original model developed by Fanger, the \ac{pmv-ce}~\cite{ashrae552023}. 
+To overcome the accuracy concerns, in particular when high air speed is used to cool people, the \gls{55} Standard uses a modified version of the original model developed by Fanger, the \ac{pmv-ce}~\cite{ashrae552023}.
 The best source to see how \ac{pmv-ce} works is the standard itself, but the standard does not explain why some choices were implemented. 
-A partial justification of the model is described in \mycite{arens_moving_2009} and \mycite{yang_cooling_2015}. 
+A partial justification of the model is described in \mycite{arens_moving_2009} and \mycite{yang_cooling_2015}.
 The process used to calculate the \ac{pmv-ce} in the \gls{55} is summarized in the flowchart depicted in Figure~\ref{fig:flowchart_pmv_ce}.
 In summary, when the \ac{v} exceeds \qty{0.1}{\m\per\s} the \gls{55} prescribes the use of the \ac{ce}.
 The value of \ac{ce} is calculated using the \ac{set} equation, and it is then subtracted from both the \ac{tdb} and \ac{tr}.
 The resulting values become the new inputs in the \ac{pmv} model.
-Since the \ac{ce} accounts for the convective heat losses from the person to its environment, thus, the value of \ac{v}, used to calculate the \ac{pmv}, is set to \qty{0.1}{\m\per\s}.
+Since the \ac{ce} accounts for the convective heat losses from the person to its environment the value of \ac{v}, used to calculate the \ac{pmv}, is set to \qty{0.1}{\m\per\s}.
 The other three input parameters (\ac{clo}, \ac{met}, and \ac{rh}) remain unchanged.
 Consequently, for a given thermal environment, results of the two \ac{pmv} formulations differ when the value of \ac{v} is higher than \qty{0.1}{\m\per\s}.
-The rationale for this approach is that the original formulation of the \ac{pmv} model cannot accurately estimate latent and sensible heat losses from the skin to the environment when \ac{v} is higher than \qty{0.1}{\m\per\s}.
+%The rationale for this approach is that the original formulation of the \ac{pmv} model cannot accurately estimate latent and sensible heat losses from the skin to the environment when \ac{v} is higher than \qty{0.1}{\m\per\s}.
+
 However, this method has limitations.
 First, it should be noted that over the years, the critical value of \ac{v} has been changed, from \qty{0.15}{\m\per\s} in \mycite{Schiavon2014} to \qty{0.2}{\m\per\s} in the ASHRAE 55--2017~\cite{ASHRAE552017, arens_moving_2009} to \qty{0.1}{\m\per\s} in \gls{55}~\cite{ashrae552023}.
 Second, calculating the \ac{pmv-ce} is more computationally intensive and complex since it requires the user to solve two heat balance equations, the \ac{pmv} and the two-node model.
@@ -95,9 +96,10 @@ These results were confirmed based on the Chinese Thermal Comfort database~\cite
 \mycite{Yao2022} compared the \ac{pmv} and \ac{pmv-ce} models, however, their aim was primarily to compare these two formulations with other adaptive \ac{pmv} formulations, hence, they do not provide a detailed analysis on the prediction accuracy of the two models.
 In particular, they focus significantly on how the models perform in different climates and when applied to people from different world regions, but for example, they do not report how the \ac{pmv} accuracy varies as a function of environmental and personal parameters, and \ac{tsv}.
 Their analysis only reports the mean bias of the different models.
-This, as depicted by \mycite{Humphreys2000}, does not provide sufficient insights and information in determining which model is more accurate in predicting \ac{tsv}.
-This is because the \ac{pmv} model has a higher prediction accuracy of sensation close to neutrality. 
-Being the ASHRAE Global Thermal Comfort Database II v2.1 an unbalanced dataset and most of the data points are neutral a more detailed analysis as the one we are presenting in this manuscript is needed to compare the accuracy of both formulations.
+This, as depicted by \mycite{Humphreys2000}, does not provide sufficient insights and information in determining which model is more accurate \ac{tsv} since it does not explain how the model performs over a wide range of environmental and personal conditions.
+Their analysis also does not allow to determine the classification accuracy of the \ac{pmv} formulations when people are grouped by their \ac{tsv}.
+This is particularly for an unbalanced dataset like the \ac{db2} where most of the participants reported to be `neutral' when asked to cast their \ac{tsv}.
+Finally, the overall bias is reported for the whole dataset, despite the fact that the two formulations only differ when the \ac{v} exceeds \qty{0.1}{\m\per\s}.
 
 \subsection{Aim and Objectives}\label{subsec:aim-and-objectives}
 We aim to compare the accuracy of the \ac{pmv} and \ac{pmv-ce} models used in the \gls{7730} and \gls{55} Standards.

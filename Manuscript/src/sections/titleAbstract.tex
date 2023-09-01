@@ -1,6 +1,8 @@
 \begin{frontmatter}
 
-    \title{PMV: Which formulation should you use the ISO 7730:2005 or ASHRAE 55:2020?}
+    \title{PMV: Comparing the prediction accuracy of ISO 7730:2005 and ASHRAE 55:2023}
+    % alternatives PMV: Which formulation should you use the ISO 7730:2005 or ASHRAE 55:2020?
+    % alternatives ISO 7730:2005 vs ASHRAE 55:2023: A comparison on the accuracy of the two implementations of the PMV model
 
     \author[label1,label2]{Federico Tartarini\corref{mycorrespondingauthor}}
     \ead{federicotartarini@berkeley.edu}
@@ -27,6 +29,7 @@
         We found that the \ac{pmv-ce} has the same accuracy as the original \ac{pmv} in predicting thermal neutrality, despite its increased complexity and computational resources needed to calculate the results.
         Surprisingly, the bias of the \ac{pmv-ce} model was greater (a higher number is negative) than the \ac{pmv} when we only analyzed the entries with \ac{v}$\geq$\qty{0.1}{\m\per\sec}.
 
+        % todo add values below and complete the Abstract
         The \ac{pmv} and \ac{pmv-ce} accuracy were XX\% and YY\% for $\mid$\ac{pmv}$\mid \leq 2$ and XX\% and YY\% for $\mid$\ac{pmv}$\mid \leq 1$, respectively.
         Neither PMV model could accurately predict `cold’, `cool’, `warm’, or `hot’ thermal sensations.
         Consequently, the PMV should only be used in conditions close to neutrality within the range $\mid$\ac{pmv}$\mid \leq 1$, and we suggest reducing the applicability limit of the Standards to this range.

@@ -45,13 +45,13 @@ palette_tp = [
     "#0067B2",
 ]
 palette_tsv = [
-    "#2C45FE",
-    "#4F96FF",
-    "#6CDFFF",
-    "#60E693",
-    "#FFDF6B",
-    "#FFB36B",
-    "#FF362B",
+    "#8DA2D8",
+    "#A9D4F5",
+    "#D1EAFA",
+    "#D2E8BF",
+    "#F0BECB",
+    "#DE7B6A",
+    "#A65558",
 ]
 
 # sns.palplot(palette_tsv)
@@ -1569,37 +1569,41 @@ def plot_distribution_variable():
 
     for ix, var in enumerate(["ta", "tr", "rh", "vel", "clo", "met"]):
         sns.boxenplot(
-            y=var, data=df, ax=axs[ix], color="#53626F", showfliers=False, linewidth=0.5
+            y=var,
+            data=df,
+            ax=axs[ix],
+            color=c_gold,
+            showfliers=False,
+            linewidth=0.5,
+            outlier_prop=0.05,
+            k_depth="proportion",
         )
         axs[ix].set(
             ylabel="",
             xlabel=f"{var_names[var]} ({var_units[var]})",
-            ylim=(applicability_limits[var][0], applicability_limits[var][1]),
         )
-        desc = df[var].describe(percentiles=[0.025, 0.25, 0.5, 0.75, 0.975])
-        if var == "ta":
+        if var == "ta" or var == "tr":
+            axs[ix].set(yticks=(np.linspace(15, 30, 4)), ylim=(15, 30))
+        if var == "rh":
             axs[ix].set(
-                ylim=(applicability_limits["tr"][0], applicability_limits["tr"][1]),
+                yticks=(np.linspace(20, 80, 4)),
+                ylim=(20, 80),
+            )
+        if var == "vel":
+            axs[ix].set(
+                yticks=(np.linspace(0, 0.6, 4)),
+                ylim=(0, 0.6),
             )
         if var == "clo":
-            axs[ix].set(yticks=(np.arange(0, 1.8, 0.3)))
-
-        desc = desc.round(2)
-        if var in ["ta", "tr", "rh", "met", "clo"]:
-            desc = desc.round(1)
-        if var in ["rh"]:
-            desc = desc.astype(int)
-
-        text_color = "#00B0Da"
-        axs[ix].text(0.5, desc["2.5%"], desc["2.5%"], c=text_color, va="center")
-        axs[ix].text(
-            0.5,
-            desc["97.5%"],
-            desc["97.5%"],
-            c=text_color,
-            va="center",
-        )
-        axs[ix].text(0.5, desc["50%"], desc["50%"], c=text_color, va="center")
+            axs[ix].set(
+                yticks=(np.linspace(0.3, 1.5, 4)),
+                ylim=(0.3, 1.5),
+            )
+        if var == "met":
+            axs[ix].set(
+                yticks=(np.linspace(0.8, 2, 5)),
+                ylim=(0.8, 2),
+            )
 
     sns.despine(bottom=True, left=True)
     plt.savefig("./Manuscript/src/figures/dist_input_data.png", dpi=300)
@@ -1619,29 +1623,36 @@ def plot_distribution_variable():
     f, axs = plt.subplots(1, 4, figsize=(8, 3))
     for ix, var in enumerate(["age", "ht", "wt", "t_mot_isd"]):
         sns.boxenplot(
-            y=var, data=df, ax=axs[ix], color="#53626F", showfliers=False, linewidth=0.5
+            y=var,
+            data=df,
+            ax=axs[ix],
+            color=c_gold,
+            showfliers=False,
+            linewidth=0.5,
+            outlier_prop=0.05,
+            k_depth="proportion",
         )
         axs[ix].set(xlabel=var_names[var], xticks=[], ylabel="")
         if var == "age":
-            axs[ix].set(ylim=(10, 100))
-        if var == "ht":
-            axs[ix].set(ylim=(1.1, 2))
-        if var == "wt":
-            axs[ix].set(ylim=(30, 140))
-        desc = df[var].describe(percentiles=[0.025, 0.25, 0.5, 0.75, 0.975]).round(1)
-
-        # axs[ix].text(0.45, desc["2.5%"], desc["2.5%"], c=text_color, va="center")
-        # axs[ix].text(
-        #     0.45,
-        #     desc["97.5%"],
-        #     desc["97.5%"],
-        #     c=text_color,
-        #     va="center",
-        #     )
-        # axs[ix].text(0.45, desc["50%"], desc["50%"], c=text_color, va="center")
-
-        if var == "t_mot_isd":
-            axs[ix].set(yticks=(np.arange(-30, 50, 10)))
+            axs[ix].set(
+                yticks=(np.linspace(10, 70, 4)),
+                ylim=(10, 70),
+            )
+        elif var == "ht":
+            axs[ix].set(
+                yticks=(np.linspace(1.4, 1.9, 6)),
+                ylim=(1.4, 1.9),
+            ),
+        elif var == "wt":
+            axs[ix].set(
+                yticks=(np.linspace(40, 100, 4)),
+                ylim=(40, 100),
+            )
+        else:
+            axs[ix].set(
+                yticks=(np.linspace(-20, 40, 5)),
+                ylim=(-20, 40),
+            )
     sns.despine(bottom=True, left=True)
     plt.tight_layout()
     plt.savefig("./Manuscript/src/figures/dist_other_data.png", dpi=300)
@@ -1670,8 +1681,8 @@ def plot_bubble_models_vs_tsv():
             pd.IntervalIndex(df_plot.index.get_level_values("ts_binned")).mid,
             pd.IntervalIndex(df_plot.index.get_level_values("y_binned")).mid,
             s=df_plot / 20,
-            alpha=0.5,
-            c="#53626F",
+            alpha=0.8,
+            c=c_gold,
         )
         sns.regplot(
             x="thermal_sensation",
@@ -1683,8 +1694,15 @@ def plot_bubble_models_vs_tsv():
             scatter=False,
             lowess=True,
         )
+        axs[ix].plot(
+            [-3, 3],
+            [-3, 3],
+            c=c_brow,
+            ls="--",
+        )
         axs[ix].axvline(0, c="darkgray", ls="--")
         axs[ix].axhline(0, c="darkgray", ls="--")
+        axs[ix].grid(None)
         axs[ix].set(title=var_names[model], ylabel="", xlabel="")
     axs[0].set(ylabel="PMV value")
     f.supxlabel(var_names["thermal_sensation"])
@@ -1731,7 +1749,7 @@ def plot_bar_tp_by_ts():
     ax1 = fig.add_subplot(gs[0, :-1])
     df_plot = df.groupby(x_var)[y_var].value_counts(normalize=True) * 100
     df_plot.unstack(y_var).plot.barh(
-        stacked=True, color=palette_tp, ax=ax1, linewidth=0
+        stacked=True, color=palette_tp, ax=ax1, linewidth=0, width=0.85
     )
     for ix, row in df_plot.unstack(y_var).round(0).reset_index(drop=True).iterrows():
         x_shift = 0
@@ -1756,8 +1774,7 @@ def plot_bar_tp_by_ts():
         frameon=False,
         ncol=3,
     )
-    ax1.grid()
-    ax1.grid(axis="x", ls="--")
+    ax1.grid(None)
     ax1.set_yticklabels(
         [
             "Cold",
@@ -1773,8 +1790,18 @@ def plot_bar_tp_by_ts():
         ax1.text(102, ix, int(row[y_var]), va="center", ha="left")
 
     ax2 = fig.add_subplot(gs[0, -1])
-    df.groupby(x_var)[x_var].count().plot.bar(color=palette_tsv, ax=ax2, linewidth=0)
-    ax2.set(ylabel="", xlabel=var_names[x_var], title="Number of votes")
+    df.groupby(x_var)[x_var].count().plot.bar(
+        color=palette_tsv, ax=ax2, linewidth=0, width=0.85
+    )
+    ax2.set(
+        ylabel="",
+        xlabel=var_names[x_var],
+        title="Number of votes",
+        yticks=(np.linspace(0, 20000, 5)),
+    )
+    ax2.set(
+        yticklabels=(f"{int(x)} K" for x in ax2.get_yticks() / 1000),
+    )
     ax2.set_xticklabels(
         [
             "Cold",
@@ -1787,8 +1814,7 @@ def plot_bar_tp_by_ts():
         ],
     )
     ax2.yaxis.tick_right()
-    ax2.grid()
-    ax2.grid(axis="y", ls="--")
+    ax2.grid(None)
 
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
 
@@ -1865,11 +1891,10 @@ def plot_stacked_bar_predictions_ts(hb_models=False, v_min=0):
             ],
         )
 
-    plt.subplots_adjust(left=0.05, right=1, bottom=0.15, top=0.85)
-    cax = plt.axes([0, 0.95, 1, 0.05])
-    cax.axis("off")
-
     if v_min == 0:
+        plt.subplots_adjust(left=0.05, right=1, bottom=0.07, top=0.85)
+        cax = plt.axes([0, 0.95, 1, 0.05])
+        cax.axis("off")
         cax.legend(
             handles,
             [
@@ -1886,6 +1911,7 @@ def plot_stacked_bar_predictions_ts(hb_models=False, v_min=0):
             ncol=7,
         )
     else:
+        plt.subplots_adjust(left=0.05, right=1, bottom=0.15, top=0.93)
         f.supxlabel(var_names["thermal_sensation"])
 
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
@@ -2071,22 +2097,23 @@ def plot_bias_distribution_whole_db(hb_models=False):
             df_plot = df.loc[df["vel"] > v, f"diff_ts_{model}"]
             interval = 0.5
             bins_plot = np.arange(-3, 3, interval / 2)
-            axs[ix].hist(df_plot, bins=bins_plot, color="gray")
+            axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
             axs[ix].hist(
                 df_plot[(df_plot >= -interval) & (df_plot < interval)],
                 bins=bins_plot,
-                color="r",
+                color=c_brown,
             )
-            y_label = "number of data points" if ix == 0 else ""
+            y_label = "Number of data points" if ix == 0 else ""
             title = var_names[model]
-            title += f" - all data points" if row == 0 else f" - V > {v} m/s"
+            title += f" - All data points" if row == 0 else f" - V > {v} m/s"
             axs[ix].set(title=title, ylabel=y_label, xlabel="", xlim=(-3, 3))
             mpl.pyplot.locator_params(axis="y", nbins=3)
             stats = {
-                "mean": df_plot.mean().round(2),
+                # "mean": df_plot.mean().round(2),
                 "median": df_plot.median().round(2),
-                "sd": df_plot.std().round(2),
-                "p_skew": skewtest(df_plot, nan_policy="omit").pvalue,
+                # "sd": df_plot.std().round(2),
+                # "sd": df_plot.std().round(2),
+                # "p_skew": skewtest(df_plot, nan_policy="omit").pvalue,
             }
             for var in stats.keys():
                 save_var_latex(f"bias_{var}_{model}_{v}", stats[var])
@@ -2094,13 +2121,13 @@ def plot_bias_distribution_whole_db(hb_models=False):
             axs[ix].text(
                 2.3,
                 y_text,
-                f"mean={stats['mean']}\nmedian={stats['median']}\nSD={stats['sd']}\n"
-                + r"$p_{skew test}$"
-                + f"={round(stats['p_skew'], 3)}",
+                f"Median = {stats['median']}\nIQR = {df_plot.quantile(.25).round(2)},"
+                f" {df_plot.quantile(.75).round(2)}",
                 va="center",
                 ha="center",
             )
             axs[ix].grid(axis="x")
+            axs[ix].axvline(0, c="k", ls="--")
 
     f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
@@ -2345,7 +2372,7 @@ def table_f1_scores():
     conditions_to_report = [
         ("vel", 0),
         ("vel", 0.2),
-        ("pmv", 2),
+        ("pmv", 1.5),
     ]
     df_final = pd.DataFrame()
     for condition in conditions_to_report:
@@ -2354,6 +2381,10 @@ def table_f1_scores():
             df_table = df[df[condition[0]] >= condition[1]]
         elif condition[0] == "pmv":
             df_table = df[(-condition[1] <= df["pmv"]) & (df["pmv"] <= condition[1])]
+            df_table = df[
+                (-condition[1] <= df["thermal_sensation"])
+                & (df["thermal_sensation"] <= condition[1])
+            ]
         for model in models_to_test:
             df_analysis = (
                 df_table[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
@@ -2513,6 +2544,9 @@ if __name__ == "__main__":
         },
     )
 
+    c_gold = "#FDB515"
+    c_brown = "#6C3302"
+
     plt.rc("axes.spines", top=False, right=False, left=False)
     plt.rcParams["font.family"] = "sans-serif"
     plt.rcParams["font.size"] = 8.8
@@ -2587,6 +2621,8 @@ if __name__ == "__main__":
 
     percentiles_to_show = [0.025, 0.25, 0.5, 0.75, 0.975]
 
+plt.close("all")
+plot_bias_distribution_whole_db()
 
 if __name__ == "__plot__":
 
@@ -2596,7 +2632,7 @@ if __name__ == "__plot__":
     # Figure 3
     plot_bar_tp_by_ts()
 
-    # plot model results vs TSV todo add regression lines info
+    # plot model results vs TSV
     plot_bubble_models_vs_tsv()
 
     # plot model accuracy using bar chart

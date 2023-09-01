@@ -35,8 +35,6 @@ We are committed to reproducible research hence we have shared the source code a
 
 \subsection{Model Validation}\label{subsec:model-validation}
 The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants and it is applied from a singly occupied zone to an area with several hundred people.
-While the \ac{db2} contains data from a sufficiently wide population no information is available on where and when exactly these data were collected.
-We only have access to building-level data and no information about whether a group of occupants was sharing the same thermal environment.
 We grouped the participants' responses by their \ac{tsv} and we determined how many of these votes were correctly labelled by the \ac{pmv} and \ac{pmv-ce} models.
 This approach is useful for performing an overall assessment of the accuracy of the models, but it introduces an error due to the rounding of both the \ac{pmv}, \ac{pmv-ce}, and \ac{tsv} values.
 The latter were sometimes collected using a continuous scale and not a discrete one, in other words, they could take any value in the range from -3.0 to 3.0.
@@ -48,6 +46,7 @@ These values were then binned using several independent variables (e.g., \ac{tdb
 If the \ac{pmv} or \ac{pmv-ce} formulations are bias-free, the distribution of any batch derived from these differences would have a mean value that is zero.
 The standard deviation would reflect the combined effect of the people's individual differences as well as any errors in formulation or in the data collection method (accuracy or precision of the instrumentation used)~\cite{Humphreys2002}.
 According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between -0.25 and 0.25.
+% todo we need to specify that we used the range 0.5 to cover the whole scale, this could potentially be an error up to 17% but is needed not to leave gaps, since thermal sensation is measured ordinally.
 Binning data by the independent variables is a significant improvement over grouping the participants' responses by their \ac{tsv}.
 This is because the \ac{pmv} model aim is, as previously mentioned, to predict the average thermal sensation of a large group of occupants sharing the same environment and not to correctly predict the average \ac{tsv} of people who reported the same \ac{tsv} vote, but where in different locations and moments of the year and day.
 % todo why not 0.5 since the delta between a PMV of 2.5 and a self-reported vote of either 2 or 3 (the closest points to 2.5) is 0.5?

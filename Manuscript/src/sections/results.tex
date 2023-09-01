@@ -7,8 +7,9 @@ While the \ac{db2} contains \var{entries_db_all} data points, only \var{entries_
 The distribution of the six input variables used to calculate the PMV indices is visualized in Figure~\ref{fig:dist_input_data}.
 The 2.5th, 50th (median), and 97.5th percentiles are shown in blue.
 % TODO:
-%  remove the gridlines or marker them very short
-%  the chart is a bit dense of information
+%  azzurrino or golden or marrone
+% remove numbers and stop at 97.5 with the box and 2.5
+% max ticks on the y line is 3 to 5, in some figure I have 10
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/dist_input_data}
@@ -54,9 +55,12 @@ The \ac{tsv} is unbalanced.
 Approximately \var{perc_tsv_neutral} of all the entries have a \ac{tsv} of `Neutral'.
 While less than \var{perc_tsv_hot} of the total sample of participants reported to be either `Hot' or `Cold'.
 % todo:
-%  FT - I like my original colour more
-%  SS - TSV chart the color here should not match the one on the thermal preference scale given that it is a different question. For example, a TSV=3 is red, like people that wants to be warmer, meaning that they are cold. Even with the inversion of the color palette, we cannot imply that TSV=3 mease wanted to be cooler. What about TSV=1, maybe people want no changer or cooler or warmer. Difficult to assume. Better to use two independet color schemes.
-%  FT - then also Michael color scheme is wrong since we cannot assume that someone that want to be warm must be cold, they could be already slightly warm but at the same time they may want to be warmed.
+% barre piu spesse
+% y axis less tick
+% use K instead of 000
+% remove gridlines
+% use Toby's colour
+
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bar_plot_tp_by_ts}
@@ -82,8 +86,8 @@ On the contrary, the \ac{tsv} is ambiguous and does not allow determining if an 
 \subsection{Comparison of PMV accuracy in predicting thermal sensation}\label{subsec:model-accuracy-comparison-in-predicting-thermal-sensation}
 The \ac{pmv} was developed with the primary aim of predicting \ac{tsv}, consequently, we are here comparing the prediction accuracy of the two formulations.
 % todo:
-%  We can use Toby's or Michael but not both, even, though I like mine more
-%  It is hard to notice that these are two distint graph because the legend is moving accross.
+%  We can use Toby's 
+%  call charts a,b,c,d
 %  and have a thin grey line to separate the two group, another option would be to add a light grey background for the two PMV and show that they are distinct.
 \begin{figure*}[htb!]
     \centering
@@ -113,6 +117,7 @@ The F1-macro score, which is free from label imbalance, depicts that the accurac
 % todo:
 %  in the table I should also report the F1 scores if I filter out some of the TSV.
 %  The PMV model should only be used in the range -2 and 2 so at least we should report also the results in this range.
+% consider limiting the table to PMV = 0 or PMV -1
 \begin{table}[htb!]
     \centering
     \input{tables/f1.tex}
@@ -121,10 +126,10 @@ The F1-macro score, which is free from label imbalance, depicts that the accurac
 \end{table}
 
 The \ac{pmv-ce} was specifically developed to more accurately estimate latent and sensible heat losses from the skin to the environment when air movement is used~\cite{arens_moving_2009}.
-However, our results show that the \ac{pmv-ce} is less accurate than the \ac{pmv} in predicting people who were `slightly warm'.
 Both models had an accuracy lower than \qty{1}{\percent} when predicting either `warm', `hot', or `cold'.
 This value is significantly lower and worse than random guessing, this is very concerning because this means that the models are actively misleading the users.
 The low prediction accuracy of both model formulations, coupled with the lack of data in the extremes of the applicability limits of the models, may suggest that the models' applicability limits should be revisited.
+% todo call it Standards implications, limit use PMV and of environmental variables
 Based on the results, we suggest that the Standards applicability limits could be reduced to the following range \qty{18}{\celsius}~$\leq$~\ac{tdb}~$\leq$~\qty{30}{\celsius} and \qty{10}{\celsius}~$\leq$~\ac{tr}~$\leq$~\qty{30}{\celsius} (instead of \qty{10}{\celsius}~$\leq$~\ac{tdb}~$\leq$~\qty{30}{\celsius} and \qty{10}{\celsius}~$\leq$~\ac{tr}~$\leq$~\qty{40}{\celsius}),  until more data are collected. 
 
 Grouping the results into discrete categories introduces rounding errors since some participants reported \ac{tsv} on a continuous scale and the \ac{pmv} value is a continuous variable.
@@ -201,6 +206,7 @@ On the contrary, the bias of the \ac{pmv-ce} diverged more from 0 as the value o
 These results are in agreement with those presented in the previous section and depict that the correction applied by the \ac{pmv-ce} model worsens the results. 
 
 \subsection{Comparison between the PMV formulations with the two-node model}\label{subsec:comparison-between-the-pmv-formulations-wih-the-two-node-model}
+% todo consider moving to appendix and explain well why I have done this.
 We compared how the results of the \ac{pmv} and \ac{pmv-ce} perform against the results of the two-node model because xxxx.
 Figure~\ref{fig:pmv_two_node_comparison} was generated by calculating the three \ac{pmv} values using the same combination of \num{10000} randomly generated sets inputs.
 The \ac{pmv} and \ac{pmv-ce} were then plotted on the y-axis while the \ac{pmvg} value was on the x-axis.

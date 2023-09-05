@@ -2237,7 +2237,7 @@ def plot_bias_distribution_by_variable_binned():
         # "top",
         # "t_mot_isd",
         "vel",
-        # "rh",  # todo report pa rather than RH
+        "rh",
         "clo",
         "met",
         # "thermal_sensation",
@@ -2246,11 +2246,12 @@ def plot_bias_distribution_by_variable_binned():
     ]
 
     bins = {
-        "ta": np.arange(18.5, 30.5, 1),
-        "tr": np.arange(18.5, 31.5, 1),
-        "top": np.arange(17.5, 30.5, 1),
-        "vel": np.arange(-0.05, 0.50, 0.1),
-        "rh": np.arange(17.5, 75, 5),
+        "ta": np.arange(18, 32, 2),
+        "tr": np.arange(18, 31.5, 2),
+        "top": np.arange(17.5, 30.5, 2),
+        "vel": np.arange(-0.00001, 0.7, 0.2),
+        "rh": np.arange(10, 100, 20),
+        "hr": np.arange(0, 20, 2),
         "clo": np.arange(0.2, 1.5, 0.2),
         "met": np.arange(0.9, 2, 0.2),
         "thermal_sensation": np.arange(-3.5, 4.5, 1),
@@ -2264,6 +2265,15 @@ def plot_bias_distribution_by_variable_binned():
     # todo only look at high velocities
 
     df_analysis = df.copy()
+
+    # # Code to calculate the Humidity Ratio
+    # hr_arr = []
+    # for i, row in df_analysis.iterrows():
+    #     hr_arr.append(
+    #         psychrolib.GetHumRatioFromRelHum(row["ta"], row["rh"] / 100, 101325) * 1000
+    #     )
+    # df_analysis["hr"] = hr_arr
+
     # for i, var in enumerate(variables):
     #     if var != "thermal_preference":
     #         df_analysis = df_analysis[
@@ -2275,7 +2285,7 @@ def plot_bias_distribution_by_variable_binned():
 
     # for ix, model in enumerate(models_to_test):
     #     color = palette_primary[ix]
-    f, axs = plt.subplots(2, 2, constrained_layout=True, figsize=(7, 5))
+    f, axs = plt.subplots(5, 1, figsize=(7, 9))
     axs = axs.flatten()
     for i, var in enumerate(variables):
         # plot bias distribution
@@ -2324,47 +2334,49 @@ def plot_bias_distribution_by_variable_binned():
         # df_plot.loc[
         #     pd.Index(df_plot[variable_to_split]).isin(range_to_keep), "neutral"
         # ] = 0
-        sns.violinplot(
+        sns.boxenplot(
             x=var,
             y="diff_ts",
             data=df_plot,
             ax=ax,
-            # color=color,
-            # width=(
-            #     df_plot.groupby(var)["diff_ts"].count() / df_plot.shape[0]
-            # ).values,
-            split=True,
             hue="model",
-            inner="quartile",
-            palette="viridis",
+            palette=["#9dad33", "#00b0da"],
+            linewidth=0.5,
+            showfliers=False,
         )
         ax.get_legend().remove()
-        ax.axhline(-0.5, c="r")
-        ax.axhline(+0.5, c="r")
+        ax.axhline(-0.5, c="r", ls="--", lw=0.75)
+        ax.axhline(+0.5, c="r", ls="--", lw=0.75)
 
         if "preference" not in var:
-            x_labels = [
-                round(x, 1) if "ta" != var else int(x)
-                for x in pd.IntervalIndex(
-                    sorted(df_plot[var].cat.categories.unique())
-                ).mid
-            ]
+            x_labels = []
+            for x in pd.IntervalIndex(sorted(df_plot[var].cat.categories.unique())).mid:
+                if ("ta" == var) or ("rh" == var):
+                    x_labels.append(int(x))
+                else:
+                    x_labels.append(round(x, 2))
+
             ax.set(
                 xticklabels=x_labels,
             )
-        ax.set(ylabel=var_names[var].split(" ")[-1], ylim=(-2, 2), xlabel="")
+        ax.set(
+            xlabel=f"{var_names[var].split(' ')[-1]} ({var_units[var]})",
+            ylim=(-2, 2),
+            ylabel=r"PMV$_i$ - TSV$_i$",
+            yticks=(np.linspace(-2, 2, 5)),
+        )
 
     handles, labels = axs[ix].get_legend_handles_labels()
     f.legend(
         handles=handles,
-        labels=labels,
-        bbox_to_anchor=(0.5, 1.03),
+        labels=[var_names[x] for x in labels],
+        bbox_to_anchor=(0.5, 1),
         loc="upper center",
         # borderaxespad=0,
         frameon=False,
         ncol=3,
     )
-    plt.suptitle(model)
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
     plt.savefig(f"./Manuscript/src/figures/bias_models.png", dpi=300)
 
 
@@ -2622,7 +2634,7 @@ if __name__ == "__main__":
     percentiles_to_show = [0.025, 0.25, 0.5, 0.75, 0.975]
 
 plt.close("all")
-plot_bias_distribution_whole_db()
+plot_bias_distribution_by_variable_binned()
 
 if __name__ == "__plot__":
 

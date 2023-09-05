@@ -189,14 +189,19 @@ The \ac{pmv-ce} has lower accuracy while making the code more complex and comput
 \subsubsection{Model Bias as Function of Four Input Variables}\label{subsec:model-bias-variable}
 In the previous section, we presented the overall bias of the two \ac{pmv} formulations.
 We then went on to determine how the bias varied as a function of \ac{tdb}, \ac{v}, \ac{met}, and \ac{clo}.
+% todo add humidity ratio chart
+We did not include \ac{tr} in the analysis since \ac{tr} was not reported in several studies, hence, we estimated it as detailed in the Methodology.
+Furthermore, in many buildings is possible to assume \ac{tr} equal to \ac{tdb} without committing a major error~\cite{Dawe2020}.
 Figure~\ref{fig:dist_input_data} shows the results.
 In each sub-figure, we have binned the results into discrete intervals of equal width, and the x-axis tick label is the center value of the interval.
 All the violin plots have the same area to aid visualization, despite the fact that the number of points in each bin is not constant.
-% todo This figure needs a lot of improvements. 1) I would use the letter-value (or boxplot), they may be easier to interpret, provide less info and could be aligned with the first figure (in particular if  The actual density distribution it is not adding much value. 2) The color for PMV and PMV_CE must be the same in the entire paper. 3) The y-label should be moved to the x-label and the y-label should explicit. I would remove the decimal values and show only the five integers -2, -1, 0, 1 and 2. 4) How is possible to have a velocity "centered" at 0? I would remove the red lines. If you want to underline the -0.5 and 0.5 range, then we should use the same strategy also for figure 7. The fact that you change graph time in the paper, it makes more difficult to interpret without adding a substantial amount of value. 
+% todo:
+%  I need to have the red lines for the same inverse reason why I cannot use the boxenplot in the previous chart
+
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bias_models}
-    \caption{}
+    \caption{Bias of the \ac{pmv} and \ac{pmv-ce} models plotted as a function of the input variables.}
     \label{fig:bias_models}
 \end{figure*}
 The results depict that the use of the \ac{pmv-ce} model did not improve the bias of the \ac{pmv} results across all four input variables.

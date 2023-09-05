@@ -239,18 +239,19 @@ More research is needed to determine how to improve the overall accuracy of the 
 The \ac{pmv} model uses simplified heat balance equations to estimate the heat loss and gains from the human body to its surrounding environment.
 This is a possible source of error since the model considers the human body to be a cylinder with constant width all uniformly covered with clothing where the heat is all generated in its core.
 This is a great simplification since it ignores, for example, the fact that different parts of the body may not be covered by clothing, the metabolic heat generation is not uniform, the mass-to-surface ratios are not constant, and it ignores vasoconstriction and vasodilation.
-However, the \ac{pmv} model erroneously assumes that the human body, aside from some edge cases, is either losing or gaining heat from its surrounding environment.
+Moreover, the \ac{pmv} model erroneously assumes that the human body is always losing or gaining heat from its surrounding environment.
 This is not the case, since the human body in most conditions observed indoors activates control strategies to maintain a constant core temperature.
 % todo Stefano Schiavon: Please add references suportting this.
 Moreover, the \ac{pmv} model has been developed based on the assumption of steady-state heat transfer, however, this never precisely occurs since the human thermoregulatory system is always actively engaged to ensure a stable core temperature.
+% todo talk also about how sweat is calculated
 
 The \ac{pmv} model uses the overall heat losses or gains, which are only a proxy to the thermal stress that the human body has to undergo to maintain a constant internal temperature, to a \ac{pmv} value which should represent a \ac{tsv} vote.
-Fanger created this equation based on a few experimental data collected in a laboratory, and despite the growing body of literature, this equation was never updated~\cite{Fanger1970}.
+Fanger created this equation based on a limited dataset collected in a laboratory, and despite the growing body of literature, this equation was never updated or revisited~\cite{Fanger1970}.
 % todo Stefano Schiavon: This is vague, Which papers or data is available to update that equation/mapping?
-In the \ac{pmv} model the heat losses and gains are mapped using constant coefficients to a thermal sensation vote, disregarding the fact that the human body does not have the same ability to compensate for warm and cold conditions.
+In the \ac{pmv} model the heat losses and gains are mapped using constant coefficients to a thermal sensation vote, disregarding the fact that the human body employs different strategies, i.e., vasodilation and vasoconstriction to cope with warm and cold conditions, respectively~\cite{romanovsky_thermoregulation_2018}.
 
 It is, therefore, not surprising to observe that the \ac{pmv} model has an `acceptable' accuracy in determining when people are `neutral`.
-This is equivalent to no heat losses or gains (i.e., \ac{pmv}=0) which means that the body is dissipating all the internal metabolic heat production through conduction, convection, or radiation without needing to thermoregulate using sweating, shivering, vasoconstriction, vasodilation, behavioral adjustments, and non-shivering thermogenesis.
+This is equivalent to no heat losses or gains (i.e., \ac{pmv}=0) which means that the body is dissipating all the internal metabolic heat production through conduction, convection, or radiation without needing to thermoregulate using sweating, shivering, vasoconstriction, vasodilation, behavioral adjustments, and non-shivering thermogenesis~\cite{ romanovsky_thermoregulation_2018}.
 On the other hand, the model cannot correctly predict the thermal sensation of people who report being outside the three central thermal sensation votes (slightly cool, neutral and slightly warm).
 % todo we need to check this since we may only recommend the use of the PMV model for thermal neutrality
 We showed that people tend to be closer to neutrality than what the models predicted (see Figure XXX), this is an indication that they were exposed to compensable thermal conditions. % todo add figure number

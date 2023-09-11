@@ -20,15 +20,14 @@
 
         \gls{55} states that the model can be used to determine ``the combinations of indoor thermal environmental factors and personal factors that will produce satisfactory thermal environmental conditions for a majority of the occupants within the space''.
 
-        The \ac{pmv} has seen widespread adoption and has been used by professionals to design and operate buildings and by researchers to predict thermal sensation.
+        Being relatively simple to calculate and being included in both the \gls{7730} and \gls{55} Standards, the \ac{pmv} has seen widespread adoption and has been used by professionals worldwide to design and operate buildings and by researchers to predict thermal sensation.
         It is still currently used in its original form in the \gls{7730} although it has a low prediction accuracy, especially outside thermal neutrality.
         Several other formulations have been proposed to compensate for its limitations, one of which is currently used in the \gls{55}.
-        \gls{7730} and \gls{55} are the most widely used Standards worldwide, and their differences are a source of confusion for users who find it difficult to decide which model to use.
+        \gls{7730} and \gls{55} are the most widely used thermal comfort Standards worldwide, and their differences are a source of confusion for users who find it difficult to decide which model to use.
 
         We aim to solve this problem by comparing the accuracy of the two main \ac{pmv} formulations, against \var{entries_db_used} thermal sensation votes collected in buildings.
         We found that the \ac{pmv-ce} has the same accuracy as the original \ac{pmv} in predicting thermal neutrality, despite its increased complexity and computational resources needed to calculate the results.
-        Surprisingly, the bias of the \ac{pmv-ce} model was greater (a higher number is negative) than the \ac{pmv} when we only analyzed the entries with \ac{v}$\geq$\qty{0.1}{\m\per\sec}.
-
+        Surprisingly, the bias of the \ac{pmv-ce} model was greater (a higher number is negative) than the \ac{pmv} when we only analyzed the entries with \ac{v}$\geq$\qty{0.2}{\m\per\sec}.
         % todo add values below and complete the Abstract
         The \ac{pmv} and \ac{pmv-ce} accuracy were XX\% and YY\% for $\mid$\ac{pmv}$\mid \leq 2$ and XX\% and YY\% for $\mid$\ac{pmv}$\mid \leq 1$, respectively.
         Neither PMV model could accurately predict `cold’, `cool’, `warm’, or `hot’ thermal sensations.

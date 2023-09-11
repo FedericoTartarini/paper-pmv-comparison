@@ -1095,6 +1095,20 @@ def importing_filtering_processing(load_preprocessed=False):
     df_["pmv_gagge"] = two_nodes_results["pmv_gagge"]
     df_["pmv_set"] = two_nodes_results["pmv_set"]
 
+    results_pmv_ppd = pmv_ppd(
+        tdb=df_.ta,
+        tr=df_.tr,
+        vr=df_.vel_r,
+        rh=df_.rh,
+        met=df_.met,
+        clo=df_.clo,
+        standard="ISO",
+        limit_inputs=False,
+    )
+
+    df_["pmv"] = results_pmv_ppd["pmv"]
+    df_["ppd"] = results_pmv_ppd["ppd"]
+
     # estimate thermal sensation using toby's model
     df_["pmv_toby"] = list(
         pd.cut(
@@ -1575,7 +1589,6 @@ def plot_distribution_variable():
             color=c_gold,
             showfliers=False,
             linewidth=0.5,
-            outlier_prop=0.05,
             k_depth="proportion",
         )
         axs[ix].set(
@@ -1583,26 +1596,26 @@ def plot_distribution_variable():
             xlabel=f"{var_names[var]} ({var_units[var]})",
         )
         if var == "ta" or var == "tr":
-            axs[ix].set(yticks=(np.linspace(15, 30, 4)), ylim=(15, 30))
+            axs[ix].set(yticks=(np.linspace(10, 34, 5)), ylim=(10, 34))
         if var == "rh":
             axs[ix].set(
-                yticks=(np.linspace(20, 80, 4)),
-                ylim=(20, 80),
+                yticks=(np.linspace(10, 90, 5)),
+                ylim=(10, 90),
             )
         if var == "vel":
             axs[ix].set(
-                yticks=(np.linspace(0, 0.6, 4)),
-                ylim=(0, 0.6),
+                yticks=(np.linspace(0, 1, 5)),
+                ylim=(0, 1),
             )
         if var == "clo":
             axs[ix].set(
-                yticks=(np.linspace(0.3, 1.5, 4)),
-                ylim=(0.3, 1.5),
+                yticks=(np.linspace(0.1, 1.6, 4)),
+                ylim=(0.1, 1.6),
             )
         if var == "met":
             axs[ix].set(
-                yticks=(np.linspace(0.8, 2, 5)),
-                ylim=(0.8, 2),
+                yticks=(np.linspace(0.8, 2.8, 5)),
+                ylim=(0.8, 2.8),
             )
 
     sns.despine(bottom=True, left=True)
@@ -1629,29 +1642,28 @@ def plot_distribution_variable():
             color=c_gold,
             showfliers=False,
             linewidth=0.5,
-            outlier_prop=0.05,
             k_depth="proportion",
         )
         axs[ix].set(xlabel=var_names[var], xticks=[], ylabel="")
         if var == "age":
             axs[ix].set(
-                yticks=(np.linspace(10, 70, 4)),
-                ylim=(10, 70),
+                yticks=(np.linspace(10, 100, 4)),
+                ylim=(10, 100),
             )
         elif var == "ht":
             axs[ix].set(
-                yticks=(np.linspace(1.4, 1.9, 6)),
-                ylim=(1.4, 1.9),
+                yticks=(np.linspace(1, 2, 5)),
+                ylim=(1, 2),
             ),
         elif var == "wt":
             axs[ix].set(
-                yticks=(np.linspace(40, 100, 4)),
-                ylim=(40, 100),
+                yticks=(np.linspace(40, 130, 4)),
+                ylim=(38, 130),
             )
         else:
             axs[ix].set(
-                yticks=(np.linspace(-20, 40, 5)),
-                ylim=(-20, 40),
+                yticks=(np.linspace(-28, 32, 5)),
+                ylim=(-28, 32),
             )
     sns.despine(bottom=True, left=True)
     plt.tight_layout()
@@ -1697,7 +1709,7 @@ def plot_bubble_models_vs_tsv():
         axs[ix].plot(
             [-3, 3],
             [-3, 3],
-            c=c_brow,
+            c=c_brown,
             ls="--",
         )
         axs[ix].axvline(0, c="darkgray", ls="--")
@@ -2094,7 +2106,7 @@ def plot_bias_distribution_whole_db(hb_models=False):
     for row, v in enumerate([0, 0.2]):
         axs = axes[row, :]
         for ix, model in enumerate(models):
-            df_plot = df.loc[df["vel"] > v, f"diff_ts_{model}"]
+            df_plot = df.loc[df["vel"] >= v, f"diff_ts_{model}"]
             interval = 0.5
             bins_plot = np.arange(-3, 3, interval / 2)
             axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
@@ -2105,7 +2117,7 @@ def plot_bias_distribution_whole_db(hb_models=False):
             )
             y_label = "Number of data points" if ix == 0 else ""
             title = var_names[model]
-            title += f" - All data points" if row == 0 else f" - V > {v} m/s"
+            title += f" - All data points" if row == 0 else r" - V $\geq$" + f" {v} m/s"
             axs[ix].set(title=title, ylabel=y_label, xlabel="", xlim=(-3, 3))
             mpl.pyplot.locator_params(axis="y", nbins=3)
             stats = {
@@ -2262,29 +2274,8 @@ def plot_bias_distribution_by_variable_binned():
     # filter_good_buildings = False
     # plt.close("all")
 
-    # todo only look at high velocities
-
     df_analysis = df.copy()
 
-    # # Code to calculate the Humidity Ratio
-    # hr_arr = []
-    # for i, row in df_analysis.iterrows():
-    #     hr_arr.append(
-    #         psychrolib.GetHumRatioFromRelHum(row["ta"], row["rh"] / 100, 101325) * 1000
-    #     )
-    # df_analysis["hr"] = hr_arr
-
-    # for i, var in enumerate(variables):
-    #     if var != "thermal_preference":
-    #         df_analysis = df_analysis[
-    #             df_analysis[var] > df_analysis[var].quantile(percentiles_to_show[0])
-    #         ]
-    #         df_analysis = df_analysis[
-    #             df_analysis[var] < df_analysis[var].quantile(percentiles_to_show[-1])
-    #         ]
-
-    # for ix, model in enumerate(models_to_test):
-    #     color = palette_primary[ix]
     f, axs = plt.subplots(5, 1, figsize=(7, 9))
     axs = axs.flatten()
     for i, var in enumerate(variables):
@@ -2296,7 +2287,7 @@ def plot_bias_distribution_by_variable_binned():
         df_plot = pd.DataFrame()
         for ix, model in enumerate(models_to_test):
             df_model = (
-                df_analysis[[var, f"diff_ts_{model}", "building_id", variable_to_split]]
+                df_analysis[[var, f"diff_ts_{model}", variable_to_split]]
                 .copy()
                 .dropna()
             )
@@ -2311,15 +2302,18 @@ def plot_bias_distribution_by_variable_binned():
         df_plot = df_plot.loc[:, ~df_plot.columns.duplicated()].copy()
         # exclude categories with very little data
         if var != "thermal_preference":
-            df_plot = df_plot[
-                df_plot[var] > df_plot[var].quantile(percentiles_to_show[0])
-            ]
-            df_plot = df_plot[
-                df_plot[var] < df_plot[var].quantile(percentiles_to_show[-1])
-            ]
+            # df_plot = df_plot[
+            #     df_plot[var] > df_plot[var].quantile(percentiles_to_show[0])
+            # ]
+            # df_plot = df_plot[
+            #     df_plot[var] < df_plot[var].quantile(percentiles_to_show[-1])
+            # ]
+            print(
+                var,
+                df_plot[var].quantile(percentiles_to_show[0]),
+                df_plot[var].quantile(percentiles_to_show[-1]),
+            )
 
-            # if filter_good_buildings:
-            #     df_plot = df_plot[df_plot["building_id"].isin(good_buildings)]
             df_plot[var] = pd.cut(df_plot[var], bins=bins[var])
 
         # try:
@@ -2348,17 +2342,17 @@ def plot_bias_distribution_by_variable_binned():
         ax.axhline(-0.5, c="r", ls="--", lw=0.75)
         ax.axhline(+0.5, c="r", ls="--", lw=0.75)
 
-        if "preference" not in var:
-            x_labels = []
-            for x in pd.IntervalIndex(sorted(df_plot[var].cat.categories.unique())).mid:
-                if ("ta" == var) or ("rh" == var):
-                    x_labels.append(int(x))
-                else:
-                    x_labels.append(round(x, 2))
-
-            ax.set(
-                xticklabels=x_labels,
-            )
+        # if "preference" not in var:
+        #     x_labels = []
+        #     for x in pd.IntervalIndex(sorted(df_plot[var].cat.categories.unique())).mid:
+        #         if ("ta" == var) or ("rh" == var):
+        #             x_labels.append(int(x))
+        #         else:
+        #             x_labels.append(round(x, 2))
+        #
+        #     ax.set(
+        #         xticklabels=x_labels,
+        #     )
         ax.set(
             xlabel=f"{var_names[var].split(' ')[-1]} ({var_units[var]})",
             ylim=(-2, 2),
@@ -2566,10 +2560,11 @@ if __name__ == "__main__":
     applicability_limits = {
         "ta": [10, 30],
         "tr": [10, 40],
-        "vel": [0, 1],
+        "vel_r": [0, 1],
         "clo": [0, 1.5],
         "met": [1, 4],
         "thermal_sensation": [-3.5, 3.5],
+        "pmv": [-3.49999, 3.5],
         "pmv_ce": [-3.49999, 3.5],
         "pmv_set": [-3.49999, 3.5],
         "pmv_gagge": [-3.49999, 3.5],
@@ -2650,8 +2645,6 @@ if __name__ == "__plot__":
     # plot model accuracy using bar chart
     plot_stacked_bar_predictions_ts(v_min=0)
     plot_stacked_bar_predictions_ts(v_min=0.2)
-    # plot_stacked_bar_predictions_ts(hb_models=True)
-    # plot_stacked_bar_predictions_tp()
 
     # plot bias distribution
     plot_bias_distribution_whole_db()
@@ -2666,7 +2659,7 @@ if __name__ == "__plot__":
     # plot_bias_distribution_by(variable="building_type")
     # plot_bias_distribution_by(variable="cooling_type")
     # plot_bias_distribution_by(variable="country")
-    #
+
     # # plot bias by contributor
     # plot_bias_distribution_by_contributor()
 

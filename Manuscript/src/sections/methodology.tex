@@ -8,10 +8,10 @@ Results were calculated using the function `pythermalcomfort.models.pmv\_ppd' in
 \subsection{Data Preparation and Cleaning}\label{subsec:data-processing-and-cleaning}
 Not all researchers logged all the six parameters needed to calculate the \ac{pmv} and \ac{pmv-ce}.
 We, therefore, decided to remove all entries that did not have any of the following variables: \ac{tdb}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv}.
-These constraints filtered out approximately \var{entries_db_valid} votes.
+This filtered out approximately \var{entries_db_valid} votes.
 We decided to keep entries that did not have \ac{tr}.
 However, since \ac{tr} is a required input in the \ac{pmv} model, it was calculated using the following equation: $2 t_{o} – t_{db}$.
-Alternatively, if the \ac{to} was not available for that entry we assumed \ac{tr} = \ac{tdb}.
+If the \ac{to} was not available for that entry we assumed \ac{tr} = \ac{tdb}.
 We are aware that these assumptions may introduce an error, but removing samples without \ac{tr} would cause an additional \var{entries_db_valid_no_tr} drop in the data used to compare the models.
 There is also evidence that in many conditions is possible to assume \ac{tr} equal to \ac{tdb} without committing a major error~\cite{Dawe2020}.
 
@@ -33,8 +33,8 @@ We used Python to analyse and visualise the results.
 We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \url{https://github.com/FedericoTartarini/paper-pmv-comparison} so other users can test different assumptions.
 
 \subsection{Model Validation}\label{subsec:model-validation}
-The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants, and it is applied from a singly occupied zone to an area with several hundred people.
-We grouped the participants' responses by their \ac{tsv} and we determined how many of these votes were correctly labelled by the \ac{pmv} and \ac{pmv-ce} models.
+The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants, but it is commonly used both in singly occupied zones and in areas with several hundred people.
+We first grouped participants' responses by their \ac{tsv}, and we determined how many of these votes were correctly labelled by the \ac{pmv} and \ac{pmv-ce} models.
 This approach is useful for performing an overall assessment of the accuracy of the models, but it introduces an error due to the rounding of both the \ac{pmv}, \ac{pmv-ce}, and \ac{tsv} values.
 The latter were sometimes collected using a continuous scale and not a discrete one, in other words, they could take any value in the range from -3.0 to 3.0.
 
@@ -45,29 +45,33 @@ These values were then binned using several independent variables (e.g., \ac{tdb
 If the \ac{pmv} or \ac{pmv-ce} formulations are bias-free, the distribution of any batch derived from these differences would have a mean value that is zero.
 The standard deviation would reflect the combined effect of the people's individual differences as well as any errors in formulation or in the data collection method (accuracy or precision of the instrumentation used)~\cite{Humphreys2002}.
 According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between \num{-0.25} and \num{0.25}.
-However, we believe that this range is too narrow since \ac{tsv} is measured using an ordinal scale of integers while the output of the \ac{pmv} model is continuous.
+However, we believe that this range is too narrow since \ac{tsv} is measured using an ordinal scale of integers.
 Consequently, we expanded the range to \num{-.5} and \num{0.5}.
 Thi is needed to ensure that each \ac{pmv} value can be matched to a \ac{tsv}.
 We are aware that an error of \num{.5} is approximately \qty{7}{\percent} of the total range and ideally we would want to have the \ac{pmv} to have a higher precision, however, this is a necessary limitation introduced by the low resolution of the \ac{tsv} scale.
 Binning data by the independent variables is a significant improvement over grouping the participants' responses by their \ac{tsv}.
 This is because the \ac{pmv} model aim is, as previously mentioned, to predict the average thermal sensation of a large group of occupants and not to correctly predict each individual \ac{tsv} of people who reported the same \ac{tsv} vote and where in different locations and moments of the year and day.
 
-Finally, we decided to compare the results of \ac{pmv} and \ac{pmv-ce} formulations with the \ac{pmvg} calculated by the two-node model.
-The two-node model was developed by \mycite{GaggeSET} and it uses a more accurate set of equations to solve the heat balance equation.
-We compared the \ac{pmv} and \ac{pmv-ce} results to the \ac{pmvg} since Gagge's two-node model is used by the \ac{pmv-ce} to calculate the \ac{ce}.
-Hence, in principle, the results of the \ac{pmv-ce} model should closely match the \ac{pmvg} values.
-We did this by passing as input to the \ac{pmv}, \ac{pmv-ce}, and two-node models the same set of \num{10000} randomly generated set of inputs. 
-Each set of inputs was sampled assuming a random uniform distribution within a predefined range. 
-We selected the range of each of the 6 input variables needed to calculate the \ac{pmv} to be equal to the 2.5th and 97.5th percentiles for all the input variables contained in the \ac{db2}.
-The only exception was for the range of \ac{v} that was randomly selected from this interval \qty{0.1}{\m\per\s}~$\leq$~\ac{v}~$\leq$~\qty{1}{\m\per\s}.
-The rationale for this decision was that both the \ac{pmv} and \ac{pmv-ce} models use the same equations for \ac{v}~$\leq$~\qty{0.1}{\m\per\s}.
+%In \ref{sec:comparison-between-the-pmv-formulations-with-the-two-node-model} we also compare the results of \ac{pmv} and \ac{pmv-ce} formulations with the \ac{pmvg} calculated by the two-node model.
+%The two-node model was developed by \mycite{GaggeSET} and it uses a more accurate set of equations to solve the heat balance equation.
+%We compared the \ac{pmv} and \ac{pmv-ce} results to the \ac{pmvg} since Gagge's two-node model is used by the \ac{pmv-ce} to calculate the \ac{ce}.
+%Hence, in principle, the results of the \ac{pmv-ce} model should closely match the \ac{pmvg} values.
+%We did this by passing as input to the \ac{pmv}, \ac{pmv-ce}, and two-node models the same set of \num{10000} randomly generated set of inputs.
+%Each set of inputs was sampled assuming a random uniform distribution within a predefined range.
+%We selected the range of each of the 6 input variables needed to calculate the \ac{pmv} to be equal to the 2.5th and 97.5th percentiles for all the input variables contained in the \ac{db2}.
+%The only exception was for the range of \ac{v} that was randomly selected from this interval \qty{0.1}{\m\per\s}~$\leq$~\ac{v}~$\leq$~\qty{1}{\m\per\s}.
+%The rationale for this decision was that both the \ac{pmv} and \ac{pmv-ce} models use the same equations for \ac{v}~$\leq$~\qty{0.1}{\m\per\s}.
+%
+%Interestingly, \mycite{GaggeSET} also describe how to calculate the \ac{pmvs} which uses the \ac{set} temperature to calculate the \ac{pmv} value in place of \ac{tdb} and \ac{tr}.
+%This would solve some of the uncertainties that the \ac{pmv-ce} model introduces as detailed above.
+%However, it is not possible for us to comment on why the \ac{pmv-ce} model was included in the \gls{55} instead of the \ac{pmvs} since no peer-reviewed paper or official document describe the rationale for this decision.
 
 \subsection{Performance Metrics}\label{subsec:performance-metrics}
 Simple accuracy can be a misleading metric to use to quantify the performance of a classification predictive model that involves an unbalanced dataset~\cite{Chawla2005}.
-We then used the F1 score when determining the performance of the \ac{pmv} and \ac{pmv-ce} in predicting the \ac{tsv} reported by a participant.
+We then also report the F1 score when determining the performance of the \ac{pmv} and \ac{pmv-ce} in predicting the \ac{tsv}.
 The F1 score is the harmonic mean of the precision and sensitivity, where an F1 score reaches its best value at 1 and the worst score at 0.
 Precision (also called positive predictive value) is the ratio of true positive overall positive results obtained from the test, while sensitivity (also known as recall or true positive rate) is the ratio of true positive over all the actual positive cases.
-The F1-micro score calculates metrics globally by counting the total true positives, false negatives and false positives.
+We report three F1-scores in the paper.
+The F1-micro score calculates metrics globally by counting the total true positives, false negatives, and false positives.
 The F1-macro calculate metrics for each label and find their unweighted mean.
 The F1-weighted calculate metrics for each label and find their average weighted by support (the number of true instances for each label).
-% todo describe also the other metrics we used like R2

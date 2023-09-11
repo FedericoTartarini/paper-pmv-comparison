@@ -11,3 +11,36 @@ These disparities shed light on the limitations and strengths of the \ac{pmv} an
 The outcomes of this analysis have significant implications for researchers, practitioners, and policymakers involved in the field of thermal comfort assessment and standardization.
 % todo add also as a result the fact that thermal sensation -1 to 1 does not mean comfortable
 % todo report also this result: Both \ac{pmv} formulations underestimated the conditions at which participants are thermally dissatisfied with their environment. The overall accuracy of the \ac{pmv} and \ac{pmv-ce} were \qty{33}{\percent} and \qty{34}{\percent}, respectively.
+
+\subsection{Implications for the ASHRAE 55 and ISO 7730 Standards}\label{subsec:implications-for-the-ashrae-55-and-iso-7730-standards}
+The \ac{pmv-ce} was specifically developed to more accurately estimate latent and sensible heat losses from the skin to the environment when air movement is used~\cite{arens_moving_2009}.
+Both models had an accuracy lower than \qty{1}{\percent} when predicting either `warm', `hot', or `cold'.
+This value is significantly lower and worse than random guessing, this is very concerning because this means that the models are actively misleading the users.
+The low prediction accuracy of both model formulations, coupled with the lack of data in the extremes of the applicability limits of the models, may suggest that the models' applicability limits should be revisited.
+Based on our results we recommend restricting the use of the \ac{pmv} only to a values $\lvert \textrm{PMV}\lvert \leq 1.5$.
+In addition, we also recommend restricting the ranges on both environmental and personal factors set by both \gls{55} and \gls{7730} Standards.
+Currently, these limits extend far beyond the range of data contained in the \ac{db2} dataset.
+Being the \ac{db2} the largest thermal comfort dataset in the world and containing data from all continents we deem not to be necessary to have such wide applicability limits for both \gls{55} and \gls{7730} Standards when these environmental variables are rarely observed in buildings across the world.
+In addition, the lack of data available beyond the ranges depicted in Figure~\ref{fig:dist_input_data} did not allow us to test the accuracy of both the \ac{pmv} and \ac{pmv-ce} above those ranges.
+Consequently, we suggest reducing both Standards applicability limits to the ranges shown in Table~\ref{tab:ranges}, until more data are collected.
+\begin{table}[htb!]
+    \centering
+    \begin{tabular}{cc}
+        \toprule
+        Variable & Proposed range \\
+        \midrule
+        \ac{tdb} & \qtyrange{17}{30}{\celsius} \\
+        \ac{tr} & \qtyrange{17}{30}{\celsius} \\
+        \ac{rh} & \qtyrange{20}{80}{\percent} \\
+        \ac{clo} & \qtyrange{0.3}{1.5}{clo} \\
+        \ac{met} & \qtyrange{1}{2}{met} \\
+        \ac{pmv} & \qtyrange{-1.5}{1.5}{} \\
+        % todo shall we also include limits on Age?
+        % todo shall we also include airspeed?
+        \bottomrule
+    \end{tabular}
+    \caption{New proposed applicability limits for the \gls{55} and \gls{7730} Standards.}
+    \label{tab:ranges}
+\end{table}
+
+% todo add more implications for Standards

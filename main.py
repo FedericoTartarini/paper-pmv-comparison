@@ -1101,7 +1101,7 @@ def importing_filtering_processing(load_preprocessed=False):
         vr=df_.vel_r,
         rh=df_.rh,
         met=df_.met,
-        clo=df_.clo,
+        clo=df_.clo_d,
         standard="ISO",
         limit_inputs=False,
     )
@@ -2258,14 +2258,18 @@ def plot_bias_distribution_by_variable_binned():
     ]
 
     bins = {
-        "ta": np.arange(18, 32, 2),
-        "tr": np.arange(18, 31.5, 2),
-        "top": np.arange(17.5, 30.5, 2),
-        "vel": np.arange(-0.00001, 0.7, 0.2),
-        "rh": np.arange(10, 100, 20),
+        # vel 0.0058333333333333 0.45
+        # rh 21.27 71.5
+        # clo 0.3000000000000001 1.3099999999999998
+        # met 1.0 1.877133105802048
+        "ta": [18.5, 21.0, 24.0, 27.0, 29.0],
+        # "tr": np.arange(18, 31.5, 2),
+        # "top": np.arange(17.5, 30.5, 2),
+        "vel": [0.0, 0.15, 0.3, 0.46],
+        "rh": [21, 40, 60, 72],
         "hr": np.arange(0, 20, 2),
-        "clo": np.arange(0.2, 1.5, 0.2),
-        "met": np.arange(0.9, 2, 0.2),
+        "clo": [0.3, 0.5, 0.7, 0.9, 1.1, 1.31],
+        "met": [1.0, 1.2, 1.4, 1.6, 1.9],
         "thermal_sensation": np.arange(-3.5, 4.5, 1),
         "thermal_preference": np.arange(-3.5, 4.5, 1),
         "pmv": np.arange(-3.5, 4.5, 1),
@@ -2275,6 +2279,7 @@ def plot_bias_distribution_by_variable_binned():
     # plt.close("all")
 
     df_analysis = df.copy()
+    df_analysis.loc[df_analysis.vel == 0, "vel"] = 0.0000001
 
     f, axs = plt.subplots(5, 1, figsize=(7, 9))
     axs = axs.flatten()
@@ -2315,6 +2320,8 @@ def plot_bias_distribution_by_variable_binned():
             )
 
             df_plot[var] = pd.cut(df_plot[var], bins=bins[var])
+
+        print(df_plot.groupby([var, "model"])["diff_ts"].median())
 
         # try:
         #     df_plot[variable_to_split] = pd.cut(
@@ -2560,7 +2567,7 @@ if __name__ == "__main__":
     applicability_limits = {
         "ta": [10, 30],
         "tr": [10, 40],
-        "vel_r": [0, 1],
+        "vel": [0, 1],
         "clo": [0, 1.5],
         "met": [1, 4],
         "thermal_sensation": [-3.5, 3.5],

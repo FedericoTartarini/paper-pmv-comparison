@@ -7,10 +7,10 @@ A search within the article title, abstract, and keyword on Scopus with the sear
 Out of those \num{1082} are scientific peer-reviewed articles published in the research area of engineering, environmental science, social sciences, and energy.
 This highlights this model's extensive adoption and use among the scientific community.
 
-To this date, the \ac{pmv} still remains to be the most utilized thermal comfort model even though several studies have highlighted that the \ac{pmv} has low accuracy in predicting thermal sensation votes~\cite{Cheung2019, Yao2022, kim2019thermal, tartarini2018thermal, Humphreys2002, doherty_evaluation_1988}.
+To this date, the \ac{pmv} still remains to be the most utilized thermal comfort model even though several studies have highlighted that the \ac{pmv} has low accuracy in predicting thermal sensation votes~\cite{Cheung2019, Yao2022, kim2019thermal, tartarini2018thermal, Humphreys2002, doherty_evaluation_1988, tartarini_prediction_2023}.
 
 To overcome the accuracy concerns, in particular when high air speed is used to cool people, the \gls{55} Standard uses a modified version of the original model, the \ac{pmv-ce}~\cite{ashrae552023}.
-The best source to see how \ac{pmv-ce} works is the Standard itself, but the standard does not explain why some choices were implemented.
+The best source to see how \ac{pmv-ce} works is the Standard itself, but the Standard does not explain why some choices were implemented.
 A partial justification of the model is described in \mycite{arens_moving_2009} and \mycite{yang_cooling_2015}.
 The process used to calculate the \ac{pmv-ce} in the \gls{55} is summarized in the flowchart depicted in Figure~\ref{fig:flowchart_pmv_ce}.
 In summary, when the \ac{v} exceeds \qty{0.1}{\m\per\s} the \gls{55} prescribes the use of the \ac{ce}.
@@ -53,7 +53,7 @@ We could not find a rationale for this choice in the available literature.
         \draw [arrow] (dec3) -- ($(dec3.east)$) -| node[above,pos=0.3] {Yes} (pro3);
         \draw [arrow] (pro3) -- (end2);
     \end{tikzpicture}
-    \caption{Flowchart depicting the steps for the calculation of the PMV in accordance with the \acs{55} Standard.}
+    \caption{Flowchart depicting the steps for the calculation of the PMV in accordance with the \gls{55} Standard.}
     \label{fig:flowchart_pmv_ce}
 \end{figure}
 
@@ -86,12 +86,10 @@ To our knowledge, no previous study compared in detail the accuracy of the \ac{p
 
 Some notable works that tried to determine the accuracy of the \ac{pmv} model include the manuscript from \mycite{doherty_evaluation_1988} who evaluated the ability of the \ac{pmv} and \ac{set} models to predict several physiological variables (i.e., skin temperature, core temperature, and skin wettedness) under a wide range of still air environments and metabolic rates.
 They concluded that the \ac{pmv} model is accurate for simulations of resting subjects, but its accuracy decreases as a function of metabolic rate.
-% todo use this finding to support limit to PMV range
 Humphreys and Nicol estimated the effects of measurement and formulation error on predicting thermal sensation using the \ac{pmv}~\cite{Humphreys2000}.
 They used the ASHRAE Global Thermal Comfort database I and determined that the measurement error and the error introduced by the \ac{pmv} model formulation had a similar and non-negligible contribution.
 They also determined the validity of the \ac{pmv} for predicting comfort votes collected in field studies~\cite{Humphreys2002}.
 They concluded that the \ac{pmv} range of applicability should be significantly reduced and it fails to predict the extent of thermal dissatisfaction of people in buildings.
-% todo use this finding to support limit to PMV range
 The \ac{pmv} was free from bias only when it was used to predict thermal neutrality.
 \mycite{Cheung2019} determined the accuracy of the \ac{pmv} model, by comparing its results with the \ac{tsv} from the ASHRAE Global Thermal Comfort Database II.
 They found that the thermal sensation predicted by the PMV model, on average, is one full thermal sensation scale unit away from the subject’s responses, confirming the results of~\cite{Humphreys2002}.
@@ -103,6 +101,9 @@ They focus significantly on how the models perform in different climates and whe
 This, as depicted by \mycite{Humphreys2000}, does not provide sufficient insights and information in determining which model is more accurate since it does not explain how the model performs over a wide range of environmental, personal conditions, and \ac{tsv}.
 Reporting the classification accuracy of the \ac{pmv} formulations when people are grouped by their \ac{tsv} is particularly for an unbalanced dataset like the \ac{db2} where most of the participants reported to be `neutral'.
 Finally, they only reported the overall bias for the whole dataset, despite the fact that the two formulations only differ when the \ac{v} exceeds \qty{0.1}{\m\per\s}.
+\mycite{tartarini_prediction_2023} also published a conference paper on this topic.
+They concluded that the \ac{pmv} and \ac{pmv-ce} models accuracy is \qty{35}{\percent} and \qty{36}{\percent} for $\mid$\ac{pmv}$\mid \leq 2$, \qty{43}{\percent} and \qty{44}{\percent} for $\mid$\ac{pmv}$\mid \leq 1$ in predicting the self-reported thermal sensation of people, respectively.
+However, their analysis is limited to providing the precision of the model alone, without reporting the sensitivity (also commonly referred as recall) and they do not provide the bias of the two models.
 
 \subsection{Aim and Objectives}\label{subsec:aim-and-objectives}
 We aim to compare the accuracy of the \ac{pmv} and \ac{pmv-ce} models used in the \gls{7730} and \gls{55} Standards.

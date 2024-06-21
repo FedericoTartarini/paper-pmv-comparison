@@ -14,6 +14,9 @@ psychrolib = "*"
 tabulate = "*"
 scikit-learn = "*"
 jinja2 = "*"
+pycairo = "*"
+pyqt6 = "*"
+lets-plot = "*"
 
 [dev-packages]
 

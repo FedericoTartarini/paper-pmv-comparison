@@ -204,3 +204,63 @@ preds = log_reg_2.predict(np.arange(0, 50, 0.5).reshape(-1, 1))
 plt.figure()
 plt.plot(np.arange(0, 50, 0.5), preds)
 plt.show()
+
+
+from pythermalcomfort.models import pmv_ppd
+from pythermalcomfort.utilities import v_relative, clo_dynamic
+
+tdb = 25
+tr = 25
+rh = 50
+v = 0.1
+met = 1.4
+clo = 0.5
+# calculate relative air speed
+v_r = v_relative(v=v, met=met)
+# calculate dynamic clothing
+clo_d = clo_dynamic(clo=clo, met=met, standard="ashrae")
+results = pmv_ppd(tdb=tdb, tr=tr, vr=v_r, rh=rh, met=met, clo=clo_d, standard="ashrae")
+print(results)
+print(results["pmv"])
+
+tdb = 19.6
+tr = 19.6
+rh = 86
+v = 0.1
+met = 1.1
+clo = 1
+# calculate relative air speed
+v_r = v_relative(v=v, met=met)
+# calculate dynamic clothing
+clo_d = clo_dynamic(clo=clo, met=met, standard="ashrae")
+results = pmv_ppd(tdb=tdb, tr=tr, vr=v_r, rh=rh, met=met, clo=clo_d, standard="ashrae")
+print(results)
+print(results["pmv"])
+
+tdb = 19.6
+tr = 19.6
+rh = 86
+v = 0.2
+met = 1.1
+clo = 1
+# calculate relative air speed
+v_r = v_relative(v=v, met=met)
+# calculate dynamic clothing
+clo_d = clo_dynamic(clo=clo, met=met, standard="ashrae")
+results = pmv_ppd(tdb=tdb, tr=tr, vr=v_r, rh=rh, met=met, clo=clo_d, standard="ashrae")
+print(results)
+print(results["pmv"])
+
+tdb = 29.4
+tr = 29.4
+rh = 61
+v = 0.1
+met = 1.9
+clo = 0.5
+# calculate relative air speed
+v_r = v_relative(v=v, met=met)
+# calculate dynamic clothing
+clo_d = clo_dynamic(clo=clo, met=met, standard="ashrae")
+results = pmv_ppd(tdb=tdb, tr=tr, vr=v_r, rh=rh, met=met, clo=clo_d, standard="ashrae")
+print(results)
+print(results["pmv"])

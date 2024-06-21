@@ -1,7 +1,7 @@
 import math
 import warnings
+from itertools import product
 
-from numba import jit, vectorize, float64
 import matplotlib as mpl
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -11,17 +11,19 @@ import psychrolib
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.gridspec import GridSpec
+from numba import jit
 from pythermalcomfort import p_sat_torr, check_standard_compliance_array
 from pythermalcomfort.models import (
     athb,
     cooling_effect,
 )
 from scipy import stats
-from scipy.stats import skewtest
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import r2_score, mean_absolute_error
+
+# mpl.use("TkAgg")
 
 warnings.filterwarnings("ignore")
 
@@ -2540,6 +2542,224 @@ def pmv_jiayu_fed(tdb, tr, vr, rh, met, clo, wme=0):
     clf.predict([[0, 1, 0.6]])
 
 
+def compare_pmv_disc():
+    def generate_t_rh_combinations(t_range, rh_range):
+        all_combinations = list(product(t_range, rh_range))
+        return pd.DataFrame(all_combinations, columns=["t", "rh"])
+
+    def heatmap(
+        data, row_labels, col_labels, ax=None, cbar_kw=None, cbarlabel="", **kwargs
+    ):
+        """
+        Create a heatmap from a numpy array and two lists of labels.
+
+        Parameters
+        ----------
+        data
+            A 2D numpy array of shape (M, N).
+        row_labels
+            A list or array of length M with the labels for the rows.
+        col_labels
+            A list or array of length N with the labels for the columns.
+        ax
+            A `matplotlib.axes.Axes` instance to which the heatmap is plotted.  If
+            not provided, use current axes or create a new one.  Optional.
+        cbar_kw
+            A dictionary with arguments to `matplotlib.Figure.colorbar`.  Optional.
+        cbarlabel
+            The label for the colorbar.  Optional.
+        **kwargs
+            All other arguments are forwarded to `imshow`.
+        """
+
+        if ax is None:
+            ax = plt.gca()
+
+        if cbar_kw is None:
+            cbar_kw = {}
+
+        # Plot the heatmap
+        im = ax.imshow(data, **kwargs)
+
+        # Create colorbar
+        cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+        cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+
+        # Show all ticks and label them with the respective list entries.
+        ax.set_xticks(np.arange(data.shape[1]), labels=col_labels)
+        ax.set_yticks(np.arange(data.shape[0]), labels=row_labels)
+
+        # Let the horizontal axes labeling appear on top.
+        ax.tick_params(top=True, bottom=False, labeltop=True, labelbottom=False)
+
+        # Rotate the tick labels and set their alignment.
+        plt.setp(
+            ax.get_xticklabels(),
+            rotation=-90,
+            ha="center",
+            va="center",
+            rotation_mode="anchor",
+        )
+
+        # Turn spines off and create white grid.
+        ax.spines[:].set_visible(False)
+
+        ax.set_xticks(np.arange(data.shape[1] + 1) - 0.5, minor=True)
+        ax.set_yticks(np.arange(data.shape[0] + 1) - 0.5, minor=True)
+        ax.grid(which="minor", color="w", linestyle="-", linewidth=1)
+        ax.tick_params(which="minor", bottom=False, left=False)
+
+        return im, cbar
+
+    def annotate_heatmap(
+        im,
+        data=None,
+        valfmt="{x:.2f}",
+        textcolors=("black", "white"),
+        threshold=None,
+        **textkw,
+    ):
+        """
+        A function to annotate a heatmap.
+
+        Parameters
+        ----------
+        im
+            The AxesImage to be labeled.
+        data
+            Data used to annotate.  If None, the image's data is used.  Optional.
+        valfmt
+            The format of the annotations inside the heatmap.  This should either
+            use the string format method, e.g. "$ {x:.2f}", or be a
+            `matplotlib.ticker.Formatter`.  Optional.
+        textcolors
+            A pair of colors.  The first is used for values below a threshold,
+            the second for those above.  Optional.
+        threshold
+            Value in data units according to which the colors from textcolors are
+            applied.  If None (the default) uses the middle of the colormap as
+            separation.  Optional.
+        **kwargs
+            All other arguments are forwarded to each call to `text` used to create
+            the text labels.
+        """
+
+        if not isinstance(data, (list, np.ndarray)):
+            data = im.get_array()
+
+        # Normalize the threshold to the images color range.
+        if threshold is not None:
+            threshold = im.norm(threshold)
+        else:
+            threshold = im.norm(data.max()) / 2.0
+
+        # Set default alignment to center, but allow it to be
+        # overwritten by textkw.
+        kw = dict(horizontalalignment="center", verticalalignment="center")
+        kw.update(textkw)
+
+        # Get the formatter in case a string is supplied
+        if isinstance(valfmt, str):
+            valfmt = mpl.ticker.StrMethodFormatter(valfmt)
+
+        # Loop over the data and create a `Text` for each "pixel".
+        # Change the text's color depending on the data.
+        texts = []
+        for i in range(data.shape[0]):
+            for j in range(data.shape[1]):
+                kw.update(color=textcolors[int(im.norm(data[i, j]) > threshold)])
+                text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
+                texts.append(text)
+
+        return texts
+
+    df = generate_t_rh_combinations(np.arange(26, 36, 1), np.arange(0, 110, 10))
+
+    wind_speeds = [0.1, 0.6]
+    f, axs = plt.subplots(len(wind_speeds), 3, constrained_layout=True, figsize=(7, 4))
+
+    for ix, v in enumerate(wind_speeds):
+        results_two_node = two_nodes(
+            tdb=df["t"],
+            tr=df["t"],
+            v=v,
+            rh=df["rh"],
+            met=1.2,
+            clo=0.5,
+            limit_inputs=False,
+        )
+        df["disc"] = results_two_node["disc"]
+        results_pmv_ce = pmv_ppd(
+            tdb=df["t"],
+            tr=df["t"],
+            vr=v,
+            rh=df["rh"],
+            met=1.2,
+            clo=0.5,
+            limit_inputs=False,
+            standard="ashrae",
+        )
+        df["pmv_ce"] = results_pmv_ce["pmv"]
+        results_pmv_iso = pmv_ppd(
+            tdb=df["t"],
+            tr=df["t"],
+            vr=v,
+            rh=df["rh"],
+            met=1.2,
+            clo=0.5,
+            limit_inputs=False,
+            standard="iso",
+        )
+        df["pmv_iso"] = results_pmv_iso["pmv"]
+        pivot_disc = df.pivot(index="rh", columns="t", values="disc").sort_index(
+            ascending=False
+        )
+        im = heatmap(
+            pivot_disc.values,
+            pivot_disc.index,
+            pivot_disc.columns,
+            ax=axs[ix][0],
+            cmap=mpl.colormaps["magma"].resampled(5),
+            cbarlabel="DISC",
+            vmin=0,
+            vmax=5,
+        )
+        pivot_pmv_ce = df.pivot(index="rh", columns="t", values="pmv_ce").sort_index(
+            ascending=False
+        )
+        im = heatmap(
+            pivot_pmv_ce.values,
+            pivot_pmv_ce.index,
+            pivot_pmv_ce.columns,
+            ax=axs[ix][1],
+            cmap=mpl.colormaps["magma"].resampled(6),
+            cbarlabel="PMV CE",
+            vmin=0,
+            vmax=3,
+        )
+        pivot_pmv_iso = df.pivot(index="rh", columns="t", values="pmv_iso").sort_index(
+            ascending=False
+        )
+        im = heatmap(
+            pivot_pmv_iso.values,
+            pivot_pmv_iso.index,
+            pivot_pmv_iso.columns,
+            ax=axs[ix][2],
+            cmap=mpl.colormaps["magma"].resampled(6),
+            cbarlabel="PMV ISO",
+            vmin=0,
+            vmax=3,
+        )
+        # texts = annotate_heatmap(im, valfmt="{x:.1f} t")
+        # sns.heatmap(pivot, annot=False, ax=axs[ix], fmt=".1f")
+        axs[ix][0].set_title(f"{v=} m/s")
+        axs[ix][0].grid()
+        axs[ix][1].grid()
+        axs[ix][2].grid()
+    plt.savefig(f"./Manuscript/src/figures/pmv_vs_disc.png", dpi=300)
+    plt.show()
+
+
 if __name__ == "__main__":
 
     sns.set_context("paper")
@@ -2635,8 +2855,8 @@ if __name__ == "__main__":
 
     percentiles_to_show = [0.025, 0.25, 0.5, 0.75, 0.975]
 
-plt.close("all")
-plot_bias_distribution_by_variable_binned()
+compare_pmv_disc()
+
 
 if __name__ == "__plot__":
 
@@ -2703,6 +2923,67 @@ if __name__ == "__plot__":
             ci=None,
         )
     plt.savefig(f"./Manuscript/src/figures/scatter_tsv_vs_hb.png", dpi=300)
+
+    plt.close("all")
+    # plot_bias_distribution_by_variable_binned()
+
+    all_combinations = list(
+        product(np.arange(26, 30, 2), np.arange(10, 90, 10), np.arange(0.2, 0.8, 0.2))
+    )
+    df_comb = pd.DataFrame(all_combinations, columns=["t", "rh", "v"])
+    df_comb["iso"] = pmv(
+        df_comb.t, df_comb.t, df_comb.v, df_comb.rh, 1.2, 0.5, standard="ISO"
+    )
+    df_comb["ash"] = pmv(
+        df_comb.t, df_comb.t, df_comb.v, df_comb.rh, 1.2, 0.5, standard="ashrae"
+    )
+    df_comb["iso-ash"] = df_comb["iso"] - df_comb["ash"]
+    for v in df_comb.v.unique():
+        df_v = df_comb[df_comb.v == v]
+        f, axs = plt.subplots(3, 1, constrained_layout=True, figsize=(4, 7))
+        iso = df_v.pivot(index="rh", columns="t", values="iso").sort_index(
+            ascending=False
+        )
+        sns.heatmap(iso, annot=True, ax=axs[0], fmt=".1f", vmin=-1, vmax=1)
+        axs[0].set_title("iso")
+        ash = df_v.pivot(index="rh", columns="t", values="ash").sort_index(
+            ascending=False
+        )
+        sns.heatmap(ash, annot=True, ax=axs[1], fmt=".1f", vmin=-1, vmax=1)
+        axs[1].set_title("ash")
+        ia = df_v.pivot(index="rh", columns="t", values="iso-ash").sort_index(
+            ascending=False
+        )
+        sns.heatmap(ia, annot=True, ax=axs[2], fmt=".1f", vmin=-1, vmax=1)
+        axs[2].set_title("iso-ash")
+        f.suptitle(f"{v=} m/s")
+        plt.show()
+
+        # # Create plot specification.
+        # p = (
+        #     ggplot({"x": df_v.t, "y1": df_v.iso, "y2": df_v.ash})
+        #     + ggsize(500, 250)
+        #     + geom_violin(
+        #         aes("x", "y1", fill="..quantile.."),
+        #         show_half=-1,
+        #         scale="count",
+        #         # quantiles=[0.02, 0.25, 0.5, 0.75, 0.98],
+        #         quantile_lines=True,
+        #     )
+        #     + geom_violin(
+        #         aes("x", "y2", fill="..quantile.."),
+        #         show_half=1,
+        #         scale="count",
+        #         # quantiles=[0.02, 0.25, 0.5, 0.75, 0.98],
+        #         quantile_lines=True,
+        #     )
+        #     + theme(axis_line_y="blank")
+        #     # + ggtitle(v)
+        #     + ylab("pmv")
+        # )
+        #
+        # # Display plot in 'SciView'.
+        # p.show()
 
 
 if __name__ == "__old_code__":

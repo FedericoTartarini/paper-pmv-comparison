@@ -28,7 +28,7 @@ We then calculated the adjusted total clothing insulation and relative airspeed 
 We used these inputs to calculate the \ac{pmv} and \ac{pmv-ce} values.
 
 Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
-However, since the thermal sensation was measured with at least a seven-point scale and the \ac{pmv} has no upper or lower boundary we decided keep the data that felt within the following ranges $|$\ac{tsv}$|$~$\leq$~\num{3} or $|$\ac{pmv}$|$~$\leq$~\num{3.5}.
+However, since the thermal sensation was measured with at least a seven-point scale and the \ac{pmv} has no upper or lower boundary we decided to keep the data that felt within the following ranges $|$\ac{tsv}$|$~$\leq$~\num{3} or $|$\ac{pmv}$|$~$\leq$~\num{3.5}.
 We used Python to analyse and visualise the results.
 We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \url{https://github.com/FedericoTartarini/paper-pmv-comparison} so other users can test different assumptions.
 
@@ -47,8 +47,8 @@ The standard deviation would reflect the combined effect of the people's individ
 According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between \num{-0.25} and \num{0.25}.
 However, we believe that this range is too narrow since \ac{tsv} is measured using an ordinal scale of integers.
 Consequently, we expanded the range to \num{-.5} and \num{0.5}.
-Thi is needed to ensure that each \ac{pmv} value can be matched to a \ac{tsv}.
-We are aware that an error of \num{.5} is approximately \qty{7}{\percent} of the total range and ideally we would want to have the \ac{pmv} to have a higher precision, however, this is a necessary limitation introduced by the low resolution of the \ac{tsv} scale.
+This is needed to ensure that each \ac{pmv} value can be matched to a \ac{tsv}.
+We are aware that an error of \num{.5} is approximately \qty{7}{\percent} of the total range and ideally, we would want to have the \ac{pmv} to have higher precision, however, this is a necessary limitation introduced by the low resolution of the \ac{tsv} scale.
 Binning data by the independent variables is a significant improvement over grouping the participants' responses by their \ac{tsv}.
 This is because the \ac{pmv} model aim is, as previously mentioned, to predict the average thermal sensation of a large group of occupants and not to correctly predict each individual \ac{tsv} of people who reported the same \ac{tsv} vote and where in different locations and moments of the year and day.
 
@@ -64,14 +64,37 @@ This is because the \ac{pmv} model aim is, as previously mentioned, to predict t
 %
 %Interestingly, \mycite{GaggeSET} also describe how to calculate the \ac{pmvs} which uses the \ac{set} temperature to calculate the \ac{pmv} value in place of \ac{tdb} and \ac{tr}.
 %This would solve some of the uncertainties that the \ac{pmv-ce} model introduces as detailed above.
-%However, it is not possible for us to comment on why the \ac{pmv-ce} model was included in the \gls{55} instead of the \ac{pmvs} since no peer-reviewed paper or official document describe the rationale for this decision.
+%However, it is not possible for us to comment on why the \ac{pmv-ce} model was included in the \gls{55} instead of the \ac{pmvs} since no peer-reviewed paper or official document describes the rationale for this decision.
 
 \subsection{Performance Metrics}\label{subsec:performance-metrics}
 Simple accuracy can be a misleading metric to use to quantify the performance of a classification predictive model that involves an unbalanced dataset~\cite{Chawla2005}.
 We then also report the F1 score when determining the performance of the \ac{pmv} and \ac{pmv-ce} in predicting the \ac{tsv}.
 The F1 score is the harmonic mean of the precision and sensitivity, where an F1 score reaches its best value at 1 and the worst score at 0.
 Precision (also called positive predictive value) is the ratio of true positive overall positive results obtained from the test, while sensitivity (also known as recall or true positive rate) is the ratio of true positive over all the actual positive cases.
-We report three F1-scores in the paper.
+We report three F1 scores in the paper.
 The F1-micro score calculates metrics globally by counting the total true positives, false negatives, and false positives.
 The F1-macro calculate metrics for each label and find their unweighted mean.
 The F1-weighted calculate metrics for each label and find their average weighted by support (the number of true instances for each label).
+
+% Ed's comments below
+% The primary sticking point is with the input data.  The following issue seems fundamental to me, something you would have to address in a published paper about this. 
+
+% Air speed measurements in the ASHRAE Field Dataset rarely conform to ASHRAE or ISO standards.  Only the studies done with instrumented carts with anemometer arrays are likely to have measured at three heights as required.   We know that very few of the studies have done this.
+ 
+% If you only measure at one height instead of three, you are very likely to record higher values than the averaged velocities that are required for the standards’ comfort models.   This is because the anemometer is almost always placed in relatively open space between mid-body and head level, avoiding measuring the usually sheltered lower body level.  The measurement will therefore most often be an overestimate for inputting into the model, and the associated sensation prediction will be cooler than it should be.  
+ 
+% So if you have a systematic bias toward higher airspeeds in the statistical data you are using, a comfort model that inherently predicts stronger rates of air speed cooling (CE) will overpredict more than a model that inherently predicts weaker rates (PMV).  The weaker one will appear to be predicting correctly, or in any event something closer to correct.  The stronger-predicting model could appear ‘biased’ when compared to the weaker-predicting model.  
+ 
+% This is one of the points of Pearl’s causal inference book—in assigning bias, you have to find the source of the bias, which in this case may be in the dataset, and not in either of the models being evaluated.  
+ 
+% The DB2 dataset is very useful for temperature, but it is really not suitable for detailed evaluation of air speed.  Air speed is far more variable and harder to measure accurately than temperature.  I suppose someone could wade through all the studies and observations in the database and observe the types of conditions under which the elevated air speeds were recorded.  Were they consistent over time and geographic location? Did they average over sufficient time as specified in standards?   Any sense of the accuracy of the anemometers used to measure them?  What kind of buildings were they in—or any indications about the thermal sensitivity of the occupancies being surveyed?  You can see that all these questions suggest possible sources of bias, all which would be need to identified and assessed, to judge whether information from such surveys is suitable for evaluating a systematic measurement system like a comfort model.  It seems a really big task with uncertain benefits.
+ 
+% Models vs laboratory study data:
+ 
+% In our 2015 Corrective Power paper, Hui assembled the results from many laboratory studies of cooling devices, including fans.   In this paper you can see the studies of Tanabe where his subjects were exposed to a uniform plug flow, where the air movement measurement represents the whole body as required by the standard.   You can compare his results to the CE model and find that the CE model slightly underpredicts the subjective cooling votes he measured.  
+ 
+% If you then look at the cooling found by Yongchao Zhai where the air movement was directed only at the upper body and measured there, the CE model slightly overpredicts his measured results.   This is of course appropriate.   It is seen in other recent studies of local fan cooling.  
+ 
+% Bigger view of this:
+
+% I think the comparison of models must be done using data from controlled experiments in the laboratory.  A lot of this was well-examined 50 years ago.  It hasn’t been followed up as intensely since then because it wasn’t considered that important by the profession.  What’s different now is that 1) people are recognizing climate warming, and 2) it’s a lot easier to do comfort and physiological modeling and learn from it, using the Web.    That’s why there is now an opportunity that people can design better buildings using more sophisticated comfort and climate information. 

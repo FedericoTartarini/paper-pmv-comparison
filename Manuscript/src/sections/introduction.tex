@@ -1,13 +1,13 @@
 \section{Introduction}\label{sec:introduction}
 \mycite{Fanger1970} developed the \ac{pmv} model, which is now incorporated into the \gls{7730} Standard~\cite{iso7730} in its original form.
-The \ac{pmv} is as an index that predicts the mean value of the thermal sensation votes (self-reported perceptions) of a large group of persons on a sensation scale expressed from –3 to +3 corresponding to the categories ``cold,'' ``cool,'' ``slightly cool,'' ``neutral,'' ``slightly warm,'' ``warm,'' and ``hot.''~\cite{iso7730, ashrae552023}.
+The \ac{pmv} is an index that predicts the mean value of the thermal sensation votes (self-reported perceptions) of a large group of persons on a sensation scale expressed from –3 to +3 corresponding to the categories ``cold,'' ``cool,'' ``slightly cool,'' ``neutral,'' ``slightly warm,'' ``warm,'' and ``hot.''~\cite{iso7730, ashrae552023}.
 The \ac{pmv} model has been widely used worldwide by researchers and practitioners.
 It is the most extensively used thermal comfort index for estimating thermal sensation.
 A search within the article title, abstract, and keyword on Scopus with the search term ``predicted mean vote'' returns approximately \num{1600} documents.
 Out of those \num{1082} are scientific peer-reviewed articles published in the research area of engineering, environmental science, social sciences, and energy.
 This highlights this model's extensive adoption and use among the scientific community.
 
-To this date, the \ac{pmv} still remains to be the most utilized thermal comfort model even though several studies have highlighted that the \ac{pmv} has low accuracy in predicting thermal sensation votes~\cite{Cheung2019, Yao2022, kim2019thermal, tartarini2018thermal, Humphreys2002, doherty_evaluation_1988, tartarini_prediction_2023}.
+To this date, the \ac{pmv} remains to be the most utilized thermal comfort model even though several studies have highlighted that the \ac{pmv} has low accuracy in predicting thermal sensation votes~\cite{Cheung2019, Yao2022, kim2019thermal, tartarini2018thermal, Humphreys2002, doherty_evaluation_1988, tartarini_prediction_2023}.
 
 To overcome the accuracy concerns, in particular when high air speed is used to cool people, the \gls{55} Standard uses a modified version of the original model, the \ac{pmv-ce}~\cite{ashrae552023}.
 The best source to see how \ac{pmv-ce} works is the Standard itself, but the Standard does not explain why some choices were implemented.
@@ -53,7 +53,7 @@ We could not find a rationale for this choice in the available literature.
         \draw [arrow] (dec3) -- ($(dec3.east)$) -| node[above,pos=0.3] {Yes} (pro3);
         \draw [arrow] (pro3) -- (end2);
     \end{tikzpicture}
-    \caption{Flowchart depicting the steps for the calculation of the PMV in accordance with the \gls{55} Standard.}
+    \caption{Flowchart depicting the steps for the calculation of the PMV following the \gls{55} Standard.}
     \label{fig:flowchart_pmv_ce}
 \end{figure}
 
@@ -72,11 +72,11 @@ Among the most notable formulations there are the: \ac{pmvs}~\cite{GaggeSET}, \a
 %If the temperature is hot all year or most of the year and there are no or few other air-conditioned buildings, \ac{ef} may be \num{0.5}, but if there are many other air-conditioned buildings, \ac{ef} may be \num{0.7}.
 %For non-air-conditioned buildings in locations where the temperature is warm solely during the summer and no or few buildings have air-conditioning \ac{ef} is \numrange{0.7}{0.8}, whereas it is \numrange{0.8}{.9} in areas where there are numerous air-conditioned buildings.
 %In regions with only brief periods of warm weather during the summer, the expectancy factor may be \numrange{0.9}{1}.
-%This arbitrary and non-scientific definition of the expectancy factor make the \ac{epmv} difficult to calculate and non-generalizable.
+%This arbitrary and non-scientific definition of the expectancy factor makes the \ac{epmv} difficult to calculate and non-generalizable.
 %Consequently, the \ac{epmv} has not gained any widespread adoption.
 %
 %Yao, R. et al. (2009) developed the Adaptive Predicted Mean Vote Model~\gls{apmv} to account for occupants adaptation.
-%They used a ``Black Box'' model to estimate an adaptive coefficient which is in turn use to calculate the \gls{apmv} using the following equation: $\mathrm{aPMV} = \mathrm{PMV}/(1+\lambda \mathrm{PMV})$
+%They used a ``Black Box'' model to estimate an adaptive coefficient which is in turn used to calculate the \gls{apmv} using the following equation: $\mathrm{aPMV} = \mathrm{PMV}/(1+\lambda \mathrm{PMV})$
 %The main issue with this approach is that the adaptive coefficient cannot be known a priori, but it is estimated based on the \ac{tsv} collected by a cohort of participants.
 %This approach cannot be, therefore, generalizable and similarly to the \ac{epmv} model the \gls{apmv} is rarely used in thermal comfort research.
 %
@@ -99,11 +99,11 @@ These results were confirmed based on the Chinese Thermal Comfort database~\cite
 \mycite{Yao2022} compared the \ac{pmv} and \ac{pmv-ce} models, however, their aim was primarily to compare these two formulations with other adaptive \ac{pmv} formulations, hence, they do not provide a detailed analysis on the prediction accuracy of the two models.
 They focus significantly on how the models perform in different climates and when applied to people from different world regions and their analysis only reports the mean bias of the different models.
 This, as depicted by \mycite{Humphreys2000}, does not provide sufficient insights and information in determining which model is more accurate since it does not explain how the model performs over a wide range of environmental, personal conditions, and \ac{tsv}.
-Reporting the classification accuracy of the \ac{pmv} formulations when people are grouped by their \ac{tsv} is particularly for an unbalanced dataset like the \ac{db2} where most of the participants reported to be `neutral'.
-Finally, they only reported the overall bias for the whole dataset, despite the fact that the two formulations only differ when the \ac{v} exceeds \qty{0.1}{\m\per\s}.
+Reporting the classification accuracy of the \ac{pmv} formulations when people are grouped by their \ac{tsv} is particularly important for an unbalanced dataset like the \ac{db2} where most of the participants reported to be `neutral'.
+Finally, they only reported the overall bias for the whole dataset, even though the two formulations only differ when the \ac{v} exceeds \qty{0.1}{\m\per\s}.
 \mycite{tartarini_prediction_2023} also published a conference paper on this topic.
 They concluded that the \ac{pmv} and \ac{pmv-ce} models accuracy is \qty{35}{\percent} and \qty{36}{\percent} for $\mid$\ac{pmv}$\mid \leq 2$, \qty{43}{\percent} and \qty{44}{\percent} for $\mid$\ac{pmv}$\mid \leq 1$ in predicting the self-reported thermal sensation of people, respectively.
-However, their analysis is limited to providing the precision of the model alone, without reporting the sensitivity (also commonly referred as recall) and they do not provide the bias of the two models.
+However, their analysis is limited to providing the precision of the model alone, without reporting the sensitivity (also commonly referred to as recall) and they do not provide the bias of the two models.
 
 \subsection{Aim and Objectives}\label{subsec:aim-and-objectives}
 We aim to compare the accuracy of the \ac{pmv} and \ac{pmv-ce} models used in the \gls{7730} and \gls{55} Standards.

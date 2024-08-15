@@ -6,9 +6,9 @@ The \ac{db2} only contains data collected by researchers in cross-sectional fiel
 Results were calculated using the function `pythermalcomfort.models.pmv\_ppd' included in pythermalcomfort v2.8.1 a Python package for thermal comfort calculations~\cite{Tartarini2020a}.
 
 \subsection{Data Preparation and Cleaning}\label{subsec:data-processing-and-cleaning}
-Not all researchers logged all the six parameters needed to calculate the \ac{pmv} and \ac{pmv-ce}.
+Not all researchers measured and logged all six parameters needed to calculate the \ac{pmv} and \ac{pmv-ce}.
 We, therefore, decided to remove all entries that did not have any of the following variables: \ac{tdb}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv}.
-This filtered out approximately \var{entries_db_valid} votes.
+This filtered out approximately \var{entries_db_valid} of the data.
 We decided to keep entries that did not have \ac{tr}.
 However, since \ac{tr} is a required input in the \ac{pmv} model, it was calculated using the following equation: $2 t_{o} – t_{db}$.
 If the \ac{to} was not available for that entry we assumed \ac{tr} = \ac{tdb}.
@@ -29,6 +29,20 @@ We used these inputs to calculate the \ac{pmv} and \ac{pmv-ce} values.
 
 Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
 However, since the thermal sensation was measured with at least a seven-point scale and the \ac{pmv} has no upper or lower boundary we decided to keep the data that felt within the following ranges $|$\ac{tsv}$|$~$\leq$~\num{3} or $|$\ac{pmv}$|$~$\leq$~\num{3.5}.
+
+In addition, it should also be noted that while all the data included in the \ac{db2} is published in peer-reviewed papers, not all entries were collected using the same methodology.
+For example, while both thermal comfort Standards recommend measuring \ac{v} at three different heights, this was not always done.
+This could introduce a bias in the data.
+Since the two \ac{pmv} formulations only differ when \ac{v}~$\geq$~\qty{0.1}{\m\per\s}, we decided to report three sets of results:
+\begin{enumerate}
+    \item all the data points,
+    \item all the data points with \ac{v}~$\geq$~\qty{0.2}{\m\per\s},
+    \item only the data points with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured \ac{v} at three different heights.
+    These results are reported in the supplementary material.
+\end{enumerate}
+We believe that this approach will help us understand the impact of the data quality on the results of the models.
+In particular, by only including those studies that measured \ac{v} at three different heights, we can reduce the bias introduced by the lack of adherence to the measurement protocol recommended by the Standards.
+
 We used Python to analyse and visualise the results.
 We are committed to reproducible research hence we have shared the source code and the dataset we used publicly at this URL: \url{https://github.com/FedericoTartarini/paper-pmv-comparison} so other users can test different assumptions.
 
@@ -39,7 +53,7 @@ This approach is useful for performing an overall assessment of the accuracy of 
 The latter were sometimes collected using a continuous scale and not a discrete one, in other words, they could take any value in the range from -3.0 to 3.0.
 
 To remove this rounding error, we subtracted the \ac{tsv} value from the \ac{pmv} and \ac{pmv-ce} values.
-These differences, aka bias, quantify the success of the model in predicting \ac{tsv}.
+These differences, also known as bias, quantify the success of the model in predicting \ac{tsv}.
 However, on their own are a low-precision estimate of the overall accuracy of the model~\cite{Humphreys2002}.
 These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{v}).
 If the \ac{pmv} or \ac{pmv-ce} formulations are bias-free, the distribution of any batch derived from these differences would have a mean value that is zero.

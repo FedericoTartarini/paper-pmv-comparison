@@ -12,7 +12,8 @@ import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.gridspec import GridSpec
 from numba import jit
-from pythermalcomfort import p_sat_torr, check_standard_compliance_array
+from pythermalcomfort.psychrometrics import p_sat_torr
+from pythermalcomfort.utilities import check_standard_compliance_array
 from pythermalcomfort.models import (
     athb,
     cooling_effect,
@@ -1673,7 +1674,104 @@ def plot_distribution_variable():
     plt.show()
 
 
+def analyse_studies_high_v():
+    # [['contributor', 'publication', 'region', 'country', 'city']]
+    df.dropna(subset='vel_l').groupby(['contributor', 'publication']).sum().sort_values(by='publication', ascending=False)
+    df_publications = df[df['vel']>0.2].dropna(subset='vel_l').groupby(['contributor', 'publication'])['vel'].count().sort_values(ascending=False)
+    print(df_publications.to_markdown())
+
+    df_perc = (
+        (
+            df.groupby(["country", "contributor"])["record_id"]
+            .count()
+            .sort_values(ascending=False)
+            / df.shape[0]
+            * 100
+        )
+        .to_frame()
+        .rename(columns={"record_id": "percentage"})
+        .round()
+    )
+    df_count = (
+        (
+            df.groupby(["country", "contributor"])["record_id"]
+            .count()
+            .sort_values(ascending=False)
+        )
+        .to_frame()
+        .rename(columns={"record_id": "count"})
+        .round(1)
+    )
+    df_sources = pd.concat([df_count, df_perc], axis=1).head(10)
+    df_sources.loc["Total"] = df_sources.sum()
+    print(df_sources.reset_index().to_markdown())
+
+    top_contributors = (
+        df.groupby(["country", "contributor"])["record_id"]
+        .count()
+        .sort_values(ascending=False)
+        .head(10)
+        .reset_index()["contributor"]
+        .to_list()
+    )
+
+    df_top = df[df["contributor"].isin(top_contributors)]
+
+    sns.boxenplot(df_top, y="contributor", x="vel")
+    plt.tight_layout()
+    plt.show()
+
+    # only those with v > 0.2
+    df_top_vel = df[df["vel"] > 0.2]
+
+    df_perc = (
+        (
+            df_top_vel.groupby(["country", "contributor"])["record_id"]
+            .count()
+            .sort_values(ascending=False)
+            / df_top_vel.shape[0]
+            * 100
+        )
+        .to_frame()
+        .rename(columns={"record_id": "percentage"})
+        .round()
+    )
+    df_count = (
+        (
+            df_top_vel.groupby(["country", "contributor"])["record_id"]
+            .count()
+            .sort_values(ascending=False)
+        )
+        .to_frame()
+        .rename(columns={"record_id": "count"})
+        .round(1)
+    )
+    df_sources = pd.concat([df_count, df_perc], axis=1).head(10)
+    df_sources.loc["Total"] = df_sources.sum()
+    print(df_sources.reset_index().to_markdown())
+
+    top_contributors = (
+        df_top_vel.groupby(["country", "contributor"])["record_id"]
+        .count()
+        .sort_values(ascending=False)
+        .head(10)
+        .reset_index()["contributor"]
+        .to_list()
+    )
+
+    df_top = df_top_vel[df_top_vel["contributor"].isin(top_contributors)]
+
+    sns.boxenplot(df_top, y="contributor", x="vel")
+    plt.tight_layout()
+    plt.show()
+
+    df_top_vel.groupby('contributor')[['vel', 'vel_h','vel_m', 'vel_l']].count().sort_values(by='vel_h', ascending=False)
+    df_top_vel.dropna(subset='vel_l').to_pickle("Data/records_with_three_air_speeds.pk")
+
 def plot_bubble_models_vs_tsv():
+    data_plot = df.copy()
+    # data_plot = pd.read_pickle("Data/records_with_three_air_speeds.pk")
+
     plt.close("all")
     # Scatter thermal_sensation vs pmv prediction
     f, axs = plt.subplots(
@@ -1683,13 +1781,13 @@ def plot_bubble_models_vs_tsv():
 
     for ix, model in enumerate(models_to_test):
         # sns.regplot(x="thermal_sensation", y=pmv, data=df,ax=axs[ix], scatter_kws={"s":2, "alpha":0.3}, line_kws={"color":"k"})
-        df_plot = df.copy()
+        df_plot = data_plot.copy()
         df_plot["ts_binned"] = pd.cut(
-            df["thermal_sensation"],
+            data_plot["thermal_sensation"],
             np.arange(-3.75, 4.25, 0.5),
         )
 
-        df_plot["y_binned"] = pd.cut(df[model], np.arange(-3.75, 4.25, 0.5))
+        df_plot["y_binned"] = pd.cut(data_plot[model], np.arange(-3.75, 4.25, 0.5))
         df_plot = df_plot.groupby(["ts_binned", "y_binned"]).size()
         axs[ix].scatter(
             pd.IntervalIndex(df_plot.index.get_level_values("ts_binned")).mid,
@@ -1701,7 +1799,7 @@ def plot_bubble_models_vs_tsv():
         sns.regplot(
             x="thermal_sensation",
             y=model,
-            data=df,
+            data=data_plot,
             ax=axs[ix],
             ci=None,
             line_kws={"color": "k", "linewidth": 2},
@@ -1720,7 +1818,7 @@ def plot_bubble_models_vs_tsv():
         axs[ix].set(title=var_names[model], ylabel="", xlabel="")
     axs[0].set(ylabel="PMV value")
     f.supxlabel(var_names["thermal_sensation"])
-
+    plt.show()
     plt.savefig(f"./Manuscript/src/figures/bubble_models_vs_tsv.png", dpi=300)
 
 
@@ -2144,7 +2242,57 @@ def plot_bias_distribution_whole_db(hb_models=False):
             axs[ix].axvline(0, c="k", ls="--")
 
     f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
+    plt.show()
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
+
+    # plot bias distribution
+    f, axs = plt.subplots(
+        1,
+        len(models),
+        sharex=True,
+        sharey="row",
+        constrained_layout=True,
+        figsize=(7, 4.5),
+    )
+
+    for ix, model in enumerate(models):
+        df_plot = pd.read_pickle("Data/records_with_three_air_speeds.pk")[f"diff_ts_{model}"]
+        interval = 0.5
+        bins_plot = np.arange(-3, 3, interval / 2)
+        axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
+        axs[ix].hist(
+            df_plot[(df_plot >= -interval) & (df_plot < interval)],
+            bins=bins_plot,
+            color=c_brown,
+        )
+        y_label = "Number of data points" if ix == 0 else ""
+        title = var_names[model]
+        title += f" - All data points" if row == 0 else r" - V $\geq$" + f" {v} m/s"
+        axs[ix].set(title=title, ylabel=y_label, xlabel="", xlim=(-3, 3))
+        mpl.pyplot.locator_params(axis="y", nbins=3)
+        stats = {
+            # "mean": df_plot.mean().round(2),
+            "median": df_plot.median().round(2),
+            # "sd": df_plot.std().round(2),
+            # "sd": df_plot.std().round(2),
+            # "p_skew": skewtest(df_plot, nan_policy="omit").pvalue,
+        }
+        for var in stats.keys():
+            save_var_latex(f"bias_{var}_{model}_{v}", stats[var])
+        y_text = 60
+        axs[ix].text(
+            2.3,
+            y_text,
+            f"Median = {stats['median']}\nIQR = {df_plot.quantile(.25).round(2)},"
+            f" {df_plot.quantile(.75).round(2)}",
+            va="center",
+            ha="center",
+        )
+        axs[ix].grid(axis="x")
+        axs[ix].axvline(0, c="k", ls="--")
+
+    f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
+    plt.show()
 
 
 def plot_bias_distribution_by(variable="building_id"):
@@ -2281,6 +2429,7 @@ def plot_bias_distribution_by_variable_binned():
     # plt.close("all")
 
     df_analysis = df.copy()
+    df_analysis = pd.read_pickle("Data/records_with_three_air_speeds.pk")
     df_analysis.loc[df_analysis.vel == 0, "vel"] = 0.0000001
 
     f, axs = plt.subplots(5, 1, figsize=(7, 9))
@@ -2337,10 +2486,11 @@ def plot_bias_distribution_by_variable_binned():
         # df_plot.loc[
         #     pd.Index(df_plot[variable_to_split]).isin(range_to_keep), "neutral"
         # ] = 0
+        print(df_plot[df_plot.index.duplicated()])
         sns.boxenplot(
             x=var,
             y="diff_ts",
-            data=df_plot,
+            data=df_plot.reset_index(),
             ax=ax,
             hue="model",
             palette=["#9dad33", "#00b0da"],
@@ -2380,6 +2530,7 @@ def plot_bias_distribution_by_variable_binned():
         ncol=3,
     )
     plt.tight_layout(rect=[0, 0, 1, 0.98])
+    plt.show()
     plt.savefig(f"./Manuscript/src/figures/bias_models.png", dpi=300)
 
 
@@ -2388,6 +2539,7 @@ def table_f1_scores():
         ("vel", 0),
         ("vel", 0.2),
         ("pmv", 1.5),
+        ("good_vel", None)
     ]
     df_final = pd.DataFrame()
     for condition in conditions_to_report:
@@ -2396,10 +2548,13 @@ def table_f1_scores():
             df_table = df[df[condition[0]] >= condition[1]]
         elif condition[0] == "pmv":
             df_table = df[(-condition[1] <= df["pmv"]) & (df["pmv"] <= condition[1])]
-            df_table = df[
-                (-condition[1] <= df["thermal_sensation"])
-                & (df["thermal_sensation"] <= condition[1])
+            df_table = df_table[
+                (-condition[1] <= df_table["thermal_sensation"])
+                & (df_table["thermal_sensation"] <= condition[1])
             ]
+        elif condition[0] == "good_vel":
+            df_table = df[df["vel"] >= 0.2]
+            df_table = df_table.dropna(subset=['vel_l'])
         for model in models_to_test:
             df_analysis = (
                 df_table[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
@@ -2855,7 +3010,7 @@ if __name__ == "__main__":
 
     percentiles_to_show = [0.025, 0.25, 0.5, 0.75, 0.975]
 
-compare_pmv_disc()
+    compare_pmv_disc()
 
 
 if __name__ == "__plot__":

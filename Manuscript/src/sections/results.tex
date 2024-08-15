@@ -18,7 +18,7 @@ This can be explained by the fact that only a few buildings in the world operate
 Mainly because an indoor \ac{tdb} lower than \var{ta_95_perc_min} would be deemed to be unsatisfactory by a great number of occupants~\cite{iso7730}.
 This lack of data in the \ac{db2} is particularly relevant for \ac{v}.
 The \ac{pmv} and \ac{pmv-ce} only differ when the value of \ac{v}~$\geq$~\qty{0.1}{\m\per\s}, however, the median value in the \ac{db2} was \qty{0.08}{\m\per\s} suggesting that most of the data points were collected in buildings with low air movement.
-Consequently, we could not reliably test the accuracy of the \ac{pmv} formulations for values of \ac{v}~$\geq$~\var{v_95_perc_max}.
+Consequently, we also could not reliably test the accuracy of the \ac{pmv} formulations for values of \ac{v}~$\geq$~\var{v_95_perc_max}.
 
 Figure~\ref{fig:dist_other_data} shows the distribution of age, height, weight, and running mean outdoor temperature.
 Less than half (\num{23300}) of the total entries have information about the participant's sex and are almost equally distributed among males \qty{52}{\percent} and females.
@@ -72,6 +72,10 @@ We set the limit to \qty{0.2}{\m\per\s} and not a higher value since, as previou
 We did not use \qty{0.1}{\m\per\s} as a threshold because the original difference between the two models was \qty{0.2}{\m\per\s} and it was changed to \qty{0.1}{\m\per\s} only in the \gls{55}.
 The effect of air movement is perceptible only when the airspeed is sufficiently high to disrupt the body's thermal plume~\cite{zukowska_impact_2012}.
 The threshold in the ASHRAE standard was reduced to \qty{0.1}{\m\per\s} to simplify the usability and achieve one threshold for all the air speeds.
+In the supplementary material, we also present the results generated using those entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured \ac{v} at three different heights.
+% todo add results to supplementary material and reference to section in the supplementary material
+
+Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figure~\ref{fig:bar_stacked_model_accuracy} we grouped participants' responses by \ac{tsv} and reported the simple accuracy of the different \ac{pmv} formulations over each sub-figure.
 % todo call charts a,b,c,d
 \begin{figure*}[htb!]
     \centering
@@ -85,13 +89,12 @@ The threshold in the ASHRAE standard was reduced to \qty{0.1}{\m\per\s} to simpl
         \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy_0.2}
         \caption{Only data with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}}
      \end{subfigure}
-    \caption{The calculated \ac{pmv} value is grouped by the \ac{tsv} value reported by the participants. 
+    \caption{The calculated \ac{pmv} value is grouped by the \ac{tsv} value reported by the participants.
     The number of data points in each bin of the two charts is the same and this allows us to compare the accuracy of both models.
-    The overall prediction accuracy is shown above the chart while the model accuracy of predicting participants grouped by their \ac{tsv} is overlayed over each bar. 
+    The overall prediction accuracy is shown above the chart while the model accuracy of predicting participants grouped by their \ac{tsv} is overlayed over each bar.
     A random model, randomly selecting a thermal sensation vote would have an overall accuracy of \qty{14}{\percent}.}
     \label{fig:bar_stacked_model_accuracy}
 \end{figure*}
-Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figure~\ref{fig:bar_stacked_model_accuracy} we grouped participants' responses by \ac{tsv} and reported the simple accuracy of the different \ac{pmv} formulations over each sub-figure.
 Both \ac{pmv} formulations underestimated the conditions at which participants are thermally dissatisfied with their environment.
 The overall accuracy of the \ac{pmv} and \ac{pmv-ce} were \qty{33}{\percent} and \qty{34}{\percent}, respectively.
 Being the classification problem unbalanced, the simple accuracy is not an optimal metric to rate the model prediction accuracy since a default strategy of guessing the majority class would lead to a high overall model accuracy.
@@ -105,6 +108,7 @@ For the subset of data with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} the F1-macro score
 This is an unexpected result since the \ac{pmv-ce}, to justify its use, should significantly outperform the \ac{pmv} model when analyzing this subset of data.
 Finally, the F1-micro and weighted scores of both models increased by about 0.1 when analyzing the dataset with $\lvert \textrm{PMV}\lvert \leq 1.5$ and $\lvert \textrm{TSV}\lvert \leq 1.5$.
 % todo compare how the models compare for PMV < |0.5| not |1.5|
+% todo check the results
 However, the macro score, within this range, remained practically unchanged.
 \begin{table}[htb!]
     \centering
@@ -119,12 +123,14 @@ To compensate for this we plotted the \ac{pmv} and \ac{pmv-ce} values as a funct
     \centering
     \includegraphics[width=\textwidth]{figures/bubble_models_vs_tsv}
     \caption{The \ac{lowess} curve shows the relationship between the raw \ac{pmv} and \ac{tsv} data.
-    Raw data were then binned and a bubble chart (circle area is proportional to the number of votes in that bin) was superimposed over the regression curve to aid the visualization of a large dataset.}
+    Raw data were then binned and a bubble chart (circle area is proportional to the number of votes in that bin) was superimposed over the regression curve to aid the visualization of a large dataset.
+    The black dashed line represents the ideal line where the slope is 1 and the intercept is 0.}
     \label{fig:bubble_models_vs_tsv}
 \end{figure*}
 The curve, in the Figure, is calculated using the individual data and not the binned data.
 We only binned the data to aid the visualization of a large dataset.
-If the model is to accurately predict the thermal sensation of people, the regression line should pass through the origin of the cartesian plane and have a slope of 1.
+If the model is to accurately predict the thermal sensation of people, the regression line (black continuous line) should pass through the origin of the cartesian plane and have a slope of 1.
+This ideal line is represented by the black dashed line.
 The intercepts for the \ac{pmv} is \qty{-0.23} and for the \ac{pmv-ce} is \qty{-0.25} which means that the model has a bias of less than one-quarter of a thermal sensation interval.
 This result is aligned with those presented in Figure~\ref{fig:bar_stacked_model_accuracy} where the \ac{pmv} and \ac{pmv-ce} models can predict people who reported to be neutral \qty{55}{\percent} and \qty{58}{\percent} of the times, respectively.
 Both \ac{pmv} formulations always under-predicted the thermal sensation of people who reported to be on the extremes of the \ac{tsv};
@@ -148,6 +154,7 @@ Results are presented in Figure~\ref{fig:hist_discrepancies}.
     \includegraphics[width=\textwidth]{figures/hist_discrepancies}
     \caption{}
     \label{fig:hist_discrepancies}
+%    todo add caption
 \end{figure*} 
 Overall both the \ac{pmv} and \ac{pmv-ce} models have a median bias lower than half of a thermal sensation interval.
 Figure~\ref{fig:hist_discrepancies} contains the summary statistics, and the results highlight that the \ac{pmv-ce} had a higher bias than the \ac{pmv} when using the entire dataset.
@@ -224,6 +231,7 @@ All the data contained in the \ac{db2} have been published in peer-reviewed manu
 This is because all measurement instrumentation is not always calibrated before use, the uncertainty of the measurements may be large, the placement of the instrumentation may not be in the proximity of the participant, and estimating clothing and metabolic rates from tables is a complex and prone to error task.
 In an ideal scenario, errors would be random and would cancel out, not significantly affecting the overall bias of the model but only affecting the standard deviation of the error~\cite{Humphreys2002}.
 However, this may not always be the case, for example, if a researcher often underestimated the clothing insulation of participants or their activity levels.
+% todo add an additional sentence also about the airspeed error measurement
 
 \paragraph{Thermal Sensation Scale}
 One minor but not negligible source of error is using a discrete scale to assess thermal sensation (most of the \ac{tsv} in the \ac{db2} were collected using a discrete scale) while the \ac{pmv} output is continuous.

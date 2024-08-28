@@ -19,7 +19,16 @@ The resulting values become the new inputs in the \ac{pmv} model.
 Since the \ac{ce} accounts for  convective heat losses from the person to its environment the value of \ac{v}, used to calculate the \ac{pmv}, is set to \qty{0.1}{\m\per\s}.
 The other three input parameters (\ac{clo}, \ac{met}, and \ac{rh}) remain unchanged.
 Consequently, for a given thermal environment, results of the two \ac{pmv} formulations differ when the value of \ac{v} is higher than \qty{0.1}{\m\per\s}.
+To quantify by how much the two models differ, we calculated the comfort regions ($\mid$\ac{pmv}$\mid \leq 0.5$) for different values of \ac{v} using the \ac{pmv} and \ac{pmv-ce} models and we plotted the results in Figure~\ref{fig:comfort_regios_pmv_pmvce}.
 %The rationale for this approach is that the original formulation of the \ac{pmv} model cannot accurately estimate latent and sensible heat losses from the skin to the environment when \ac{v} is higher than \qty{0.1}{\m\per\s}.
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/pmv_comfort_regions}
+    \caption{Comfort regions ($|$\ac{pmv}$|$~$\leq$~\num{0.5}) calculated using \ac{pmv} and \ac{pmv-ce} models.
+    The chart shows how the comfort regions change as a function of \ac{v}.
+    We assumed $M$~=~1.2 met, $i_{cl}$~=~0.5 clo.
+    \label{fig:comfort_regios_pmv_pmvce}}
+\end{figure}
 
 However, this method has limitations.
 First, it should be noted that over the years, the critical value of \ac{v} has been changed, from \qty{0.15}{\m\per\s} in \mycite{Schiavon2014} to \qty{0.2}{\m\per\s} in the ASHRAE 55--2017~\cite{ASHRAE552017, arens_moving_2009} to \qty{0.1}{\m\per\s} in \gls{55}~\cite{ashrae552023}.

@@ -23,8 +23,10 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import r2_score, mean_absolute_error
+from scipy import optimize
+import scipy
 
-# mpl.use("TkAgg")
+mpl.use("TkAgg")
 
 warnings.filterwarnings("ignore")
 
@@ -61,6 +63,8 @@ palette_tsv = [
 # sns.palplot(palette_tp)
 # sns.palplot(palette_primary)
 
+percentiles_to_show = [0.025, 0.25, 0.5, 0.75, 0.975]
+
 palette_primary = [
     "#FFBA22",
     "#FF2380",
@@ -84,6 +88,93 @@ palette_primary = [
     "#149678",
     "#FFE146",
 ]
+
+sns.set_context("paper")
+mpl.rcParams["figure.figsize"] = [8.0, 3.5]
+sns.set_style(
+    "whitegrid",
+    {
+        "grid.color": ".85",
+        "grid.linewidth": "1",
+        "grid.linestyle": "--",
+        "axes.spines.left": False,
+        "axes.spines.bottom": False,
+        "axes.spines.right": False,
+        "axes.spines.top": False,
+    },
+)
+
+c_gold = "#FDB515"
+c_brown = "#6C3302"
+c_blue = "#3B7EA1"
+c_green = "#53626F"
+
+plt.rc("axes.spines", top=False, right=False, left=False)
+plt.rcParams["font.family"] = "sans-serif"
+plt.rcParams["font.size"] = 8.8
+
+applicability_limits = {
+    "ta": [10, 30],
+    "tr": [10, 40],
+    "vel": [0, 1],
+    "clo": [0, 1.5],
+    "met": [1, 4],
+    "thermal_sensation": [-3.5, 3.5],
+    "pmv": [-3.49999, 3.5],
+    "pmv_ce": [-3.49999, 3.5],
+    "pmv_set": [-3.49999, 3.5],
+    "pmv_gagge": [-3.49999, 3.5],
+    "pmv_toby": [-3.49999, 3.5],
+    "rh": [0, 100],
+    "pa": [0, 2700],
+}
+
+var_names = {
+    "ta": r"$t_{db}$",
+    "tr": r"$\overline{t_{r}}$",
+    "top": r"$t_{o}$",
+    "vel": r"$V$",
+    "rh": r"RH",
+    "clo": r"$I_{cl}$",
+    "met": r"$M$",
+    "thermal_sensation": "Thermal Sensation Vote (TSV)",
+    "thermal_sensation_round": "Thermal Sensation Vote (TSV)",
+    "thermal_preference": "Thermal Preference Vote (TPV)",
+    "age": "Age (year)",
+    "ht": "Height (m)",
+    "wt": "Weight (kg)",
+    "t_mot_isd": r"$t_{ormt}$" + r" $(^{\circ}$C)",
+    "pmv": r"PMV",
+    "pmv_round": r"PMV",
+    "lr_hb_pmv": r"PMV$_{hb}$",
+    "lr_hb_pmv_ce": r"PMV$_{CE,hb}$",
+    "lr_hb_pmv_set": r"PMV$_{SET,hb}$",
+    "lr_hb_pmv_gagge": r"PMV$_{Gagge,hb}$",
+    "lr_hb_athb": r"ATHB$_{hb}$",
+    "pmv_ce_round": r"PMV$_{CE}$",
+    "pmv_ce": r"PMV$_{CE}$",
+    "pmv_set": r"PMV$_{SET}$",
+    "pmv_set_round": r"PMV$_{SET}$",
+    "pmv_gagge": r"PMV$_{Gagge}$",
+    "pmv_gagge_round": r"PMV$_{Gagge}$",
+    "pmv_toby": r"PMV$_{Toby}$",
+    "athb_round": r"ATHB",
+    "athb": r"ATHB",
+}
+
+var_units = {
+    "ta": r"$^{\circ}$C",
+    "tr": r"$^{\circ}$C",
+    "vel": r"m/s",
+    "rh": r"%",
+    "clo": r"clo",
+    "met": r"met",
+}
+
+models_to_test = [
+    "pmv",
+    "pmv_ce",
+]  # ["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb", "pmv_toby"]
 
 
 @jit(nopython=True)
@@ -1050,7 +1141,15 @@ def save_var_latex(key, value, units=False, round_var=False):
 
 def importing_filtering_processing(load_preprocessed=False):
 
-    df_ = pd.read_csv(r"./Data/db_measurements_v2.1.0.csv.gz", compression="gzip")
+    df_ = pd.read_csv(
+        r"./Data/db_measurements_v2.1.0.csv.gz",
+        compression="gzip",
+        dtype={
+            "subject_id": str,
+            "air_movement_acceptability": str,
+            "air_movement_preference": str,
+        },
+    )
 
     save_var_latex("entries_db_all", df_.shape[0])
 
@@ -1069,7 +1168,9 @@ def importing_filtering_processing(load_preprocessed=False):
     )
 
     if load_preprocessed:
-        return pd.read_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
+        data_ = pd.read_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
+        df_meta = pd.read_csv("./Data/db_metadata.csv")
+        return pd.merge(data_, df_meta, on="building_id", how="left")
 
     pa_arr = []
     for i, row in df_.iterrows():
@@ -1629,9 +1730,12 @@ def plot_distribution_variable():
         percentiles=percentiles_to_show
     )
 
-    # save_var_latex("rh_95_perc_min", desc["ta"]["2.5%"], "\\celsius", round_var=1)
+    save_var_latex("ta_95_perc_min", desc["ta"]["2.5%"], "\\celsius", round_var=2)
     save_var_latex("rh_95_perc_max", desc["rh"]["97.5%"], "\\percent", round_var=2)
     save_var_latex("v_95_perc_max", desc["vel"]["97.5%"], "\\m\\per\\s", round_var=2)
+    save_var_latex("v_median", desc["vel"]["50%"], "\\m\\per\\s", round_var=2)
+
+    save_var_latex("entries_with_sex_info", df["gender"].dropna().shape[0])
 
     r2 = r2_score(df.ta, df.tr)
 
@@ -1674,11 +1778,93 @@ def plot_distribution_variable():
     plt.show()
 
 
-def analyse_studies_high_v():
+def analyse_studies_with_three_speed_measurements():
     # [['contributor', 'publication', 'region', 'country', 'city']]
-    df.dropna(subset='vel_l').groupby(['contributor', 'publication']).sum().sort_values(by='publication', ascending=False)
-    df_publications = df[df['vel']>0.2].dropna(subset='vel_l').groupby(['contributor', 'publication'])['vel'].count().sort_values(ascending=False)
-    print(df_publications.to_markdown())
+    df_three_heights = df[df["vel"] >= 0.2].dropna(subset="vel_l")
+    df_three_heights.replace(
+        {
+            "https://doi.org/10.1016/j.buildenv.2010.05.024": "Zhang, Y., Wang, J., Chen, H., Zhang, J., & Meng, Q. (2010).",
+            "https://doi.org/10.1016/j.buildenv.2012.09.009": "Zhang, Y., Chen, H., Meng, Q. (2013)",
+            "https://doi.org/10.1016/j.buildenv.2018.01.018": "Tartarini, F., Cooper, P., Fleming, R. (2018)",
+        },
+        inplace=True,
+    )
+    df_three_heights["publication"] = (
+        df_three_heights["publication"].str.split(")").str[0] + ")"
+    )
+    df_three_heights["publication"] = df_three_heights["publication"].str.replace(
+        "&", r"and"
+    )
+    df_three_heights.to_pickle("Data/records_with_three_air_speeds.pk")
+
+    plt.close("all")
+    f, ax = plt.subplots(1, 1, constrained_layout=True)
+    df_stacked = (
+        df_three_heights[["vel_h", "vel_m", "vel_l", "publication"]]
+        .set_index("publication")
+        .stack()
+    )
+    df_stacked.index = df_stacked.index.map(" ".join)
+    df_stacked = df_stacked.reset_index()
+    df_stacked.columns = ["publication", "value"]
+    sns.boxenplot(
+        df_stacked,
+        y="publication",
+        x="value",
+        ax=ax,
+        palette=["#FC9514", "#FDB515", "#FCCF14"],
+    )
+    y_labels = ax.get_yticklabels()
+    new_y_labels = []
+    index_change = 1
+    for ix, label in enumerate(y_labels):
+        text = label.get_text()
+        if index_change == ix:
+            text = text.replace("vel_m", "chest height")
+            index_change += 3
+        else:
+            text = text.replace("vel_h", "vel_head height")
+            text = text.replace("vel_l", "vel_ankle height")
+            text = text.split("vel_")[1]
+        label.set_text(text)
+        new_y_labels.append(label)
+    ax.set_yticklabels(new_y_labels)
+    ax.set(xlabel="Wind speed (m/s)", ylabel="")
+
+    from matplotlib.lines import Line2D
+
+    ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
+    y_value = 0.99
+    for ix in range(0, 9):
+        x, y = np.array([[0.42, 1], [y_value, y_value]])
+        line = Line2D(x, y, lw=0.5, color="gray", alpha=0.4)
+        ax2.add_line(line)
+        y_value -= 0.217 / 2
+
+    ax2.grid(False)
+    ax.grid(False)
+
+    plt.savefig(
+        "./Manuscript/src/figures/boxenplot_wind_speed_three_heights.png", dpi=300
+    )
+    plt.show()
+
+    df_publications = (
+        df_three_heights.groupby(["contributor", "publication"])["vel"]
+        .count()
+        .sort_values(ascending=False)
+    )
+    df_publications = df_publications.reset_index()
+
+    df_publications[r"\%"] = df_publications["vel"] / df_publications["vel"].sum() * 100
+    df_publications.loc["Total"] = df_publications.sum(numeric_only=True)
+    df_publications.replace({np.nan: "Total"}, inplace=True)
+    df_publications[["publication", "vel", r"\%"]].set_index("publication").rename(
+        columns={"vel": "Count"}
+    ).to_latex(
+        "./Manuscript/src/tables/publications_with_three_heights.tex",
+        float_format="{:.0f}".format,
+    )
 
     df_perc = (
         (
@@ -1765,11 +1951,17 @@ def analyse_studies_high_v():
     plt.tight_layout()
     plt.show()
 
-    df_top_vel.groupby('contributor')[['vel', 'vel_h','vel_m', 'vel_l']].count().sort_values(by='vel_h', ascending=False)
-    df_top_vel.dropna(subset='vel_l').to_pickle("Data/records_with_three_air_speeds.pk")
+    df_top_vel.groupby("contributor")[
+        ["vel", "vel_h", "vel_m", "vel_l"]
+    ].count().sort_values(by="vel_h", ascending=False)
+    df_top_vel.dropna(subset="vel_l")
 
-def plot_bubble_models_vs_tsv():
-    data_plot = df.copy()
+
+def plot_bubble_models_vs_tsv(
+    data_: pd.DataFrame() = None,
+    fig_name: str = "./Manuscript/src/figures/bubble_models_vs_tsv.png",
+) -> None:
+    data_plot = data_.copy()
     # data_plot = pd.read_pickle("Data/records_with_three_air_speeds.pk")
 
     plt.close("all")
@@ -1796,7 +1988,7 @@ def plot_bubble_models_vs_tsv():
             alpha=0.8,
             c=c_gold,
         )
-        sns.regplot(
+        p = sns.regplot(
             x="thermal_sensation",
             y=model,
             data=data_plot,
@@ -1806,35 +1998,46 @@ def plot_bubble_models_vs_tsv():
             scatter=False,
             lowess=True,
         )
+        print(model)
+        print(
+            round(
+                scipy.stats.linregress(
+                    x=p.get_lines()[0].get_xdata(), y=p.get_lines()[0].get_ydata()
+                ).intercept,
+                2,
+            )
+        )
         axs[ix].plot(
             [-3, 3],
             [-3, 3],
             c=c_brown,
             ls="--",
         )
+        axs[ix].set(xlim=(-3.5, 3.5), ylim=(-3.5, 3.5))
+        axs[ix].text(2, 2.2, "Identity line", rotation=37)
         axs[ix].axvline(0, c="darkgray", ls="--")
         axs[ix].axhline(0, c="darkgray", ls="--")
         axs[ix].grid(None)
         axs[ix].set(title=var_names[model], ylabel="", xlabel="")
     axs[0].set(ylabel="PMV value")
     f.supxlabel(var_names["thermal_sensation"])
+    plt.savefig(fig_name, dpi=300)
     plt.show()
-    plt.savefig(f"./Manuscript/src/figures/bubble_models_vs_tsv.png", dpi=300)
 
 
-def plot_bar_tp_by_ts():
+def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
     x_var, y_var = "thermal_sensation_round", "thermal_preference"
     save_var_latex(
         f"entries_with_tp",
-        df["thermal_preference"].value_counts().sum(),
+        data_["thermal_preference"].value_counts().sum(),
     )
 
-    df_count = df.groupby(x_var)[[y_var]].count()
+    df_count = data_.groupby(x_var)[[y_var]].count()
 
     save_var_latex(
         f"perc_tsv_neutral",
         int(
-            df[x_var]
+            data_[x_var]
             .value_counts(normalize=True)
             .to_frame()
             .query("index == 0")
@@ -1847,7 +2050,7 @@ def plot_bar_tp_by_ts():
     save_var_latex(
         f"perc_tsv_hot",
         int(
-            df[x_var]
+            data_[x_var]
             .value_counts(normalize=True)
             .to_frame()
             .query("index == 3")
@@ -1859,7 +2062,7 @@ def plot_bar_tp_by_ts():
     fig = plt.figure(constrained_layout=True)
     gs = GridSpec(1, 3, figure=fig, wspace=0.15)
     ax1 = fig.add_subplot(gs[0, :-1])
-    df_plot = df.groupby(x_var)[y_var].value_counts(normalize=True) * 100
+    df_plot = data_.groupby(x_var)[y_var].value_counts(normalize=True) * 100
     df_plot.unstack(y_var).plot.barh(
         stacked=True, color=palette_tp, ax=ax1, linewidth=0, width=0.85
     )
@@ -1902,7 +2105,7 @@ def plot_bar_tp_by_ts():
         ax1.text(102, ix, int(row[y_var]), va="center", ha="left")
 
     ax2 = fig.add_subplot(gs[0, -1])
-    df.groupby(x_var)[x_var].count().plot.bar(
+    data_.groupby(x_var)[x_var].count().plot.bar(
         color=palette_tsv, ax=ax2, linewidth=0, width=0.85
     )
     ax2.set(
@@ -1927,14 +2130,20 @@ def plot_bar_tp_by_ts():
     )
     ax2.yaxis.tick_right()
     ax2.grid(None)
-
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
+    plt.show()
 
 
-def plot_stacked_bar_predictions_ts(hb_models=False, v_min=0):
+def plot_stacked_bar_predictions_ts(
+    data_: pd.DataFrame = None,
+    hb_models: bool = False,
+    v_min: float = 0.0,
+    fig_name: str = None,
+) -> None:
     plt.close("all")
 
-    fig_name = f"bar_stacked_model_accuracy_{v_min}"
+    if fig_name is None:
+        fig_name = f"bar_stacked_predictions_ts_{v_min}"
     models = models_to_test
     if hb_models:
         models = [f"lr_hb_{x}" for x in models_to_test[:-1]]
@@ -2027,6 +2236,7 @@ def plot_stacked_bar_predictions_ts(hb_models=False, v_min=0):
         f.supxlabel(var_names["thermal_sensation"])
 
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
+    plt.show()
 
 
 def plot_stacked_bar_predictions_model():
@@ -2185,9 +2395,8 @@ def plot_stacked_bar_predictions_tp():
     plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy_tp.png", dpi=300)
 
 
-def plot_bias_distribution_whole_db(hb_models=False):
+def plot_bias_distribution_whole_db(hb_models=False, data_: pd.DataFrame = None, fig_name:str="hist_discrepancies"):
 
-    fig_name = "hist_discrepancies"
     models = models_to_test
     if hb_models:
         models = [f"lr_hb_{x}" for x in models_to_test[:-1]]
@@ -2206,7 +2415,7 @@ def plot_bias_distribution_whole_db(hb_models=False):
     for row, v in enumerate([0, 0.2]):
         axs = axes[row, :]
         for ix, model in enumerate(models):
-            df_plot = df.loc[df["vel"] >= v, f"diff_ts_{model}"]
+            df_plot = data_.loc[data_["vel"] >= v, f"diff_ts_{model}"]
             interval = 0.5
             bins_plot = np.arange(-3, 3, interval / 2)
             axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
@@ -2242,21 +2451,21 @@ def plot_bias_distribution_whole_db(hb_models=False):
             axs[ix].axvline(0, c="k", ls="--")
 
     f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
-    plt.show()
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
+    plt.show()
 
-    # plot bias distribution
+    # plot bias distribution only for entries with three air speeds
     f, axs = plt.subplots(
         1,
         len(models),
         sharex=True,
         sharey="row",
         constrained_layout=True,
-        figsize=(7, 4.5),
+        figsize=(7, 2.5),
     )
 
     for ix, model in enumerate(models):
-        df_plot = pd.read_pickle("Data/records_with_three_air_speeds.pk")[f"diff_ts_{model}"]
+        df_plot = data_[data_["vel"] >= 0.2].dropna(subset=["vel_l"])[f"diff_ts_{model}"]
         interval = 0.5
         bins_plot = np.arange(-3, 3, interval / 2)
         axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
@@ -2267,18 +2476,12 @@ def plot_bias_distribution_whole_db(hb_models=False):
         )
         y_label = "Number of data points" if ix == 0 else ""
         title = var_names[model]
-        title += f" - All data points" if row == 0 else r" - V $\geq$" + f" {v} m/s"
+        title += f" - V $\geq$" + f" {v} m/s and three speeds"
         axs[ix].set(title=title, ylabel=y_label, xlabel="", xlim=(-3, 3))
         mpl.pyplot.locator_params(axis="y", nbins=3)
         stats = {
-            # "mean": df_plot.mean().round(2),
             "median": df_plot.median().round(2),
-            # "sd": df_plot.std().round(2),
-            # "sd": df_plot.std().round(2),
-            # "p_skew": skewtest(df_plot, nan_policy="omit").pvalue,
         }
-        for var in stats.keys():
-            save_var_latex(f"bias_{var}_{model}_{v}", stats[var])
         y_text = 60
         axs[ix].text(
             2.3,
@@ -2292,6 +2495,7 @@ def plot_bias_distribution_whole_db(hb_models=False):
         axs[ix].axvline(0, c="k", ls="--")
 
     f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
+    plt.savefig(f"./Manuscript/src/figures/hist_discrepancies_three_heights.png", dpi=300)
     plt.show()
 
 
@@ -2429,7 +2633,7 @@ def plot_bias_distribution_by_variable_binned():
     # plt.close("all")
 
     df_analysis = df.copy()
-    df_analysis = pd.read_pickle("Data/records_with_three_air_speeds.pk")
+    # df_analysis = pd.read_pickle("Data/records_with_three_air_speeds.pk")
     df_analysis.loc[df_analysis.vel == 0, "vel"] = 0.0000001
 
     f, axs = plt.subplots(5, 1, figsize=(7, 9))
@@ -2535,12 +2739,7 @@ def plot_bias_distribution_by_variable_binned():
 
 
 def table_f1_scores():
-    conditions_to_report = [
-        ("vel", 0),
-        ("vel", 0.2),
-        ("pmv", 1.5),
-        ("good_vel", None)
-    ]
+    conditions_to_report = [("vel", 0), ("vel", 0.2), ("good_vel", None), ("pmv", 1.5)]
     df_final = pd.DataFrame()
     for condition in conditions_to_report:
         results_f1 = {}
@@ -2554,7 +2753,7 @@ def table_f1_scores():
             ]
         elif condition[0] == "good_vel":
             df_table = df[df["vel"] >= 0.2]
-            df_table = df_table.dropna(subset=['vel_l'])
+            df_table = df_table.dropna(subset=["vel_l"])
         for model in models_to_test:
             df_analysis = (
                 df_table[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
@@ -2573,6 +2772,44 @@ def table_f1_scores():
         "./Manuscript/src/tables/f1.tex",
         float_format="{:.2f}".format,
     )
+    with open("./Manuscript/src/tables/f1.tex", "r") as f:
+        file = f.read()
+        file = file.replace("lrrl", "lccc")
+        file = file.replace("condition", "Dataset")
+        file = file.replace("('vel', 0)", "\multirow{3}{*}{All data}", 1)
+        file = file.replace(
+            "('vel', 0)",
+            "",
+        )
+        file = file.replace(r"micro", r"\specialrule{.01em}{.05em}{.05em} micro")
+        file = file.replace(r"\specialrule{.01em}{.05em}{.05em}", r"", 1)
+        file = file.replace(
+            r"('vel', 0.2)", r"\multirow{3}{*}{\ac{v} $\geq$ \qty{0.2}{\m\per\s}}", 1
+        )
+        file = file.replace(
+            "('vel', 0.2)",
+            "",
+        )
+        file = file.replace(
+            r"('pmv', 1.5)",
+            r"\multirow{3}{*}{$\lvert \textrm{PMV}\lvert \leq 1.5$ and $\lvert \textrm{TSV}\lvert \leq 1.5$}",
+            1,
+        )
+        file = file.replace(
+            "('pmv', 1.5)",
+            "",
+        )
+        file = file.replace(
+            "('good_vel', None)",
+            r"\multirow{3}{*}{\ac{v} $\geq$ \qty{0.2}{\m\per\s} at three heights}",
+            1,
+        )
+        file = file.replace(
+            "('good_vel', None)",
+            "",
+        )
+    with open("./Manuscript/src/tables/f1.tex", "w") as f:
+        f.write(file)
 
     results_f1 = {}
     for model in [f"lr_hb_{x}" for x in models_to_test[:-1]]:
@@ -2915,121 +3152,139 @@ def compare_pmv_disc():
     plt.show()
 
 
-if __name__ == "__main__":
+def compare_pmv_pmv_ce_comfort_region():
+    met = 1.2
+    clo = 0.5
+    wme = 0
+    results = []
+    for v in [0.2, 0.4]:
+        for model in ["iso", "ashrae"]:
+            for pmv_limit in [-0.5, 0.5]:
+                for rh in np.arange(0, 110, 10):
 
-    sns.set_context("paper")
-    mpl.rcParams["figure.figsize"] = [8.0, 3.5]
-    sns.set_style(
-        "whitegrid",
-        {
-            "grid.color": ".85",
-            "grid.linewidth": "1",
-            "grid.linestyle": "--",
-            "axes.spines.left": False,
-            "axes.spines.bottom": False,
-            "axes.spines.right": False,
-            "axes.spines.top": False,
-        },
+                    def function(x):
+                        return (
+                            pmv(
+                                x,
+                                x,
+                                vr=v,
+                                rh=rh,
+                                met=met,
+                                clo=clo,
+                                wme=wme,
+                                round=False,
+                                standard=model,
+                                limit_inputs=False,
+                            )
+                            - pmv_limit
+                        )
+
+                    temp = optimize.brentq(function, 10, 40)
+                    results.append(
+                        {
+                            "rh": rh,
+                            "temp": temp,
+                            "pmv_limit": pmv_limit,
+                            "model": model,
+                            "v": v,
+                        }
+                    )
+
+    cooling_effect(tdb=23, tr=23, vr=0.2, rh=100, met=met, clo=clo, wme=0)
+    pmv(tdb=23, tr=23, vr=0.2, rh=100, met=met, clo=clo, wme=0, standard="ashrae")
+    pmv(tdb=23, tr=23, vr=0.2, rh=100, met=met, clo=clo, wme=0, standard="iso")
+
+    df = pd.DataFrame(results)
+
+    f, axs = plt.subplots(len(df["v"].unique()), 1, figsize=(8.0, 6), sharex=True)
+    for ix, v in enumerate(df["v"].unique()):
+        df_v = df[df["v"] == v]
+        for model in ["iso", "ashrae"]:
+            color = "#9dad33" if model == "iso" else "#00b0da"
+            df_model = df_v[df_v["model"] == model]
+            t1 = df_model[df_model["pmv_limit"] == -0.5]
+            t2 = df_model[df_model["pmv_limit"] == 0.5]
+            axs[ix].fill_betweenx(
+                t1["rh"], t1["temp"], t2["temp"], color=color, alpha=0.5, label=model
+            )
+            rh_50 = df_model[df_model["rh"] == 50].values
+            v_offset = -20 if model == "iso" else 20
+            for val in rh_50:
+                axs[ix].plot([val[1]], [val[0]], "o", c="gray")
+                axs[ix].annotate(
+                    f"{val[1]:.1f}",
+                    (val[1], val[0]),
+                    textcoords="offset points",
+                    xytext=(0, v_offset),
+                    arrowprops=dict(
+                        arrowstyle="->", facecolor="black", color="gray", lw=0.5
+                    ),
+                    ha="center",
+                    va="center",
+                )
+            # plt.plot(df_plot["temp"], df_plot["rh"], label=model, color=color)
+        axs[ix].set(
+            xlabel="RH (%)",
+            ylabel="Temperature (°C)",
+            title=f"V = {v} m/s",
+            ylim=(0, 100),
+        )
+        axs[ix].legend(frameon=False)
+    axs[0].set(xlabel="")
+    axs[0].get_legend().remove()
+    plt.suptitle(
+        r"Comfort regions (|PMV| $\leq$ 0.5) for different wind speeds. $M$ = "
+        + str(met)
+        + r" met ; $I_{cl}$ = "
+        + str(clo)
+        + " clo."
     )
+    plt.tight_layout()
+    plt.savefig(f"./Manuscript/src/figures/pmv_comfort_regions.png", dpi=300)
+    plt.show()
+    # r = pmv(tdb=temp, tr=temp, vr=v, rh=rh, met=met, clo=clo, wme=wme, round=False)
 
-    c_gold = "#FDB515"
-    c_brown = "#6C3302"
 
-    plt.rc("axes.spines", top=False, right=False, left=False)
-    plt.rcParams["font.family"] = "sans-serif"
-    plt.rcParams["font.size"] = 8.8
-
-    applicability_limits = {
-        "ta": [10, 30],
-        "tr": [10, 40],
-        "vel": [0, 1],
-        "clo": [0, 1.5],
-        "met": [1, 4],
-        "thermal_sensation": [-3.5, 3.5],
-        "pmv": [-3.49999, 3.5],
-        "pmv_ce": [-3.49999, 3.5],
-        "pmv_set": [-3.49999, 3.5],
-        "pmv_gagge": [-3.49999, 3.5],
-        "pmv_toby": [-3.49999, 3.5],
-        "rh": [0, 100],
-        "pa": [0, 2700],
-    }
-
-    var_names = {
-        "ta": r"$t_{db}$",
-        "tr": r"$\overline{t_{r}}$",
-        "top": r"$t_{o}$",
-        "vel": r"$V$",
-        "rh": r"RH",
-        "clo": r"$I_{cl}$",
-        "met": r"$M$",
-        "thermal_sensation": "Thermal Sensation Vote (TSV)",
-        "thermal_sensation_round": "Thermal Sensation Vote (TSV)",
-        "thermal_preference": "Thermal Preference Vote (TPV)",
-        "age": "Age (year)",
-        "ht": "Height (m)",
-        "wt": "Weight (kg)",
-        "t_mot_isd": r"$t_{ormt}$" + r" $(^{\circ}$C)",
-        "pmv": r"PMV",
-        "pmv_round": r"PMV",
-        "lr_hb_pmv": r"PMV$_{hb}$",
-        "lr_hb_pmv_ce": r"PMV$_{CE,hb}$",
-        "lr_hb_pmv_set": r"PMV$_{SET,hb}$",
-        "lr_hb_pmv_gagge": r"PMV$_{Gagge,hb}$",
-        "lr_hb_athb": r"ATHB$_{hb}$",
-        "pmv_ce_round": r"PMV$_{CE}$",
-        "pmv_ce": r"PMV$_{CE}$",
-        "pmv_set": r"PMV$_{SET}$",
-        "pmv_set_round": r"PMV$_{SET}$",
-        "pmv_gagge": r"PMV$_{Gagge}$",
-        "pmv_gagge_round": r"PMV$_{Gagge}$",
-        "pmv_toby": r"PMV$_{Toby}$",
-        "athb_round": r"ATHB",
-        "athb": r"ATHB",
-    }
-
-    var_units = {
-        "ta": r"$^{\circ}$C",
-        "tr": r"$^{\circ}$C",
-        "vel": r"m/s",
-        "rh": r"%",
-        "clo": r"clo",
-        "met": r"met",
-    }
-
-    models_to_test = [
-        "pmv",
-        "pmv_ce",
-    ]  # ["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb", "pmv_toby"]
+if __name__ == "__main__":
 
     # filter data outside standard applicability limits
     df = importing_filtering_processing(load_preprocessed=True)
 
-    df_meta = pd.read_csv("./Data/db_metadata.csv")
-    df = pd.merge(df, df_meta, on="building_id", how="left")
-
-    percentiles_to_show = [0.025, 0.25, 0.5, 0.75, 0.975]
-
-    compare_pmv_disc()
+    analyse_studies_with_three_speed_measurements()
 
 
 if __name__ == "__plot__":
+
+    compare_pmv_pmv_ce_comfort_region()
 
     # Figure 1 and 2
     plot_distribution_variable()
 
     # Figure 3
-    plot_bar_tp_by_ts()
-
-    # plot model results vs TSV
-    plot_bubble_models_vs_tsv()
+    plot_bar_tp_by_ts(data_=df.copy())
 
     # plot model accuracy using bar chart
-    plot_stacked_bar_predictions_ts(v_min=0)
-    plot_stacked_bar_predictions_ts(v_min=0.2)
+    plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0)
+    plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0.2)
+    # only for entries with velocity >= 0.2 m/s and three heights
+    plot_stacked_bar_predictions_ts(
+        data_=df[df["vel"] >= 0.2].dropna(subset="vel_l"),
+        v_min=0.2,
+        fig_name="bar_stacked_model_accuracy_0.2_three_heights.png",
+    )
+
+    # print Markdown table of f1-scores
+    table_f1_scores()
+
+    # plot model results vs TSV
+    plot_bubble_models_vs_tsv(data_=df.copy())
+    plot_bubble_models_vs_tsv(
+        data_=df[df["vel"] >= 0.2].dropna(subset="vel_l"),
+        fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.png",
+    )
 
     # plot bias distribution
-    plot_bias_distribution_whole_db()
+    plot_bias_distribution_whole_db(data_=df.copy())
     # plot_bias_distribution_whole_db(hb_models=True)
 
     # # plot bias by building
@@ -3048,8 +3303,9 @@ if __name__ == "__plot__":
     # plot bias by each variable
     plot_bias_distribution_by_variable_binned()
 
-    # print Markdown table of f1-scores
-    table_f1_scores()
+    compare_pmv_disc()
+
+    analyse_studies_with_three_speed_measurements()
 
     plt.close("all")
     f, axs = plt.subplots(1, 5, constrained_layout=True, sharey=True, sharex=True)
@@ -3219,7 +3475,9 @@ if __name__ == "__old_code__":
         _df = df_dropna.query("thermal_preference == @preference").head(3000)
         df_log = pd.concat([df_log, _df])
     print(df_log.groupby("thermal_preference")["pmv_set_hb"].count())
-    clf = LogisticRegression(random_state=0,).fit(
+    clf = LogisticRegression(
+        random_state=0,
+    ).fit(
         df_log[["pmv_set_hb", "met", "clo", "t_mot_isd"]].values,
         df_log["thermal_preference"],
     )

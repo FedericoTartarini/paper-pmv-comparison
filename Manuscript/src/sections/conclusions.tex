@@ -4,8 +4,8 @@ The \ac{pmv-ce} was specifically developed with the aim of more accurately estim
 We determined the predictive accuracy of the \ac{pmv} and \ac{pmv-ce} models by comparing their results to the \ac{tsv} available in the ASHRAE Global Thermal Comfort Database II v2.1 (Comfort DB).
 
 The overall accuracy of the \ac{pmv} and \ac{pmv-ce} were \qty{33}{\percent} and \qty{34}{\percent}, respectively.
-Both models had an accuracy lower than \qty{2}{\percent} when predicting either `warm', `hot', or `cold'.
-This value is significantly lower and worse than random guessing, this is very concerning because this means that the models are actively misleading the users.
+Both models had an accuracy lower than \qty{7}{\percent} when predicting either `warm', `hot', or `cold'.
+This value is significantly lower and worse than random guessing, this means that the models are actively misleading the users.
 When only comparing the results of the two models for entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} -- range in which the two models differ -- the \ac{pmv} outperformed the \ac{pmv-ce} on different metrics.
 For example, the median bias of the \ac{pmv} model is \var{bias_median_pmv_0.2} while the median bias for the \ac{pmv-ce} is \var{bias_median_pmv_ce_0.2}.
 
@@ -38,11 +38,9 @@ Consequently, we suggest reducing both Standards' applicability limits to the ra
         \midrule
         \ac{tdb} & \qtyrange{17}{30}{\celsius} \\
         \ac{tr} & \qtyrange{17}{30}{\celsius} \\
-        \ac{rh} & \qtyrange{20}{80}{\percent} \\
+        \ac{rh} & \qtyrange{10}{80}{\percent} \\
         \ac{clo} & \qtyrange{0.3}{1.5}{clo} \\
         \ac{met} & \qtyrange{1}{2}{met} \\
-        % todo shall we also include limits on Age?
-        % todo shall we also include airspeed?
         \bottomrule
     \end{tabular}
     \caption{New proposed applicability limits for the \gls{55} and \gls{7730} Standards.}

@@ -3,7 +3,7 @@
 \section{Analysis of the dataset with air speed measurements at three heights}\label{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}
 
 In this section, we analyzed the dataset with air speed measurements at three heights.
-Only eight papers in the \ac{db2} had air speed measurements at three heights with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
+Only a limited subset of papers in the \ac{db2} had air speed measurements at three heights with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
 A summary of the papers is provided in Table~\ref{tab:three_heights_papers}.
 The table also shows the number of measurements for each paper and how much (percentage) each study contributed to the dataset.
 \begin{table}[htb!]
@@ -12,8 +12,8 @@ The table also shows the number of measurements for each paper and how much (per
     \caption{F1-score for the \ac{pmv} and \ac{pmv-ce} models for different subsets of data.}
     \label{tab:three_heights_papers}
 \end{table}
-The paper by Zhang et al.\ and Cena et al.\ contributed the most to the dataset with \qty{58}{\percent} and \qty{23}{\percent}, respectively.
-These \num{1184} where used to compare the \ac{pmv} and \ac{pmv-ce} models using the same methodology as in Section~\ref{sec:results}.
+The paper by Cena et al.\ (1999), de Dear et al. (1994), and Zhang et al.\ (2013 and 2010) contributed the most to the dataset.
+These \num{3063} entries where used to compare the \ac{pmv} and \ac{pmv-ce} models using the same methodology as in Section~\ref{sec:results}.
 The air speed distribution at the three heights for each paper is shown in Figure~\ref{fig:boxenplot_wind_speed_three_heights}.
 \begin{figure}[htb!]
     \centering
@@ -23,11 +23,15 @@ The air speed distribution at the three heights for each paper is shown in Figur
 \end{figure}
 The distribution of air speed at the three heights varies between the papers, hence, it is difficult to make generalizations.
 However, it should be noted that in most of the studies the air speed measured at the chest height was a good representation of the air speed at the other two heights.
-This assumption is not valid for Brenton et al.\ (1994) and Donnini et al.\ (1996) it should be noted that these two studies had a only \num{11} and \num{7} measurements, respectively.
+This assumption is not valid for Brenton et al.\ (1994) however this study contributed only \qty{1}{\percent} of the dataset.
+The adjustment of \ac{v} based on the \ac{met} significantly increased the base value of the air speed measured by all the studies.
+With the value of \ac{v} being \var{delta_v_mean} higher than the average of the other wind speeds combined.
+The discussion on weather this increase is justified is beyond the scope of this paper since both Standards require the user to adjust the air speed based on the \ac{met} value.
+
 In this section we are not showing the F1-score for the \ac{pmv} and \ac{pmv-ce} models for the different subsets of data since we have already presented the results in Table~\ref{tab:f1}.
-We would like to remind the reader that the F1-score for \ac{pmv-ce} model was lower than the \ac{pmv} model for this subset of data, i.e, \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and \ac{v} measured at three heights.
-As previously discussed this is an unexpected result since the \ac{pmv} should be significantly more accurate than the \ac{pmv-ce} model for this subset of data.
-In this section we are not showing the accuracy of the \ac{pmv} and \ac{pmv-ce} model as a function of the \ac{tsv} since we have a very limited number of measurements for this subset of data moreover this analysis has some limitations as previously discussed.
+We would like to remind the reader that the F1-macro score for \ac{pmv-ce}~=~\num{.16} was lower than the \ac{pmv}~=~\num{.17} for this subset of data, i.e, \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and \ac{v} measured at three heights.
+As previously discussed this is an unexpected result since the \ac{pmv-ce} should be significantly more accurate than the \ac{pmv} model for this subset of data to justify its use.
+In this section we are not showing the accuracy of the \ac{pmv} and \ac{pmv-ce} model as a function of the \ac{tsv} since we have a very limited number of measurements for this subset of data moreover this analysis has several limitations as previously discussed.
 
 We, however, plotted the \ac{pmv} and \ac{pmv-ce} values against the \ac{tsv} values and we plotted the \ac{lowess} curves to visualize the prevailing data trend.
 The results are shown in Figure~\ref{fig:bubble_models_vs_tsv_three_heights}.
@@ -41,10 +45,10 @@ The results are shown in Figure~\ref{fig:bubble_models_vs_tsv_three_heights}.
     \label{fig:bubble_models_vs_tsv_three_heights}
 \end{figure*}
 The results show that the \ac{pmv} model is more accurate than the \ac{pmv-ce} model.
-The intercept of the \ac{pmv} model is \num{-.2} while the intercept of the \ac{pmv-ce} model is \num{-.39}.
-Moreover, the \ac{pmv-ce} \ac{lowess} curve is only marginally higher than \num{0} despite partcipants reporting a \ac{tsv} of \num{3}.
+The intercept of the \ac{pmv} model is \num{-.31} while the intercept of the \ac{pmv-ce} model is \num{-.41}.
+Moreover, the \ac{pmv-ce} \ac{lowess} curve is only marginally higher than \num{0} despite participants reporting a \ac{tsv} of \num{3}.
 
-Despite the fact that these results already showing that the \ac{pmv} model is more accurate than the \ac{pmv-ce} model for this subset of data, we also calculated the overall bias of the \ac{pmv} and \ac{pmv-ce} models.
+Finally, we are showing calculated the overall bias of the \ac{pmv} and \ac{pmv-ce} models.
 The results are shown in Figure~\ref{fig:hist_discrepancies_three_heights}.
 \begin{figure}[htb!]
     \centering
@@ -52,9 +56,9 @@ The results are shown in Figure~\ref{fig:hist_discrepancies_three_heights}.
     \caption{Bias of the \ac{pmv} and \ac{pmv-ce} models for the dataset with air speed measured at three heights.}
     \label{fig:hist_discrepancies_three_heights}
 \end{figure}
-The \ac{pmv} model has a bias of \num{-.1} while the \ac{pmv-ce} model has a bias of \num{-.28}.
-Moreover, the distribution of the discrepancies for the \ac{pmv} model is more centered around \num{0} than the \ac{pmv-ce} model.
-These results allows us to conclude that the \ac{pmv} model is more accurate than the \ac{pmv-ce} model for the dataset with air speed measured at three heights.
+The \ac{pmv} model has a bias of \num{-.28} while the \ac{pmv-ce} model has a bias of \num{-.38}.
+The inter-quartile range for the \ac{pmv} model is more centered around \num{0} than the \ac{pmv-ce} model.
+These results allow us to conclude that the \ac{pmv} model is more accurate than the \ac{pmv-ce} model for the dataset with air speed measured at three heights.
 Consequently, we recommend using the \ac{pmv} model instead of the \ac{pmv-ce}.
 
 %\section{Comparison between the PMV formulations with the \ac{pmvg}}\label{sec:comparison-between-the-pmv-formulations-with-the-two-node-model}
@@ -77,7 +81,3 @@ Consequently, we recommend using the \ac{pmv} model instead of the \ac{pmv-ce}.
 %    \caption{}
 %    \label{fig:pmv_two_node_comparison}
 %\end{figure*}
-%
-%% todo include the folling
-%%I think it is reasonable to have an appendix where we do the analysis for the dataset with only three heights.
-%%Given that we have only five authors, we can provide a bit more info about those, maybe in a table format, (paper DOI, publication year, measuring heights, type of anemometer, accuracy, compliance with ISO 7726 or ASHRAE 55, type of building, how long they measure, etc) and have a graph of air speed letter-plot as you did in the email to Ed. For example, for the Yufeng's paper he specified that he followed ISO 7726 (so very good), he used an omni-directional anemometer with a range of 0-5 m/s and accuracy of +-0.02 m/s between 0 and 0.99 m/s and +-0.1 m/s between 1 and 5 m/s). The measurements were taken at 0.1, 0.6 and 1.1 m.

@@ -1,15 +1,15 @@
 \begin{frontmatter}
 
-    \title{PMV: Comparing the prediction accuracy of ISO 7730:2005 and ASHRAE 55:2023}
+    \title{Which PMV model should you use? Comparison of the ISO 7730:2005 and ASHRAE 55:2023 PMV models}
     % alternatives PMV: Which formulation should you use the ISO 7730:2005 or ASHRAE 55:2020?
     % alternatives ISO 7730:2005 vs ASHRAE 55:2023: A comparison of the accuracy of the two implementations of the PMV model
 
     \author[label1,label2]{Federico Tartarini\corref{mycorrespondingauthor}}
-    \ead{federicotartarini@berkeley.edu}
+    \ead{federico.tartarini@sydney.edu.au}
     \author[label3]{Stefano Schiavon}
 
-    \address[label1]{Berkeley Education Alliance for Research in Singapore, Singapore}
-    \address[label2]{Heat and Health Research Incubator, Faculty of Health and Medicine, University of Sydney, Sydney, AU}
+    \address[label1]{University of Sydney, Sydney, AU}
+    \address[label2]{Berkeley Education Alliance for Research in Singapore, Singapore}
     \address[label3]{Center for the Built Environment, University of California, Berkeley, CA, USA}
 
     \cortext[mycorrespondingauthor]{Corresponding author}
@@ -19,20 +19,22 @@
 %        It is based on a heat balance model of the human body.
 
 %        Being relatively simple to calculate and included in both the \gls{7730} and \gls{55} Standards, the \ac{pmv} has seen widespread adoption and has been used by professionals worldwide to design and operate buildings and by researchers to predict thermal sensation.
-        The \ac{pmv} model, developed by Fanger, is still currently used in its original form in the \gls{7730} although it has a low prediction accuracy, especially outside thermal neutrality.
-        Several other formulations have been proposed to compensate for its limitations, one of which is currently used in the \gls{55}.
-        The \gls{7730} and \gls{55} are the most widely used thermal comfort Standards worldwide, and their different \ac{pmv} formulations are a source of confusion for many users who often struggle to determine which model is most appropriate for their needs.
+        The \ac{pmv} model, developed by Fanger, is still currently used in its original form in the \gls{7730}.
+        It has a low prediction accuracy, especially outside thermal neutrality.
+        Several other formulations have been proposed to compensate for its limitations, one is the \ac{pmv-ce}.
+        The \gls{7730} and \gls{55} are the most widely used thermal comfort Standards worldwide, and their different \ac{pmv} formulations are a source of confusion.
+%        for many users who often struggle to determine which model is most appropriate for their needs.
+        Which model is more accurate?
+        Which model should you use?
 
-        We compared the accuracy of the two main \ac{pmv} formulations, against \var{entries_db_used} thermal sensation votes collected in buildings.
-        We found that the use of the \ac{pmv-ce} provides no significant improvement over the original \ac{pmv} in predicting thermal sensation, despite its increased complexity and computational resources needed to calculate the results.
-        Surprisingly, the bias of the \ac{pmv-ce} model was greater (a higher number is negative) than the \ac{pmv} when we only analyzed the entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\sec}.
-
-        Based on our results, we recommend using the original \ac{pmv} instead of the \ac{pmv-ce} and we suggest reducing the applicability limit of the \ac{pmv} within the range $\mid$\ac{pmv}$\mid \leq 0.5$.
-        This recommendation already aligns with the \gls{55} Standard's definition which states that the \ac{pmv} model can be used to determine ``the combinations of indoor thermal environmental factors and personal factors that will produce \textit{satisfactory thermal environmental conditions} for a majority of the occupants within the space''.
-        The \ac{pmv} model cannot determine the degree to which people are dissatisfied.
+        We compared the accuracy of the two \ac{pmv} formulations, against \var{entries_db_used} thermal sensation votes collected in buildings.
+        Based on our results, we recommend using the original \ac{pmv} instead of the \ac{pmv-ce}, since the \ac{pmv-ce} provides no significant improvement over the original \ac{pmv} in predicting thermal sensation, despite its increased complexity.
+%        Surprisingly, the bias of the \ac{pmv-ce} model was greater (a higher number is negative) than the \ac{pmv} when we only analyzed the entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\sec}.
+        We suggest reducing the applicability limit of the \ac{pmv} within the range $\mid$\ac{pmv}$\mid \leq 0.5$ since the \ac{pmv} model cannot determine the degree to which people are dissatisfied.
+%        This recommendation already aligns with the \gls{55} Standard's definition which states that the \ac{pmv} model can be used to determine ``the combinations of indoor thermal environmental factors and personal factors that will produce \textit{satisfactory thermal environmental conditions} for a majority of the occupants within the space''.
         A \ac{pmv} value higher than \num{.5} or lower than \num{-.5} only indicates that people's thermal sensation is on the `warm' or `cold' side, respectively.
-        Finally, our results show that the classic assumption that people who are `slightly warm' or `slightly cool' are thermally comfortable leads to under-counting thermal discomfort in our dataset.
-        We, hence, recommend in thermal comfort research the use of the thermal preference scale to determine how people perceive their thermal environment.
+        Finally, the classic assumption that people who are `slightly warm' or `slightly cool' are thermally comfortable leads to under-counting thermal discomfort in our dataset.
+        We, hence, recommend in thermal comfort research the use of the thermal preference scale instead of the thermal sensation scale.
     \end{abstract}
 
     \begin{keyword}

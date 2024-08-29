@@ -26,6 +26,8 @@ from sklearn.metrics import r2_score, mean_absolute_error
 from scipy import optimize
 import scipy
 
+from matplotlib.lines import Line2D
+
 mpl.use("TkAgg")
 
 warnings.filterwarnings("ignore")
@@ -116,7 +118,7 @@ plt.rcParams["font.size"] = 8.8
 applicability_limits = {
     "ta": [10, 30],
     "tr": [10, 40],
-    "vel": [0, 1],
+    "vel_r": [0, 1],
     "clo": [0, 1.5],
     "met": [1, 4],
     "thermal_sensation": [-3.5, 3.5],
@@ -133,7 +135,7 @@ var_names = {
     "ta": r"$t_{db}$",
     "tr": r"$\overline{t_{r}}$",
     "top": r"$t_{o}$",
-    "vel": r"$V$",
+    "vel_r": r"$V$",
     "rh": r"RH",
     "clo": r"$I_{cl}$",
     "met": r"$M$",
@@ -165,7 +167,7 @@ var_names = {
 var_units = {
     "ta": r"$^{\circ}$C",
     "tr": r"$^{\circ}$C",
-    "vel": r"m/s",
+    "vel_r": r"m/s",
     "rh": r"%",
     "clo": r"clo",
     "met": r"met",
@@ -1154,7 +1156,7 @@ def importing_filtering_processing(load_preprocessed=False):
     save_var_latex("entries_db_all", df_.shape[0])
 
     # entries without ta, rh, v, clo, met
-    df_valid_input = df_.dropna(subset=["ta", "vel", "rh", "met", "clo"])
+    df_valid_input = df_.dropna(subset=["ta", "vel_r", "rh", "met", "clo"])
     df_valid_input_no_tr = df_valid_input.dropna(subset=["tr"]).shape[0]
     save_var_latex(
         "entries_db_valid",
@@ -1212,6 +1214,20 @@ def importing_filtering_processing(load_preprocessed=False):
 
     df_["pmv"] = results_pmv_ppd["pmv"]
     df_["ppd"] = results_pmv_ppd["ppd"]
+
+    results_pmv_ppd = pmv_ppd(
+        tdb=df_.ta,
+        tr=df_.tr,
+        vr=df_.vel_r,
+        rh=df_.rh,
+        met=df_.met,
+        clo=df_.clo_d,
+        standard="ashrae",
+        limit_inputs=False,
+    )
+
+    df_["pmv_ce"] = results_pmv_ppd["pmv"]
+    df_["ppd_ce"] = results_pmv_ppd["ppd"]
 
     # estimate thermal sensation using toby's model
     df_["pmv_toby"] = list(
@@ -1278,7 +1294,6 @@ def importing_filtering_processing(load_preprocessed=False):
         ].diff(axis=1)[f"lr_hb_{model}"]
 
     save_var_latex("entries_db_used", df_.shape[0])
-    save_var_latex("entries_db_used_v_01", df_[df_.vel > 0.1].shape[0])
 
     df_.to_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
 
@@ -1292,7 +1307,7 @@ def bar_chart(
     figletter=False,
     variables=["pmv_round", "pmv_ce_round"],
 ):
-    if data.vel.min() != 0:
+    if data.vel_r.min() != 0:
         f, axs = plt.subplots(
             1, 2, sharey=True, constrained_layout=True, figsize=(8.0, 4.1)
         )
@@ -1330,7 +1345,7 @@ def bar_chart(
             x = "thermal_sensation_round"
             x_label = "thermal_sensation"
             axs[ix].set(xlabel=x_label, ylabel="Percentage [%]")
-            if data.vel.min() == 0:
+            if data.vel_r.min() == 0:
                 axs[ix].set_title(var_names[model], y=0.9)
         df_total = _df.sum(axis=1)
         df_rel = _df.div(df_total, 0) * 100
@@ -1367,7 +1382,7 @@ def bar_chart(
             axs[ix].set(xlabel=var_names[model], ylabel="Percentage [%]")
         else:
             axs[ix].set(xlabel=x_label, ylabel="Percentage [%]")
-            if data.vel.min() == 0:
+            if data.vel_r.min() == 0:
                 axs[ix].set_title(var_names[model], y=1.1)
                 axs[ix].set_xticklabels("")
                 axs[ix].set_xlabel("")
@@ -1422,7 +1437,7 @@ def bar_chart(
                         )
                     cum_sum += el
 
-    # if data.vel.min() != 0:
+    # if data.vel_r.min() != 0:
     # sm = plt.cm.ScalarMappable(cmap=cmap1, norm=plt.Normalize(vmin=-3.5, vmax=+3.5))
     # cmap = mpl.cm.rainbow
     # bounds = np.linspace(-3.5, 3.5, 8)
@@ -1453,7 +1468,7 @@ def bar_chart(
         plt.gcf().text(0.05, 0.95, f"{figletter})", weight="bold")
 
     plt.savefig(
-        f"./Manuscript/src/figures/bar_plot_{ind}_Vmin_{data.vel.min()}.png", dpi=300
+        f"./Manuscript/src/figures/bar_plot_{ind}_Vmin_{data.vel_r.min()}.png", dpi=300
     )
 
 
@@ -1678,14 +1693,15 @@ def plot_error_prediction(data):
             )
 
     plt.savefig(
-        f"./Manuscript/src/figures/prediction_error_Vmin_{data.vel.min()}.png", dpi=300
+        f"./Manuscript/src/figures/prediction_error_Vmin_{data.vel_r.min()}.png",
+        dpi=300,
     )
 
 
 def plot_distribution_variable():
     f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(8, 3))
 
-    for ix, var in enumerate(["ta", "tr", "rh", "vel", "clo", "met"]):
+    for ix, var in enumerate(["ta", "tr", "rh", "vel_r", "clo", "met"]):
         sns.boxenplot(
             y=var,
             data=df,
@@ -1706,7 +1722,7 @@ def plot_distribution_variable():
                 yticks=(np.linspace(10, 90, 5)),
                 ylim=(10, 90),
             )
-        if var == "vel":
+        if var == "vel_r":
             axs[ix].set(
                 yticks=(np.linspace(0, 1, 5)),
                 ylim=(0, 1),
@@ -1726,14 +1742,14 @@ def plot_distribution_variable():
     plt.savefig("./Manuscript/src/figures/dist_input_data.png", dpi=300)
     plt.show()
 
-    desc = df[["ta", "tr", "rh", "vel", "clo", "met"]].describe(
+    desc = df[["ta", "tr", "rh", "vel_r", "clo", "met"]].describe(
         percentiles=percentiles_to_show
     )
 
     save_var_latex("ta_95_perc_min", desc["ta"]["2.5%"], "\\celsius", round_var=2)
     save_var_latex("rh_95_perc_max", desc["rh"]["97.5%"], "\\percent", round_var=2)
-    save_var_latex("v_95_perc_max", desc["vel"]["97.5%"], "\\m\\per\\s", round_var=2)
-    save_var_latex("v_median", desc["vel"]["50%"], "\\m\\per\\s", round_var=2)
+    save_var_latex("v_95_perc_max", desc["vel_r"]["97.5%"], "\\m\\per\\s", round_var=2)
+    save_var_latex("v_median", desc["vel_r"]["50%"], "\\m\\per\\s", round_var=2)
 
     save_var_latex("entries_with_sex_info", df["gender"].dropna().shape[0])
 
@@ -1777,13 +1793,37 @@ def plot_distribution_variable():
     plt.savefig("./Manuscript/src/figures/dist_other_data.png", dpi=300)
     plt.show()
 
+    # filter data with age between 20 and 35
+    df_age_size = df[(df["age"] >= 20) & (df["age"] <= 35)].shape[0]
+    save_var_latex(
+        "percentage_age_20_35",
+        int(df_age_size / df["age"].dropna().shape[0] * 100),
+        "\\percent",
+    )
+    # filter data with age over 60
+    df_age_size = df[(df["age"] >= 60)].shape[0]
+    save_var_latex(
+        "percentage_age_over_60",
+        df_age_size / df["age"].dropna().shape[0] * 100,
+        "\\percent",
+        1,
+    )
+    # filter data with running mean between 10 and 25
+    df_size = df[(df["t_mot_isd"] >= 10) & (df["t_mot_isd"] <= 25)].shape[0]
+    save_var_latex(
+        "running_mean_10_25",
+        df_size / df["t_mot_isd"].dropna().shape[0] * 100,
+        "\\percent",
+        1,
+    )
 
-def analyse_studies_with_three_speed_measurements():
+
+def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
     # [['contributor', 'publication', 'region', 'country', 'city']]
-    df_three_heights = df[df["vel"] >= 0.2].dropna(subset="vel_l")
+    df_three_heights = data_[data_["vel_r"] >= 0.2].dropna(subset="vel_l")
     df_three_heights.replace(
         {
-            "https://doi.org/10.1016/j.buildenv.2010.05.024": "Zhang, Y., Wang, J., Chen, H., Zhang, J., & Meng, Q. (2010).",
+            "https://doi.org/10.1016/j.buildenv.2010.05.024": "Zhang, Y. et al. (2010).",
             "https://doi.org/10.1016/j.buildenv.2012.09.009": "Zhang, Y., Chen, H., Meng, Q. (2013)",
             "https://doi.org/10.1016/j.buildenv.2018.01.018": "Tartarini, F., Cooper, P., Fleming, R. (2018)",
         },
@@ -1795,12 +1835,25 @@ def analyse_studies_with_three_speed_measurements():
     df_three_heights["publication"] = df_three_heights["publication"].str.replace(
         "&", r"and"
     )
-    df_three_heights.to_pickle("Data/records_with_three_air_speeds.pk")
+    df_three_heights["publication"] = df_three_heights["publication"].str.replace(
+        "Benton, C. C. and Brager, G. S. Advanced Customer Technology Test (ACT2)",
+        "Benton, C. C. and Brager, G. S. ACT2",
+    )
+    df_three_heights["publication"] = df_three_heights["publication"].str.replace(
+        "Benton, C. et al. Advanced Customer Technology Test (ACT2)",
+        "Benton, C. et al. ACT2",
+    )
+    df_three_heights.loc[df_three_heights["publication"].isna(), "publication"] = (
+        df_three_heights.loc[df_three_heights["publication"].isna(), "contributor"]
+    )
+
+    df_delta_v = df_three_heights["vel_r"] - df_three_heights[["vel_h", "vel_m", "vel_l"]].mean(axis=1)
+    save_var_latex("delta_v_mean", df_delta_v.mean(), "\\m\\per\\s", 2)
 
     plt.close("all")
-    f, ax = plt.subplots(1, 1, constrained_layout=True)
+    f, ax = plt.subplots(1, 1, constrained_layout=True, figsize=(8, 6))
     df_stacked = (
-        df_three_heights[["vel_h", "vel_m", "vel_l", "publication"]]
+        df_three_heights[["vel_h", "vel_m", "vel_l", "vel_r", "publication"]]
         .set_index("publication")
         .stack()
     )
@@ -1812,157 +1865,158 @@ def analyse_studies_with_three_speed_measurements():
         y="publication",
         x="value",
         ax=ax,
-        palette=["#FC9514", "#FDB515", "#FCCF14"],
+        palette=["#FC9514", "#FDB515", "#FCCF14", c_green],
     )
     y_labels = ax.get_yticklabels()
     new_y_labels = []
     index_change = 1
     for ix, label in enumerate(y_labels):
         text = label.get_text()
-        if index_change == ix:
-            text = text.replace("vel_m", "chest height")
+        if "vel_m" in text:
+            text = text.replace("vel_m", "      chest height")
             index_change += 3
         else:
             text = text.replace("vel_h", "vel_head height")
             text = text.replace("vel_l", "vel_ankle height")
+            text = text.replace("vel_r", "vel_relative wind speed")
             text = text.split("vel_")[1]
         label.set_text(text)
         new_y_labels.append(label)
     ax.set_yticklabels(new_y_labels)
     ax.set(xlabel="Wind speed (m/s)", ylabel="")
 
-    from matplotlib.lines import Line2D
-
-    ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
-    y_value = 0.99
-    for ix in range(0, 9):
-        x, y = np.array([[0.42, 1], [y_value, y_value]])
+    ax2 = plt.axes([0, 0.07, 1, 0.92], facecolor=(1, 1, 1, 0))
+    y_value = 1
+    for ix in range(0, 13):
+        x, y = np.array([[0.3, 1], [y_value, y_value]])
         line = Line2D(x, y, lw=0.5, color="gray", alpha=0.4)
         ax2.add_line(line)
-        y_value -= 0.217 / 2
+        y_value -= 1 / 11
 
     ax2.grid(False)
+    ax2.axis("off")
     ax.grid(False)
-
     plt.savefig(
         "./Manuscript/src/figures/boxenplot_wind_speed_three_heights.png", dpi=300
     )
     plt.show()
 
     df_publications = (
-        df_three_heights.groupby(["contributor", "publication"])["vel"]
+        df_three_heights.groupby(["contributor", "publication"])["vel_r"]
         .count()
         .sort_values(ascending=False)
     )
     df_publications = df_publications.reset_index()
 
-    df_publications[r"\%"] = df_publications["vel"] / df_publications["vel"].sum() * 100
+    df_publications[r"\%"] = (
+        df_publications["vel_r"] / df_publications["vel_r"].sum() * 100
+    )
     df_publications.loc["Total"] = df_publications.sum(numeric_only=True)
     df_publications.replace({np.nan: "Total"}, inplace=True)
-    df_publications[["publication", "vel", r"\%"]].set_index("publication").rename(
-        columns={"vel": "Count"}
+    df_publications[["publication", "vel_r", r"\%"]].set_index("publication").rename(
+        columns={"vel_r": "Count"}
     ).to_latex(
         "./Manuscript/src/tables/publications_with_three_heights.tex",
         float_format="{:.0f}".format,
     )
 
-    df_perc = (
-        (
-            df.groupby(["country", "contributor"])["record_id"]
-            .count()
-            .sort_values(ascending=False)
-            / df.shape[0]
-            * 100
-        )
-        .to_frame()
-        .rename(columns={"record_id": "percentage"})
-        .round()
-    )
-    df_count = (
-        (
-            df.groupby(["country", "contributor"])["record_id"]
-            .count()
-            .sort_values(ascending=False)
-        )
-        .to_frame()
-        .rename(columns={"record_id": "count"})
-        .round(1)
-    )
-    df_sources = pd.concat([df_count, df_perc], axis=1).head(10)
-    df_sources.loc["Total"] = df_sources.sum()
-    print(df_sources.reset_index().to_markdown())
-
-    top_contributors = (
-        df.groupby(["country", "contributor"])["record_id"]
-        .count()
-        .sort_values(ascending=False)
-        .head(10)
-        .reset_index()["contributor"]
-        .to_list()
-    )
-
-    df_top = df[df["contributor"].isin(top_contributors)]
-
-    sns.boxenplot(df_top, y="contributor", x="vel")
-    plt.tight_layout()
-    plt.show()
-
-    # only those with v > 0.2
-    df_top_vel = df[df["vel"] > 0.2]
-
-    df_perc = (
-        (
-            df_top_vel.groupby(["country", "contributor"])["record_id"]
-            .count()
-            .sort_values(ascending=False)
-            / df_top_vel.shape[0]
-            * 100
-        )
-        .to_frame()
-        .rename(columns={"record_id": "percentage"})
-        .round()
-    )
-    df_count = (
-        (
-            df_top_vel.groupby(["country", "contributor"])["record_id"]
-            .count()
-            .sort_values(ascending=False)
-        )
-        .to_frame()
-        .rename(columns={"record_id": "count"})
-        .round(1)
-    )
-    df_sources = pd.concat([df_count, df_perc], axis=1).head(10)
-    df_sources.loc["Total"] = df_sources.sum()
-    print(df_sources.reset_index().to_markdown())
-
-    top_contributors = (
-        df_top_vel.groupby(["country", "contributor"])["record_id"]
-        .count()
-        .sort_values(ascending=False)
-        .head(10)
-        .reset_index()["contributor"]
-        .to_list()
-    )
-
-    df_top = df_top_vel[df_top_vel["contributor"].isin(top_contributors)]
-
-    sns.boxenplot(df_top, y="contributor", x="vel")
-    plt.tight_layout()
-    plt.show()
-
-    df_top_vel.groupby("contributor")[
-        ["vel", "vel_h", "vel_m", "vel_l"]
-    ].count().sort_values(by="vel_h", ascending=False)
-    df_top_vel.dropna(subset="vel_l")
+    # df_perc = (
+    #     (
+    #         df.groupby(["country", "contributor"])["record_id"]
+    #         .count()
+    #         .sort_values(ascending=False)
+    #         / df.shape[0]
+    #         * 100
+    #     )
+    #     .to_frame()
+    #     .rename(columns={"record_id": "percentage"})
+    #     .round()
+    # )
+    # df_count = (
+    #     (
+    #         df.groupby(["country", "contributor"])["record_id"]
+    #         .count()
+    #         .sort_values(ascending=False)
+    #     )
+    #     .to_frame()
+    #     .rename(columns={"record_id": "count"})
+    #     .round(1)
+    # )
+    # df_sources = pd.concat([df_count, df_perc], axis=1).head(10)
+    # df_sources.loc["Total"] = df_sources.sum()
+    # print(df_sources.reset_index().to_markdown())
+    #
+    # top_contributors = (
+    #     df.groupby(["country", "contributor"])["record_id"]
+    #     .count()
+    #     .sort_values(ascending=False)
+    #     .head(10)
+    #     .reset_index()["contributor"]
+    #     .to_list()
+    # )
+    #
+    # df_top = df[df["contributor"].isin(top_contributors)]
+    #
+    # sns.boxenplot(df_top, y="contributor", x="vel_r")
+    # plt.tight_layout()
+    # plt.show()
+    #
+    # # only those with v > 0.2
+    # df_top_vel = df[df["vel_r"] > 0.2]
+    #
+    # df_perc = (
+    #     (
+    #         df_top_vel.groupby(["country", "contributor"])["record_id"]
+    #         .count()
+    #         .sort_values(ascending=False)
+    #         / df_top_vel.shape[0]
+    #         * 100
+    #     )
+    #     .to_frame()
+    #     .rename(columns={"record_id": "percentage"})
+    #     .round()
+    # )
+    # df_count = (
+    #     (
+    #         df_top_vel.groupby(["country", "contributor"])["record_id"]
+    #         .count()
+    #         .sort_values(ascending=False)
+    #     )
+    #     .to_frame()
+    #     .rename(columns={"record_id": "count"})
+    #     .round(1)
+    # )
+    # df_sources = pd.concat([df_count, df_perc], axis=1).head(10)
+    # df_sources.loc["Total"] = df_sources.sum()
+    # print(df_sources.reset_index().to_markdown())
+    #
+    # top_contributors = (
+    #     df_top_vel.groupby(["country", "contributor"])["record_id"]
+    #     .count()
+    #     .sort_values(ascending=False)
+    #     .head(10)
+    #     .reset_index()["contributor"]
+    #     .to_list()
+    # )
+    #
+    # df_top = df_top_vel[df_top_vel["contributor"].isin(top_contributors)]
+    #
+    # sns.boxenplot(df_top, y="contributor", x="vel_r")
+    # plt.tight_layout()
+    # plt.show()
+    #
+    # df_top_vel.groupby("contributor")[
+    #     ["vel_r", "vel_h", "vel_m", "vel_l"]
+    # ].count().sort_values(by="vel_h", ascending=False)
+    # df_top_vel.dropna(subset="vel_l")
 
 
 def plot_bubble_models_vs_tsv(
     data_: pd.DataFrame() = None,
     fig_name: str = "./Manuscript/src/figures/bubble_models_vs_tsv.png",
+    fig_letters: list[str] = ["a", "b"],
 ) -> None:
     data_plot = data_.copy()
-    # data_plot = pd.read_pickle("Data/records_with_three_air_speeds.pk")
 
     plt.close("all")
     # Scatter thermal_sensation vs pmv prediction
@@ -2021,6 +2075,11 @@ def plot_bubble_models_vs_tsv(
         axs[ix].set(title=var_names[model], ylabel="", xlabel="")
     axs[0].set(ylabel="PMV value")
     f.supxlabel(var_names["thermal_sensation"])
+    ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
+    ax2.text(0.025, 0.95, fig_letters[0], fontsize=16, fontweight="bold")
+    ax2.text(0.95, 0.95, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.axis("off")
+    ax2.grid(False)
     plt.savefig(fig_name, dpi=300)
     plt.show()
 
@@ -2139,11 +2198,12 @@ def plot_stacked_bar_predictions_ts(
     hb_models: bool = False,
     v_min: float = 0.0,
     fig_name: str = None,
+    fig_letters: list[str] = ["a", "b"],
 ) -> None:
     plt.close("all")
 
     if fig_name is None:
-        fig_name = f"bar_stacked_predictions_ts_{v_min}"
+        fig_name = f"bar_stacked_model_accuracy_{v_min}"
     models = models_to_test
     if hb_models:
         models = [f"lr_hb_{x}" for x in models_to_test[:-1]]
@@ -2155,7 +2215,7 @@ def plot_stacked_bar_predictions_ts(
 
     for ix, pmv in enumerate(models):
         var = f"{pmv}_round"
-        df_v = df[df["vel"] >= v_min]
+        df_v = df[df["vel_r"] >= v_min]
         df_plot = (
             df_v.groupby("thermal_sensation_round")[var]
             .value_counts(normalize=True)
@@ -2235,6 +2295,11 @@ def plot_stacked_bar_predictions_ts(
         plt.subplots_adjust(left=0.05, right=1, bottom=0.15, top=0.93)
         f.supxlabel(var_names["thermal_sensation"])
 
+    ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
+    ax2.text(0.025, 0.95, fig_letters[0], fontsize=16, fontweight="bold")
+    ax2.text(0.95, 0.95, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.axis("off")
+    ax2.grid(False)
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
     plt.show()
 
@@ -2395,7 +2460,10 @@ def plot_stacked_bar_predictions_tp():
     plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy_tp.png", dpi=300)
 
 
-def plot_bias_distribution_whole_db(hb_models=False, data_: pd.DataFrame = None, fig_name:str="hist_discrepancies"):
+def plot_bias_distribution_whole_db(
+    hb_models=False, data_: pd.DataFrame = None, fig_name: str = "hist_discrepancies",
+    fig_letters: list[str] = ["a)", "b)", "c)", "d)"],
+):
 
     models = models_to_test
     if hb_models:
@@ -2415,7 +2483,7 @@ def plot_bias_distribution_whole_db(hb_models=False, data_: pd.DataFrame = None,
     for row, v in enumerate([0, 0.2]):
         axs = axes[row, :]
         for ix, model in enumerate(models):
-            df_plot = data_.loc[data_["vel"] >= v, f"diff_ts_{model}"]
+            df_plot = data_.loc[data_["vel_r"] >= v, f"diff_ts_{model}"]
             interval = 0.5
             bins_plot = np.arange(-3, 3, interval / 2)
             axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
@@ -2438,7 +2506,7 @@ def plot_bias_distribution_whole_db(hb_models=False, data_: pd.DataFrame = None,
             }
             for var in stats.keys():
                 save_var_latex(f"bias_{var}_{model}_{v}", stats[var])
-            y_text = 3500 if row == 0 else 400
+            y_text = 3500 if row == 0 else 1200
             axs[ix].text(
                 2.3,
                 y_text,
@@ -2451,6 +2519,13 @@ def plot_bias_distribution_whole_db(hb_models=False, data_: pd.DataFrame = None,
             axs[ix].axvline(0, c="k", ls="--")
 
     f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
+    ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
+    ax2.text(0.025, 0.95, fig_letters[0], fontsize=16, fontweight="bold")
+    ax2.text(0.95, 0.95, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.text(0.025, 0.5, fig_letters[2], fontsize=16, fontweight="bold")
+    ax2.text(0.95, 0.5, fig_letters[3], fontsize=16, fontweight="bold")
+    ax2.axis("off")
+    ax2.grid(False)
     plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
     plt.show()
 
@@ -2465,7 +2540,9 @@ def plot_bias_distribution_whole_db(hb_models=False, data_: pd.DataFrame = None,
     )
 
     for ix, model in enumerate(models):
-        df_plot = data_[data_["vel"] >= 0.2].dropna(subset=["vel_l"])[f"diff_ts_{model}"]
+        df_plot = data_[data_["vel_r"] >= 0.2].dropna(subset=["vel_l"])[
+            f"diff_ts_{model}"
+        ]
         interval = 0.5
         bins_plot = np.arange(-3, 3, interval / 2)
         axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
@@ -2482,7 +2559,7 @@ def plot_bias_distribution_whole_db(hb_models=False, data_: pd.DataFrame = None,
         stats = {
             "median": df_plot.median().round(2),
         }
-        y_text = 60
+        y_text = 150
         axs[ix].text(
             2.3,
             y_text,
@@ -2495,7 +2572,14 @@ def plot_bias_distribution_whole_db(hb_models=False, data_: pd.DataFrame = None,
         axs[ix].axvline(0, c="k", ls="--")
 
     f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
-    plt.savefig(f"./Manuscript/src/figures/hist_discrepancies_three_heights.png", dpi=300)
+    ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
+    ax2.text(0.025, 0.9, fig_letters[0], fontsize=16, fontweight="bold")
+    ax2.text(0.95, 0.9, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.axis("off")
+    ax2.grid(False)
+    plt.savefig(
+        f"./Manuscript/src/figures/hist_discrepancies_three_heights.png", dpi=300
+    )
     plt.show()
 
 
@@ -2602,7 +2686,7 @@ def plot_bias_distribution_by_variable_binned():
         # "tr",
         # "top",
         # "t_mot_isd",
-        "vel",
+        "vel_r",
         "rh",
         "clo",
         "met",
@@ -2612,14 +2696,14 @@ def plot_bias_distribution_by_variable_binned():
     ]
 
     bins = {
-        # vel 0.0058333333333333 0.45
+        # vel_r 0.0058333333333333 0.45
         # rh 21.27 71.5
         # clo 0.3000000000000001 1.3099999999999998
         # met 1.0 1.877133105802048
         "ta": [18.5, 21.0, 24.0, 27.0, 29.0],
         # "tr": np.arange(18, 31.5, 2),
         # "top": np.arange(17.5, 30.5, 2),
-        "vel": [0.0, 0.15, 0.3, 0.46],
+        "vel_r": [0.0, 0.15, 0.3, 0.46],
         "rh": [21, 40, 60, 72],
         "hr": np.arange(0, 20, 2),
         "clo": [0.3, 0.5, 0.7, 0.9, 1.1, 1.31],
@@ -2633,8 +2717,7 @@ def plot_bias_distribution_by_variable_binned():
     # plt.close("all")
 
     df_analysis = df.copy()
-    # df_analysis = pd.read_pickle("Data/records_with_three_air_speeds.pk")
-    df_analysis.loc[df_analysis.vel == 0, "vel"] = 0.0000001
+    df_analysis.loc[df_analysis.vel_r == 0, "vel_r"] = 0.0000001
 
     f, axs = plt.subplots(5, 1, figsize=(7, 9))
     axs = axs.flatten()
@@ -2739,11 +2822,16 @@ def plot_bias_distribution_by_variable_binned():
 
 
 def table_f1_scores():
-    conditions_to_report = [("vel", 0), ("vel", 0.2), ("good_vel", None), ("pmv", 1.5)]
+    conditions_to_report = [
+        ("vel_r", 0),
+        ("vel_r", 0.2),
+        ("good_vel", None),
+        ("pmv", 1.5),
+    ]
     df_final = pd.DataFrame()
     for condition in conditions_to_report:
         results_f1 = {}
-        if condition[0] == "vel":
+        if condition[0] == "vel_r":
             df_table = df[df[condition[0]] >= condition[1]]
         elif condition[0] == "pmv":
             df_table = df[(-condition[1] <= df["pmv"]) & (df["pmv"] <= condition[1])]
@@ -2752,7 +2840,7 @@ def table_f1_scores():
                 & (df_table["thermal_sensation"] <= condition[1])
             ]
         elif condition[0] == "good_vel":
-            df_table = df[df["vel"] >= 0.2]
+            df_table = df[df["vel_r"] >= 0.2]
             df_table = df_table.dropna(subset=["vel_l"])
         for model in models_to_test:
             df_analysis = (
@@ -2776,18 +2864,18 @@ def table_f1_scores():
         file = f.read()
         file = file.replace("lrrl", "lccc")
         file = file.replace("condition", "Dataset")
-        file = file.replace("('vel', 0)", "\multirow{3}{*}{All data}", 1)
+        file = file.replace("('vel_r', 0)", "\multirow{3}{*}{All data}", 1)
         file = file.replace(
-            "('vel', 0)",
+            "('vel_r', 0)",
             "",
         )
         file = file.replace(r"micro", r"\specialrule{.01em}{.05em}{.05em} micro")
         file = file.replace(r"\specialrule{.01em}{.05em}{.05em}", r"", 1)
         file = file.replace(
-            r"('vel', 0.2)", r"\multirow{3}{*}{\ac{v} $\geq$ \qty{0.2}{\m\per\s}}", 1
+            r"('vel_r', 0.2)", r"\multirow{3}{*}{\ac{v} $\geq$ \qty{0.2}{\m\per\s}}", 1
         )
         file = file.replace(
-            "('vel', 0.2)",
+            "('vel_r', 0.2)",
             "",
         )
         file = file.replace(
@@ -3247,13 +3335,12 @@ def compare_pmv_pmv_ce_comfort_region():
 
 if __name__ == "__main__":
 
-    # filter data outside standard applicability limits
-    df = importing_filtering_processing(load_preprocessed=True)
-
-    analyse_studies_with_three_speed_measurements()
-
+    plt.close("all")
 
 if __name__ == "__plot__":
+
+    # filter data outside standard applicability limits
+    df = importing_filtering_processing(load_preprocessed=True)
 
     compare_pmv_pmv_ce_comfort_region()
 
@@ -3264,23 +3351,24 @@ if __name__ == "__plot__":
     plot_bar_tp_by_ts(data_=df.copy())
 
     # plot model accuracy using bar chart
-    plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0)
-    plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0.2)
+    plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0, fig_letters=["a)", "b)"])
+    plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0.2, fig_letters=["c)", "d)"])
     # only for entries with velocity >= 0.2 m/s and three heights
     plot_stacked_bar_predictions_ts(
-        data_=df[df["vel"] >= 0.2].dropna(subset="vel_l"),
+        data_=df[df["vel_r"] >= 0.2].dropna(subset="vel_l"),
         v_min=0.2,
         fig_name="bar_stacked_model_accuracy_0.2_three_heights.png",
+        fig_letters=["a)", "b)"],
     )
 
     # print Markdown table of f1-scores
     table_f1_scores()
 
     # plot model results vs TSV
-    plot_bubble_models_vs_tsv(data_=df.copy())
+    plot_bubble_models_vs_tsv(data_=df.copy(), fig_letters=["a)", "b)"],)
     plot_bubble_models_vs_tsv(
-        data_=df[df["vel"] >= 0.2].dropna(subset="vel_l"),
-        fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.png",
+        data_=df[df["vel_r"] >= 0.2].dropna(subset="vel_l"),
+        fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.png", fig_letters=["a)", "b)"],
     )
 
     # plot bias distribution
@@ -3305,7 +3393,7 @@ if __name__ == "__plot__":
 
     compare_pmv_disc()
 
-    analyse_studies_with_three_speed_measurements()
+    analyse_studies_with_three_speed_measurements(data_=df.copy())
 
     plt.close("all")
     f, axs = plt.subplots(1, 5, constrained_layout=True, sharey=True, sharex=True)
@@ -3579,7 +3667,7 @@ if __name__ == "__old_code__":
     # legend_pmv()
 
     # Figure 3
-    plot_error_prediction(data=df[df.vel > 0.1])
+    plot_error_prediction(data=df[df.vel_r > 0.1])
     plot_error_prediction(data=df)
 
 

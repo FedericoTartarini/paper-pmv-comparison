@@ -3,8 +3,8 @@
 The \ac{pmv} is an index that aims to predict the mean value of the thermal sensation votes (self-reported perceptions) of a large group of people on a sensation scale expressed from \num{-3} to \num{3} corresponding to the categories ``cold,'' ``cool,'' ``slightly cool,'' ``neutral,'' ``slightly warm,'' ``warm,'' and ``hot.''~\cite{iso7730, ashrae552023}.
 The \ac{pmv} model has been widely used worldwide by researchers and practitioners.
 It is the most extensively used thermal comfort index for estimating thermal sensation.
-A search within the article title, abstract, and keyword on Scopus with the search term ``predicted mean vote'' returns approximately \num{1600} documents.
-Out of those \num{1082} are scientific peer-reviewed articles published in the research area of engineering, environmental science, social sciences, and energy.
+A search within the article title, abstract, and keyword on Scopus with the search term ``predicted mean vote'' returns approximately \num{2050} documents.
+Out of those \num{1200} are scientific peer-reviewed articles published in the research area of engineering, environmental science, social sciences, and energy.
 This highlights this model's extensive adoption and use among the scientific community.
 To this date, the \ac{pmv} remains to be the most utilized thermal comfort model even though several studies have highlighted that the \ac{pmv} has low accuracy in predicting thermal sensation votes~\cite{Cheung2019, Yao2022, kim2019thermal, tartarini2018thermal, Humphreys2002, doherty_evaluation_1988, tartarini_prediction_2023}.
 
@@ -12,44 +12,18 @@ To overcome the accuracy concerns, in particular when high air speed is used to 
 The best source to see how \ac{pmv-ce} works is the Standard itself, but the Standard does not explain why some choices were implemented.
 A partial justification of the model is described in \mycite{arens_moving_2009} and \mycite{yang_cooling_2015}.
 The process used to calculate the \ac{pmv-ce} in the \gls{55} is summarized in the flowchart depicted in Figure~\ref{fig:flowchart_pmv_ce}.
-In summary, when the \ac{v} exceeds \qty{0.1}{\m\per\s} the \gls{55} prescribes the use of the \ac{ce}.
-The value of \ac{ce} is calculated using the \ac{set} equation.
-The \ac{ce} is then subtracted from both the \ac{tdb} and \ac{tr}.
-The resulting values become the new inputs in the \ac{pmv} model.
-Since the \ac{ce} accounts for  convective heat losses from the person to its environment the value of \ac{v}, used to calculate the \ac{pmv}, is set to \qty{0.1}{\m\per\s}.
-The other three input parameters (\ac{clo}, \ac{met}, and \ac{rh}) remain unchanged.
-Consequently, for a given thermal environment, results of the two \ac{pmv} formulations differ when the value of \ac{v} is higher than \qty{0.1}{\m\per\s}.
-To quantify by how much the two models differ, we calculated the comfort regions ($\mid$\ac{pmv}$\mid \leq 0.5$) for different values of \ac{v} using the \ac{pmv} and \ac{pmv-ce} models and we plotted the results in Figure~\ref{fig:comfort_regios_pmv_pmvce}.
-%The rationale for this approach is that the original formulation of the \ac{pmv} model cannot accurately estimate latent and sensible heat losses from the skin to the environment when \ac{v} is higher than \qty{0.1}{\m\per\s}.
 \begin{figure}[!htb]
     \centering
-    \includegraphics[width=1\textwidth]{figures/pmv_comfort_regions}
-    \caption{Comfort regions ($|$\ac{pmv}$|$~$\leq$~\num{0.5}) calculated using \ac{pmv} and \ac{pmv-ce} models.
-    The chart shows how the comfort regions change as a function of \ac{v}.
-    We assumed $M$~=~1.2 met, $i_{cl}$~=~0.5 clo.
-    \label{fig:comfort_regios_pmv_pmvce}}
-\end{figure}
-
-However, this method has limitations.
-First, it should be noted that over the years, the critical value of \ac{v} has been changed, from \qty{0.15}{\m\per\s} in \mycite{Schiavon2014} to \qty{0.2}{\m\per\s} in the ASHRAE 55--2017~\cite{ASHRAE552017, arens_moving_2009} to \qty{0.1}{\m\per\s} in \gls{55}~\cite{ashrae552023}.
-Second, calculating the \ac{pmv-ce} is more computationally intensive and complex since it requires the user to solve two heat balance equations, the \ac{pmv} and the two-node model.
-Third, we could not find any peer-reviewed scientific publication that quantified the accuracy improvements of this model over the original \ac{pmv}.
-Finally, the \ac{set} temperature which is used to calculate the \ac{ce}, is defined as the hypothetical isothermal environment at a \ac{rh} of \qty{50}{\percent}, \ac{v}~$\leq$~\qty{0.1}{\m\per\s}, and \ac{tr}~=~\ac{tdb} in which the total heat loss from the skin of an imaginary occupant wearing clothing, standardized for the activity concerned, is the same as that from a person in the actual environment with actual clothing and activity level~\cite{ashrae552023}.
-However, while \ac{v}, used to calculate the \ac{pmv-ce}, is set to \qty{0.1}{\m\per\s} since the \ac{ce} already accounts for the convective heat losses, the value of \ac{rh} and \ac{clo} are not adjusted to compensate for the fact that \ac{set} normalizes them.
-We could not find a rationale for this choice in the available literature.
-
-\begin{figure}[!htb]
-    \centering
-    \begin{tikzpicture}[node distance=1.2cm]
-        \node (start) [startstop] {\ac{pmv} calculation as per \gls{55}};
-        \node (dec1) [decision, below of=start, yshift=-.25cm] {\ac{met} $> \qty{1}{met}$ };
-        \node (pro1a) [process, right of=dec1, xshift=3.5cm] {\ac{v} = \ac{v}$+ 0.3 ($\ac{met}$-1)$};
-        \node (dec2) [decision, below of=dec1, yshift=-0.75cm] {\ac{met} $> \qty{1.2}{met}$ };
-        \node (pro2a) [process, right of=dec2, xshift=3.5cm] {\ac{clo} = \ac{clo}$(0.6 + 0.4/$\ac{met}$)$};
-        \node (dec3) [decision, below of=dec2, yshift=-0.75cm] {\ac{v} $> \qty{0.1}{\m\per\s}$ };
-        \node (end1) [startstop, below of=dec3, yshift=-.25cm, xshift=-4cm] {\ac{pmv}(\ac{tdb}, \ac{tr}, \ac{rh}, \ac{v}, \ac{met}, \ac{clo})};
-        \node (pro3) [process, below of=dec3, yshift=-.25cm, xshift=3cm] {Calculate \ac{ce}};
-        \node (end2) [startstop, below of=pro3, yshift=-.5cm] {\ac{pmv}(\ac{tdb} - \ac{ce}, \ac{tr} - \ac{ce}, \ac{rh}, \ac{v} = \qty{0.1}{\m\per\s}, \ac{met}, \ac{clo})};
+    \begin{tikzpicture}[node distance=1cm and 3cm, transform shape]
+        \node (start) [startstop] {\acs{pmv} calculation as per \gls{55}};
+        \node (dec1) [decision, below of=start, yshift=-.25cm] {\acs{met} $> \qty{1}{met}$ };
+        \node (pro1a) [process, right of=dec1, xshift=3.5cm] {\acs{v} = \acs{v}$+ 0.3 ($\acs{met}$-1)$};
+        \node (dec2) [decision, below of=dec1, yshift=-0.75cm] {\acs{met} $> \qty{1.2}{met}$ };
+        \node (pro2a) [process, right of=dec2, xshift=3.5cm] {\acs{clo} = \acs{clo}$(0.6 + 0.4/$\acs{met}$)$};
+        \node (dec3) [decision, below of=dec2, yshift=-0.75cm] {\acs{v} $> \qty{0.1}{\m\per\s}$ };
+        \node (end1) [startstop, below of=dec3, yshift=-.25cm, xshift=-4cm] {\acs{pmv}(\acs{tdb}, \acs{tr}, \acs{rh}, \acs{v}, \acs{met}, \acs{clo})};
+        \node (pro3) [process, below of=dec3, yshift=-.25cm, xshift=3cm] {Calculate \acs{ce}};
+        \node (end2) [startstop, below of=pro3, yshift=-.5cm] {\acs{pmv}(\acs{tdb} - \acs{ce}, \acs{tr} - \acs{ce}, \acs{rh}, \acs{v} = \qty{0.1}{\m\per\s}, \acs{met}, \acs{clo})};
 
         \draw [arrow] (start) -- (dec1);
         \draw [arrow] (dec1) -- node[above,pos=0.3] {Yes} (pro1a);
@@ -65,12 +39,42 @@ We could not find a rationale for this choice in the available literature.
     \caption{Flowchart depicting the steps for the calculation of the PMV following the \gls{55} Standard.}
     \label{fig:flowchart_pmv_ce}
 \end{figure}
+In summary, when the \ac{v} exceeds \qty{0.1}{\m\per\s} the \gls{55} prescribes the use of the \ac{ce}.
+The reader should note that \ac{v} is not the measured value.
+The value of \ac{v} measured by the sensors, should be adjusted based on the \ac{met} of the occupant if \ac{met}~$>$~\qty{1}{met} using this equation \ac{v} = \ac{v}$+ 0.3 ($\ac{met}$-1)$.
+The value of \ac{ce} is calculated using the \ac{set} equation.
+The \ac{ce} is then subtracted from both the \ac{tdb} and \ac{tr}.
+The resulting values become the new inputs in the \ac{pmv} model.
+Since the \ac{ce} accounts for  convective heat losses from the person to its environment the value of \ac{v}, used to calculate the \ac{pmv}, is set to \qty{0.1}{\m\per\s}.
+The other three input parameters (\ac{clo}, \ac{rh}, \ac{met}) remain unchanged.
+Consequently, for a given thermal environment, results of the two \ac{pmv} formulations differ only when the value of \ac{v} is higher than \qty{0.1}{\m\per\s}.
+To show to the reader by how much the output of the two models differ, we calculated the comfort regions ($\mid$\ac{pmv}$\mid \leq 0.5$) for different values of \ac{v} using the \ac{pmv} and \ac{pmv-ce} models assuming \ac{met}~=~\qty{1.2}{met} and \ac{clo}~=~\qty{0.5}{clo}.
+We plotted the results in Figure~\ref{fig:comfort_regios_pmv_pmvce}.
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/pmv_comfort_regions}
+    \caption{Comfort regions ($|$\ac{pmv}$|$~$\leq$~\num{0.5}) calculated using \ac{pmv} and \ac{pmv-ce} models.
+    The chart shows how the comfort regions change as a function of \ac{v}.
+    We assumed $M$~=~1.2 met, $i_{cl}$~=~0.5 clo.
+    \label{fig:comfort_regios_pmv_pmvce}}
+\end{figure}
+The results show that for \ac{v}~=~\qty{0.4}{\m\per\s} the comfort regions estimated using the \ac{pmv-ce} is wider than the one calculated using the \ac{pmv} and shifted towards the warmer temperatures.
 
-Choosing between the \ac{pmv} and \ac{pmv-ce} is consequently now a source of confusion for many practitioners, educators, and researchers worldwide since both models are widely adopted and incorporated in many building codes and standards worldwide.
+The rationale for using the \ac{pmv-ce} model is that the original \ac{pmv} formulation cannot accurately estimate latent and sensible heat losses from the skin to the environment when \ac{v}~$>$~\qty{0.1}{\m\per\s}.
+However, this method has its own limitations.
+First, it should be noted that over the years, the critical value of \ac{v} has been changed, from \qty{0.15}{\m\per\s} in \mycite{Schiavon2014} to \qty{0.2}{\m\per\s} in the ASHRAE 55--2017~\cite{ASHRAE552017, arens_moving_2009} to \qty{0.1}{\m\per\s} in \gls{55}~\cite{ashrae552023}.
+Second, calculating the \ac{pmv-ce} is more computationally intensive and complex since it requires the user to solve two heat balance equations, the \ac{pmv} and the two-node model.
+Third, we could not find any peer-reviewed scientific publication that quantified the accuracy improvements of this model over the original \ac{pmv}.
+Finally, the \ac{set} temperature which is used to calculate the \ac{ce}, is defined as the hypothetical isothermal environment at a \ac{rh} of \qty{50}{\percent}, \ac{v}~$\leq$~\qty{0.1}{\m\per\s}, and \ac{tr}~=~\ac{tdb} in which the total heat loss from the skin of an imaginary occupant wearing clothing, standardized for the activity concerned, is the same as that from a person in the actual environment with actual clothing and activity level~\cite{ashrae552023}.
+However, while \ac{v}, used to calculate the \ac{pmv-ce}, is set to \qty{0.1}{\m\per\s} since the \ac{ce} already accounts for the convective heat losses, the value of \ac{rh} and \ac{clo} are not adjusted to compensate for the fact that \ac{set} normalizes them.
+We could not find a rationale for this choice in the available literature.
 
 Several other formulations of the \ac{pmv} model have been proposed to complicate this issue further.
 Among the most notable formulations there are the: \ac{pmvs}~\cite{GaggeSET}, \ac{pmvg}~\cite{GaggeSET}, \ac{epmv}~\cite{Toftum2002}, and \ac{athb}~\cite{Schweiker2022}.
 \mycite{Yao2022} provides a comprehensive review of different thermal comfort models and compares and describes some of the above-mentioned models.
+Here, we decided to focus on the \ac{pmv} and \ac{pmv-ce} models since they are the most widely used thermal comfort models worldwide and are incorporated in the \gls{7730} and \gls{55} Standards.
+
+Choosing between the \ac{pmv} and \ac{pmv-ce} is consequently now a source of confusion for many practitioners, educators, and researchers worldwide since both models are widely adopted and incorporated in many building codes and standards worldwide.
 
 %In 2002, Fanger, P. O. and Toftum, J. developed the \ac{epmv} an extension of the \ac{pmv}.
 %The \ac{epmv} includes an expectancy factor introduced for use in non-air-conditioned buildings in warm climates.
@@ -113,7 +117,10 @@ Finally, \mycite{Yao2022} only reported the overall bias for the whole dataset, 
 However, their analysis is limited to providing the precision of the model alone, without reporting the sensitivity (also commonly referred to as recall) and they do not provide the bias of the two models.
 
 \subsection{Aim and Objectives}\label{subsec:aim-and-objectives}
-In this paper, we aim to compare the accuracy of the \ac{pmv} and \ac{pmv-ce} models used in the \gls{7730} and \gls{55} Standards, respectively.
+In this paper, we compare the accuracy of the \ac{pmv} and \ac{pmv-ce} models used in the \gls{7730} and \gls{55} Standards, respectively.
+The paper objective is to quantitatively answer the following questions:
+which model should you use?
+Which model is more accurate?
 We used the self-reported \ac{tsv} recorded in the \acf{db2}.
 We aim to determine which \ac{pmv} model is most accurate and which are its applicability limits.
 This will allow \ac{pmv} users - engineers, architects, and educators - to make an informed decision on which model they should use and will help policymakers to select the most appropriate model to be used in Standards.

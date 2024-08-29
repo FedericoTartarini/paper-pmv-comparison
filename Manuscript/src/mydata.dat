@@ -5,14 +5,13 @@ Overall PMV ISO accuracy - limit 2,\num{35}
 Overall PMV ASHRAE accuracy - limit 2,\num{36}
 Overall PMV ISO accuracy - limit 1,\num{44}
 Overall PMV ASHRAE accuracy - limit 1,\num{45}
-entries_db_used,\num{49359}
-entries_db_used_v_01,\num{17123}
+entries_db_used,\num{49282}
 entries_db_all,\num{109033}
-entries_db_valid,\qty{23}{\percent}
-entries_db_valid_no_tr,\qty{29}{\percent}
+entries_db_valid,\qty{46}{\percent}
+entries_db_valid_no_tr,\qty{0}{\percent}
 perc_tsv_neutral,\qty{42}{\percent}
 perc_tsv_hot,\qty{3}{\percent}
-entries_with_tp,\num{41118}
+entries_with_tp,\num{41048}
 ta_95_perc_min,\qty{18.5}{\celsius}
 tr_95_perc_min,\qty{18.4}{\celsius}
 ta_95_perc_max,\qty{29.0}{\celsius}
@@ -20,8 +19,8 @@ ta_median,\qty{23.2}{\celsius}
 tr_95_perc_max,\qty{29.5}{\celsius}
 tr_median,\qty{23.6}{\celsius}
 rh_95_perc_max,\qty{71.5}{\percent}
-v_95_perc_max,\qty{0.46}{\m\per\s}
-v_median,\qty{0.08}{\m\per\s}
+v_95_perc_max,\qty{0.55}{\m\per\s}
+v_median,\qty{0.15}{\m\per\s}
 bias_mean_pmv_0,\num{-0.36}
 bias_median_pmv_0,\num{-0.35}
 bias_sd_pmv_0,\num{1.25}
@@ -35,7 +34,11 @@ bias_median_pmv_0.2,\num{-0.2}
 bias_sd_pmv_0.2,\num{1.21}
 bias_p_skew_pmv_0.2,\num{1.9873380372240127e-08}
 bias_mean_pmv_ce_0.2,\num{-0.43}
-bias_median_pmv_ce_0.2,\num{-0.38}
+bias_median_pmv_ce_0.2,\num{-0.34}
 bias_sd_pmv_ce_0.2,\num{1.19}
 bias_p_skew_pmv_ce_0.2,\num{8.725890695753451e-09}
-entries_with_sex_info,\num{23298}
+entries_with_sex_info,\num{23241}
+percentage_age_20_35,\qty{55}{\percent}
+percentage_age_over_60,\qty{3.0}{\percent}
+running_mean_10_25,\qty{55.2}{\percent}
+delta_v_mean,\qty{0.11}{\m\per\s}

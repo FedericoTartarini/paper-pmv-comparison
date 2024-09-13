@@ -12,7 +12,7 @@ pprint(two_nodes(tdb=35, tr=35, v=0.1, rh=50, met=1.1, clo=0.5))
 pprint(pmv(tdb=35, tr=35, vr=0.1, rh=50, met=1.1, clo=0.5, standard="ASHRAE"))
 3.3  # also 3.3 with ISO
 ```
-![](./figures/PMV and thermal stress.png)
+![](./figures/PMV and thermal stresspdf)
 * I am not sure about the classification issue, precision vs recall and false positive and false negative. SMOTE reduce false negatives at the cost of increasing false positive. Maybe better not to use it.
 * The assumption -1, 0, 1 thermal sensation comfortable is incorrect, see chart comparison thermal preference
 * the database II inherently contain a lot of issues, see simply as a small change in met or clo affects the results. As I show in the COBEE paper
@@ -26,7 +26,7 @@ pprint(pmv(tdb=35, tr=35, vr=0.1, rh=50, met=1.1, clo=0.5, standard="ASHRAE"))
 * create a model that compares SET vs thermal preference, I am not sure SET defines clothing as a function of MET and it is not consistent
     * a model for thermal preference vs w (skin wettedness) for wanting to be cooler?
     * a model for thermal preference vs cold signal (vasonctriction) for wanting to be warmer?
-![](./figures/PMV and w as a function of SET.png)
+![](./figures/PMV and w as a function of SETpdf)
 
 ## Comfort DB overview
 
@@ -36,12 +36,12 @@ The dataset contains mainly:
 * V lower than 0.2 m/s
 * Met lower than 1.5 met
 
-![](./figures/dist_input_data.png)
+![](./figures/dist_input_data.pdf)
 
 * Age is not normally distributed with more votes from younger adults
 * Running mean temperature is also skewed with mainly warm data
 
-![](./figures/dist_other_data.png)
+![](./figures/dist_other_datapdf)
 
 The dataset is not well-balanced, most of the people reported to be thermally `neutral`.
 
@@ -49,7 +49,7 @@ The great majority of the participants voted `no change` when thermally `neutral
 Thermal preference can be easily used to predict `hot` or `cold`.
 The great majority of the people who reported to be `slighlty warm` or `slightly cold` wanted to be `cooler` and `warmer`, respectively.
 
-![](./figures/bar_plot_tp_by_ts.png)
+![](./figures/bar_plot_tp_by_tspdf)
 
 > SMOTE it is used to tweak the model to reduce false negatives at the cost of increasing false positive. For example, we will better detect who is hot but at the same time we will also increase the number of people who are in fact hot but are predicted to be comfortable. SMOTE generally increase recall, but decreases precision. For example a model that always predict hot has a good recall but a low precision.
 
@@ -64,12 +64,12 @@ All models failed to predict thermal discomfort.
 * The ATHB model which tent to predict `neutral` under every condition.
 * The ATHB chart comprises a smaller number of data-points since not all the studies measured running mean outdoor temperature.
 
-![](./figures/bar_stacked_model_accuracy.png)
+![](./figures/bar_stacked_model_accuracypdf)
 
 This plot shows on the x-axis the predicted PVM value while the stacked bar plot shows the number of thermal sensation votes recorded for the PMV binned. We are also reporting the number of points per bin.
 Even in this scenario only for PMV = 0 results are `satisfactory`.
 
-![](./figures/bar_stacked_model_accuracy_model.png)
+![](./figures/bar_stacked_model_accuracy_modelpdf)
 
 #### Thermal sensation f1-micro
 
@@ -89,14 +89,14 @@ Precision (also called positive predictive value) is the fraction of relevant in
 Thermal preference was calculated considering -0.5 < PMV < 0.5 satisfactory.
 On the x-axis I am showing the reported thermal preference while on the y-axis the percentage of time the PMV correctly predicted thermal preference.
 
-![](./figures/bar_stacked_model_accuracy_tp.png)
+![](./figures/bar_stacked_model_accuracy_tppdf)
 
 ### Regression
 
 The LOWESS line of some models do not pass through the center point.
 The slope of the line is low.
 
-![](./figures/bubble_models_vs_tsv.png)
+![](./figures/bubble_models_vs_tsvpdf)
 
 ### Overall bias
 
@@ -106,7 +106,7 @@ Same analysis as Humphreys et al. (2002)
 
 > PMV is free from serious bias, same conclusion as Humphreys et al. (2002)
 
-![](./figures/hist_discrepancies.png)
+![](./figures/hist_discrepanciespdf)
 
 ### Bias per model vs each variable
 
@@ -140,15 +140,15 @@ The value on the x-axis is the middle point of the bin.
 #### PMV models comparison
 * ATHB has less bias towards different PMV values, while other models are okay only for central categories or PMV between 0 and 1.
 
-![](./figures/bias_pmv.png)
+![](./figures/bias_pmvpdf)
 
-![](./figures/bias_pmv_ce.png)
+![](./figures/bias_pmv_cepdf)
 
-![](./figures/bias_pmv_gagge.png)
+![](./figures/bias_pmv_gaggepdf)
 
-![](./figures/bias_pmv_set.png)
+![](./figures/bias_pmv_setpdf)
 
-![](./figures/bias_athb.png)
+![](./figures/bias_athbpdf)
 
 ## Formulaic error
 
@@ -156,7 +156,7 @@ The following scatter plot illustrates the formulaic error between the SET and t
 Since both the SET and PMV models use the same inputs, the delta is only caused by the difference in the formulation of both models.
 Analysis from Humphreys et al. 2000.
 
-![](./figures/scatter_set_vs_models.png)
+![](./figures/scatter_set_vs_modelspdf)
 
 # Main issue with the PMV
 

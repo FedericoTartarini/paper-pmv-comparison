@@ -56,7 +56,7 @@ ax[2].set(ylabel="w", xlim=(20, 40), xlabel="tdb")
 ax[1].set(ylabel="pmv", xlim=(20, 40), xlabel="set")
 ax[3].set(ylabel="pmv", xlim=(20, 40), xlabel="tdb")
 plt.show()
-plt.savefig("./Manuscript/src/figures/PMV and w as a function of SET.png", dpi=300)
+plt.savefig("./Manuscript/src/figures/PMV and w as a function of SET.pdf")
 
 # SMOTE example https://towardsdatascience.com/smote-fdce2f605729
 # F1 score example https://towardsdatascience.com/the-f1-score-bec2bbc38aa6

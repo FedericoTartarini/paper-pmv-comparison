@@ -1,46 +1,48 @@
 \section{Conclusions}\label{sec:conclusions}
-The present study compares the accuracy of the \ac{pmv} model, as used in the \gls{7730} standard, and its modified version, the \ac{pmv-ce} model, as employed in the \gls{55} standard.
+The present study compares the accuracy of the \ac{pmv} model, as used in the \gls{7730} standard, and its modified version, the \ac{pmv-ce} model, included in the \gls{55} standard.
 The \ac{pmv-ce} was intentionally developed to more accurately estimate the effect of elevated air movement~\cite{arens_moving_2009}.
 We determined the predictive accuracy of the \ac{pmv} and \ac{pmv-ce} models by comparing their results to the \ac{tsv} available in the ASHRAE Global Thermal Comfort Database II v2.1.
 
-% todo  could you add the values of F1-macro here as well?
-The overall accuracy of the \ac{pmv} and \ac{pmv-ce} were \qty{33}{\percent} and \qty{34}{\percent}, respectively.
-Both models had an accuracy lower than \qty{7}{\percent} when predicting either `warm', `hot', or `cold'.
-This value is lower than random guessing (\qty{14}{\percent}), this means that the models are misleading the users.
+The overall accuracy and F1-macro score of the \ac{pmv} is \qty{33}{\percent} and \num{.16}, respectively.
+While the overall accuracy and F1-macro score of the \ac{pmv-ce} is \qty{34}{\percent} and \num{.16}, respectively.
+Both models have an accuracy lower or equal than \qty{7}{\percent} when predicting either `warm', `hot', or `cold'.
+This value is lower than random guessing (\qty{14}{\percent}).
+This means that the models are misleading the users.
 When only comparing the results of the two models for entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} the \ac{pmv} outperformed the \ac{pmv-ce} on different metrics.
 For example, the median bias of the \ac{pmv} model is \var{bias_median_pmv_0.2} while the median bias for the \ac{pmv-ce} is \var{bias_median_pmv_ce_0.2}.
 
 Our results also show that the assumption that people who are `slightly warm' or `slightly cool' are thermally comfortable is incorrect and leads to under-counting thermal discomfort.
 In the \ac{db2} \qty{68}{\percent} of participants who were `slightly warm' wanted to be `cooler' and \qty{54}{\percent} of participants who were `slightly cool' wanted to be `warmer'.
 
-\subsection{Implications for the ASHRAE 55 and ISO 7730 standards}\label{subsec:implications-for-the-ashrae-55-and-iso-7730-standards}
-As mentioned previously, researchers, educators and practitioners worldwide may wonder which model they should use.
+\subsection{Implications for the \gls{55} and \gls{7730} Standards and \ac{pmv} Users}\label{subsec:implications-for-the-ashrae-55-and-iso-7730-standards}
+Researchers, educators and practitioners worldwide may wonder which model they should use.
 The \gls{55} standard explains how the \ac{pmv-ce} works, however, we could not find a peer-reviewed publication that proves it has superior prediction performances.
 The \ac{pmv-ce} is more complex, and computationally intensive to run, while not being more accurate than the original \ac{pmv} model.
 Hence, we do not recommend its use.
 
-The very low prediction accuracy of both model formulations, along with the lack of data at the extremes of their applicability limits, suggests that these limits may need to be reconsidered.
+The very low prediction accuracy of both model formulations, along with the lack of data at the extremes of their applicability limits, suggests that these limits should be reconsidered.
 Based on our results, we recommend restricting the use of the \ac{pmv} only to values $\lvert \textrm{PMV}\lvert \leq 0.5$.
-In other words, we only recommend it for determining whether an environment may be deemed comfortable by a large group of occupants.
+In other words, we only recommend using it for determining whether an environment may be deemed thermally neutral by a large group of occupants.
 The model, however, is not capable of determining the degree by which people are dissatisfied and can only be used to classify if individuals are on the `cold' (\ac{pmv}~$\leq 0.5$) or `warm' (\ac{pmv}~$\geq 0.5$) side.
 Several peer-reviewed papers \cite{Cheung2019, Yao2022, kim2019thermal, tartarini2018thermal, Humphreys2002, doherty_evaluation_1988} provide corroborating evidence that supports our results.
 
 We also recommend restricting the ranges on both environmental and personal factors set by both \gls{55} and \gls{7730} standards.
 Currently, these limits extend far beyond the range of data contained in the \ac{db2} dataset.
 Being the \ac{db2} the largest thermal comfort dataset in the world and containing data from all continents, we deem it not to be necessary to have such wide applicability limits for both \gls{55} and \gls{7730} standards when these environmental variables are rarely observed in buildings across the world.
-In addition, the lack of data available beyond the ranges depicted in Figure~\ref{fig:dist_input_data} did not allow us to test the accuracy of both the \ac{pmv} and \ac{pmv-ce} above those ranges.
+The lack of data available beyond the ranges depicted in Figure~\ref{fig:dist_input_data} did not allow us to test the accuracy of both the \ac{pmv} and \ac{pmv-ce} above those ranges.
 Consequently, we suggest reducing both standards' applicability limits to the ranges shown in Table~\ref{tab:ranges}, until more data are collected.
 \begin{table}[htb!]
     \centering
     \begin{tabular}{cc}
         \toprule
-        Variable & Proposed range \\
+        Variable & New Proposed range \\
         \midrule
         \ac{tdb} & \qtyrange{17}{30}{\celsius} \\
         \ac{tr} & \qtyrange{17}{30}{\celsius} \\
         \ac{rh} & \qtyrange{10}{80}{\percent} \\
         \ac{clo} & \qtyrange{0.3}{1.5}{clo} \\
         \ac{met} & \qtyrange{1}{2}{met} \\
+        \ac{pmv} & \numrange{-.5}{.5}{} \\
         \bottomrule
     \end{tabular}
     \caption{New proposed applicability limits for the \gls{55} and \gls{7730} standards.}
@@ -48,8 +50,9 @@ Consequently, we suggest reducing both standards' applicability limits to the ra
 \end{table}
 \mycite{Humphreys2002} reached a similar conclusion and observed that the ranges of inputs consistent with a valid use of PMV are much narrower than those given in \gls{7730}.
 The limit on \ac{met} is also corroborated by evidence provided by \mycite{doherty_evaluation_1988}.
+We then recommend tha the \gls{55} should change back the upper value of \ac{met} to \qty{2}{met} as it was in the 2020 version of the standard.
 
 The \ac{tsv} is ambiguous and does not allow determining if an action should be taken to increase the participant's thermal comfort.
-Assuming that people who are `slightly warm' or `slightly cool' are comfortable leads to undercounting thermal discomfort in our dataset, which is not a valid assumption.
+Assuming that people who are `slightly warm' or `slightly cool' are thermally neutral leads to undercounting thermal discomfort in our dataset, which is not a valid assumption.
 We recommend the use of the thermal preference scale to determine how people perceive their thermal environment. 
 This scale more clearly allows an HVAC system to decide whether to change or not the thermal environment.

@@ -8,25 +8,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import psychrolib
+import scipy
 import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.gridspec import GridSpec
 from numba import jit
-from pythermalcomfort.psychrometrics import p_sat_torr
-from pythermalcomfort.utilities import check_standard_compliance_array
 from pythermalcomfort.models import (
     athb,
     cooling_effect,
 )
+from pythermalcomfort.psychrometrics import p_sat_torr
+from pythermalcomfort.utilities import check_standard_compliance_array
+from scipy import optimize
 from scipy import stats
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import r2_score, mean_absolute_error
-from scipy import optimize
-import scipy
-
-from matplotlib.lines import Line2D
 
 mpl.use("TkAgg")
 
@@ -92,7 +90,7 @@ palette_primary = [
 ]
 
 sns.set_context("paper")
-mpl.rcParams["figure.figsize"] = [8.0, 3.5]
+mpl.rcParams["figure.figsize"] = [7.0, 3.5]
 sns.set_style(
     "whitegrid",
     {
@@ -1467,9 +1465,7 @@ def bar_chart(
     if figletter:
         plt.gcf().text(0.05, 0.95, f"{figletter})", weight="bold")
 
-    plt.savefig(
-        f"./Manuscript/src/figures/bar_plot_{ind}_Vmin_{data.vel_r.min()}.png", dpi=300
-    )
+    plt.savefig(f"./Manuscript/src/figures/bar_plot_{ind}_Vmin_{data.vel_r.min()}.pdf")
 
 
 def scatter_plot_flip_x(data):
@@ -1564,7 +1560,7 @@ def scatter_plot(data, ind="tsv", x_jitter=0):
         axs[ix].grid(axis="x")
 
     plt.tight_layout()
-    plt.savefig("./Manuscript/src/figures/scatter_tsv_pmv.png", dpi=300)
+    plt.savefig("./Manuscript/src/figures/scatter_tsv_pmv.pdf")
 
 
 def plot_error_prediction(data):
@@ -1693,13 +1689,12 @@ def plot_error_prediction(data):
             )
 
     plt.savefig(
-        f"./Manuscript/src/figures/prediction_error_Vmin_{data.vel_r.min()}.png",
-        dpi=300,
+        f"./Manuscript/src/figures/prediction_error_Vmin_{data.vel_r.min()}.pdf",
     )
 
 
 def plot_distribution_variable():
-    f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(8, 3))
+    f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(7, 3))
 
     for ix, var in enumerate(["ta", "tr", "rh", "vel_r", "clo", "met"]):
         sns.boxenplot(
@@ -1739,7 +1734,7 @@ def plot_distribution_variable():
             )
 
     sns.despine(bottom=True, left=True)
-    plt.savefig("./Manuscript/src/figures/dist_input_data.png", dpi=300)
+    plt.savefig("./Manuscript/src/figures/dist_input_data.pdf")
     plt.show()
 
     desc = df[["ta", "tr", "rh", "vel_r", "clo", "met"]].describe(
@@ -1790,7 +1785,7 @@ def plot_distribution_variable():
             )
     sns.despine(bottom=True, left=True)
     plt.tight_layout()
-    plt.savefig("./Manuscript/src/figures/dist_other_data.png", dpi=300)
+    plt.savefig("./Manuscript/src/figures/dist_other_data.pdf")
     plt.show()
 
     # filter data with age between 20 and 35
@@ -1846,14 +1841,97 @@ def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
     df_three_heights.loc[df_three_heights["publication"].isna(), "publication"] = (
         df_three_heights.loc[df_three_heights["publication"].isna(), "contributor"]
     )
+    df_three_heights["publication"] = df_three_heights["publication"].str.replace(
+        "Fred Baumann",
+        "Bauman, F.",
+    )
+    df_three_heights["publication"] = df_three_heights["publication"].str.replace(
+        "Schiller, G. E. (1990)",
+        "Schiller (Brager), G. (1990)",
+    )
+    df_three_heights["publication"] = df_three_heights["publication"].str.replace(
+        "Donnini, G. et al (1996)",
+        "Donnini, G. et al. (1996)",
+    )
 
-    df_delta_v = df_three_heights["vel_r"] - df_three_heights[["vel_h", "vel_m", "vel_l"]].mean(axis=1)
+    df_publications = (
+        df_three_heights.groupby(["publication"])["vel_r"]
+        .count()
+        .sort_values(ascending=False)
+    )
+    df_publications = df_publications[df_publications >= 5]
+    df_publications = df_publications.reset_index()
+
+    df_publications[r"\% Total"] = (
+        df_publications["vel_r"] / df_publications["vel_r"].sum() * 100
+    )
+    # df_publications.loc["Total"] = df_publications.sum(numeric_only=True)
+    # df_publications.replace({np.nan: "Total"}, inplace=True)
+    df_publications[["publication", "vel_r", r"\% Total"]].rename(
+        columns={"vel_r": "Count", "publication": "Publication"}
+    ).to_latex(
+        "./Manuscript/src/tables/publications_with_three_heights.tex",
+        float_format="{:.0f}".format,
+        index=False,
+    )
+
+    authors_to_show = df_publications['publication'].tolist()
+
+    df_delta_v = df_three_heights["vel_r"] - df_three_heights[
+        ["vel_h", "vel_m", "vel_l"]
+    ].mean(axis=1)
     save_var_latex("delta_v_mean", df_delta_v.mean(), "\\m\\per\\s", 2)
 
+    # plt.figure()
+    # sns.scatterplot(
+    #     x="ta",
+    #     y="vel_r",
+    #     data=df_three_heights[
+    #         df_three_heights["publication"].isin(
+    #             [
+    #                 "Cena, K., and de Dear, R. J. (1999)",
+    #                 "de Dear, R.J. and Fountain, M.E. (1994)",'Zhang, Y., Chen, H., Meng, Q. (2013)', 'Zhang, Y. et al. (2010)'
+    #             ]
+    #         )
+    #     ],
+    #     hue="publication",
+    #     # hue="met",
+    #     palette="Set1",
+    # )
+    # plt.show()
+    #
+    # plt.figure()
+    # sns.boxenplot(
+    #     x="publication",
+    #     y="vel_r",
+    #     data=df_three_heights[
+    #         df_three_heights["publication"].isin(
+    #             [
+    #                 "Cena, K., and de Dear, R. J. (1999)",
+    #                 "de Dear, R.J. and Fountain, M.E. (1994)",'Zhang, Y., Chen, H., Meng, Q. (2013)', 'Zhang, Y. et al. (2010)'
+    #             ]
+    #         )
+    #     ],
+    #     # hue="publication",
+    #     # hue="met",
+    #     palette="Set1",
+    # )
+    # plt.show()
+
+    df_three_heights[df_three_heights["publication"].isin(
+        [
+            'Zhang, Y., Chen, H., Meng, Q. (2013)', 'Zhang, Y. et al. (2010)', 'Tartarini, F., Cooper, P., Fleming, R. (2018)'
+        ]
+    )].to_csv("data_three_heights.csv")
+
     plt.close("all")
-    f, ax = plt.subplots(1, 1, constrained_layout=True, figsize=(8, 6))
+    df_plot = df_three_heights.loc[df_three_heights['publication'].isin(authors_to_show), ["vel_h", "vel_m", "vel_l", "vel_r", "publication"]]
+    df_plot.publication = df_plot.publication.astype("category")
+    df_plot.publication = df_plot.publication.cat.set_categories(authors_to_show)
+    df_plot = df_plot.sort_values(["publication"])
+    f, ax = plt.subplots(1, 1, constrained_layout=True, figsize=(8, 8))
     df_stacked = (
-        df_three_heights[["vel_h", "vel_m", "vel_l", "vel_r", "publication"]]
+        df_plot[["vel_h", "vel_m", "vel_l", "vel_r", "publication"]]
         .set_index("publication")
         .stack()
     )
@@ -1866,6 +1944,7 @@ def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
         x="value",
         ax=ax,
         palette=["#FC9514", "#FDB515", "#FCCF14", c_green],
+        showfliers=False,
     )
     y_labels = ax.get_yticklabels()
     new_y_labels = []
@@ -1873,52 +1952,33 @@ def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
     for ix, label in enumerate(y_labels):
         text = label.get_text()
         if "vel_m" in text:
-            text = text.replace("vel_m", "      chest height")
+            text = text.replace("vel_m", "      Chest height")
             index_change += 3
         else:
-            text = text.replace("vel_h", "vel_head height")
-            text = text.replace("vel_l", "vel_ankle height")
-            text = text.replace("vel_r", "vel_relative wind speed")
+            text = text.replace("vel_h", "vel_Head height")
+            text = text.replace("vel_l", "vel_Ankle height")
+            text = text.replace("vel_r", "vel_Relative wind speed")
             text = text.split("vel_")[1]
         label.set_text(text)
         new_y_labels.append(label)
     ax.set_yticklabels(new_y_labels)
-    ax.set(xlabel="Wind speed (m/s)", ylabel="")
+    ax.set(xlabel="Air speed (m/s)", ylabel="")
 
-    ax2 = plt.axes([0, 0.07, 1, 0.92], facecolor=(1, 1, 1, 0))
-    y_value = 1
-    for ix in range(0, 13):
-        x, y = np.array([[0.3, 1], [y_value, y_value]])
-        line = Line2D(x, y, lw=0.5, color="gray", alpha=0.4)
-        ax2.add_line(line)
-        y_value -= 1 / 11
+    # ax2 = plt.axes([0, 0.07, 1, 0.929], facecolor=(1, 1, 1, 0))
+    y_value = -0.5
+    for ix in range(0, len(authors_to_show)+1):
+        ax.axhline(
+            y_value,
+            0,
+            1,
+            color="gray",
+            linewidth=0.25,
+        )
+        y_value += 4
 
-    ax2.grid(False)
-    ax2.axis("off")
-    ax.grid(False)
-    plt.savefig(
-        "./Manuscript/src/figures/boxenplot_wind_speed_three_heights.png", dpi=300
-    )
+    # ax.grid(False)
+    plt.savefig("./Manuscript/src/figures/boxenplot_wind_speed_three_heights.pdf")
     plt.show()
-
-    df_publications = (
-        df_three_heights.groupby(["contributor", "publication"])["vel_r"]
-        .count()
-        .sort_values(ascending=False)
-    )
-    df_publications = df_publications.reset_index()
-
-    df_publications[r"\%"] = (
-        df_publications["vel_r"] / df_publications["vel_r"].sum() * 100
-    )
-    df_publications.loc["Total"] = df_publications.sum(numeric_only=True)
-    df_publications.replace({np.nan: "Total"}, inplace=True)
-    df_publications[["publication", "vel_r", r"\%"]].set_index("publication").rename(
-        columns={"vel_r": "Count"}
-    ).to_latex(
-        "./Manuscript/src/tables/publications_with_three_heights.tex",
-        float_format="{:.0f}".format,
-    )
 
     # df_perc = (
     #     (
@@ -2013,7 +2073,7 @@ def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
 
 def plot_bubble_models_vs_tsv(
     data_: pd.DataFrame() = None,
-    fig_name: str = "./Manuscript/src/figures/bubble_models_vs_tsv.png",
+    fig_name: str = "./Manuscript/src/figures/bubble_models_vs_tsv.pdf",
     fig_letters: list[str] = ["a", "b"],
 ) -> None:
     data_plot = data_.copy()
@@ -2068,16 +2128,18 @@ def plot_bubble_models_vs_tsv(
             ls="--",
         )
         axs[ix].set(xlim=(-3.5, 3.5), ylim=(-3.5, 3.5))
-        axs[ix].text(2, 2.2, "Identity line", rotation=37)
+        axs[ix].text(2, 2.2, "Identity line", rotation=41)
         axs[ix].axvline(0, c="darkgray", ls="--")
         axs[ix].axhline(0, c="darkgray", ls="--")
         axs[ix].grid(None)
         axs[ix].set(title=var_names[model], ylabel="", xlabel="")
+
     axs[0].set(ylabel="PMV value")
+
     f.supxlabel(var_names["thermal_sensation"])
     ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
     ax2.text(0.025, 0.95, fig_letters[0], fontsize=16, fontweight="bold")
-    ax2.text(0.95, 0.95, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.text(0.55, 0.95, fig_letters[1], fontsize=16, fontweight="bold")
     ax2.axis("off")
     ax2.grid(False)
     plt.savefig(fig_name, dpi=300)
@@ -2189,25 +2251,22 @@ def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
     )
     ax2.yaxis.tick_right()
     ax2.grid(None)
-    plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.pdf")
     plt.show()
 
 
 def plot_stacked_bar_predictions_ts(
     data_: pd.DataFrame = None,
-    hb_models: bool = False,
     v_min: float = 0.0,
     fig_name: str = None,
     fig_letters: list[str] = ["a", "b"],
+    fig_letters_height: float = 0.86,
 ) -> None:
     plt.close("all")
 
     if fig_name is None:
         fig_name = f"bar_stacked_model_accuracy_{v_min}"
     models = models_to_test
-    if hb_models:
-        models = [f"lr_hb_{x}" for x in models_to_test[:-1]]
-        fig_name = "bar_stacked_model_accuracy_hb"
 
     # Stacked boxplot
     f, axs = plt.subplots(1, len(models), sharex=True, sharey=True)
@@ -2228,6 +2287,7 @@ def plot_stacked_bar_predictions_ts(
                 else:
                     df_plot[x] = np.nan
         df_plot = df_plot[df_plot.columns.sort_values()]
+        df_plot *= 100
         df_plot.plot.bar(
             stacked=True, color=palette_tsv, ax=axs[ix], rot=0, linewidth=0, width=0.85
         )
@@ -2235,7 +2295,8 @@ def plot_stacked_bar_predictions_ts(
             accuracy_score(df_v[var].fillna(999), df_v["thermal_sensation_round"]) * 100
         )
         axs[ix].set(xlabel="")
-        axs[ix].set_title(f"Overall accuracy {var_names[pmv]} {accuracy}%")
+        title = " - All data" if v_min == 0 else f" - $V$  $\geq$ {v_min}"
+        axs[ix].set_title(f"Overall accuracy {var_names[pmv]}={accuracy}% {title}")
         handles, labels = axs[ix].get_legend_handles_labels()
         axs[ix].get_legend().remove()
         axs[ix].grid(False)
@@ -2247,15 +2308,15 @@ def plot_stacked_bar_predictions_ts(
                 match = df_match[df_match[var] == float(x._text)][0].values[0]
                 axs[ix].text(
                     x._x,
-                    1.025,
-                    f"{int(match * 100)}%",
+                    102,
+                    f"{int(match)}%",
                     va="center",
                     ha="center",
                 )
             except IndexError:
                 axs[ix].text(
                     x._x,
-                    1.025,
+                    102,
                     f"0 %",
                     va="center",
                     ha="center",
@@ -2271,9 +2332,13 @@ def plot_stacked_bar_predictions_ts(
                 "Hot",
             ],
         )
+        axs[ix].tick_params(axis="both", which="major", labelsize=8)
+        # axs[ix].tick_params(axis='both', which='minor', labelsize=8)
 
+    left = 0.08
+    wspace = 0.05
     if v_min == 0:
-        plt.subplots_adjust(left=0.05, right=1, bottom=0.07, top=0.85)
+        plt.subplots_adjust(left=left, right=1, bottom=0.07, top=0.85, wspace=wspace)
         cax = plt.axes([0, 0.95, 1, 0.05])
         cax.axis("off")
         cax.legend(
@@ -2291,16 +2356,19 @@ def plot_stacked_bar_predictions_ts(
             loc="upper center",
             ncol=7,
         )
+
     else:
-        plt.subplots_adjust(left=0.05, right=1, bottom=0.15, top=0.93)
+        plt.subplots_adjust(left=left, right=1, bottom=0.15, top=0.93, wspace=wspace)
         f.supxlabel(var_names["thermal_sensation"])
 
+    axs[0].set(ylabel="Percentage (%)")
+
     ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
-    ax2.text(0.025, 0.95, fig_letters[0], fontsize=16, fontweight="bold")
-    ax2.text(0.95, 0.95, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.text(0.032, fig_letters_height, fig_letters[0], fontsize=16, fontweight="bold")
+    ax2.text(0.55, fig_letters_height, fig_letters[1], fontsize=16, fontweight="bold")
     ax2.axis("off")
     ax2.grid(False)
-    plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/{fig_name}.pdf")
     plt.show()
 
 
@@ -2389,9 +2457,7 @@ def plot_stacked_bar_predictions_model():
         ncol=7,
     )
     f.supxlabel("Model prediction")
-    plt.savefig(
-        f"./Manuscript/src/figures/bar_stacked_model_accuracy_model.png", dpi=300
-    )
+    plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy_model.pdf")
 
 
 def plot_stacked_bar_predictions_tp():
@@ -2457,11 +2523,13 @@ def plot_stacked_bar_predictions_tp():
         ncol=7,
     )
     f.supxlabel(var_names["thermal_preference"])
-    plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy_tp.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/bar_stacked_model_accuracy_tp.pdf")
 
 
 def plot_bias_distribution_whole_db(
-    hb_models=False, data_: pd.DataFrame = None, fig_name: str = "hist_discrepancies",
+    hb_models=False,
+    data_: pd.DataFrame = None,
+    fig_name: str = "hist_discrepancies",
     fig_letters: list[str] = ["a)", "b)", "c)", "d)"],
 ):
 
@@ -2506,7 +2574,10 @@ def plot_bias_distribution_whole_db(
             }
             for var in stats.keys():
                 save_var_latex(f"bias_{var}_{model}_{v}", stats[var])
-            y_text = 3500 if row == 0 else 1200
+            y_text = 3500
+            if row == 1:
+                y_text = 1200
+                axs[row].set_yticks([0, 500, 1000])
             axs[ix].text(
                 2.3,
                 y_text,
@@ -2521,12 +2592,12 @@ def plot_bias_distribution_whole_db(
     f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
     ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
     ax2.text(0.025, 0.95, fig_letters[0], fontsize=16, fontweight="bold")
-    ax2.text(0.95, 0.95, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.text(0.55, 0.95, fig_letters[1], fontsize=16, fontweight="bold")
     ax2.text(0.025, 0.5, fig_letters[2], fontsize=16, fontweight="bold")
-    ax2.text(0.95, 0.5, fig_letters[3], fontsize=16, fontweight="bold")
+    ax2.text(0.55, 0.5, fig_letters[3], fontsize=16, fontweight="bold")
     ax2.axis("off")
     ax2.grid(False)
-    plt.savefig(f"./Manuscript/src/figures/{fig_name}.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/{fig_name}.pdf")
     plt.show()
 
     # plot bias distribution only for entries with three air speeds
@@ -2553,7 +2624,7 @@ def plot_bias_distribution_whole_db(
         )
         y_label = "Number of data points" if ix == 0 else ""
         title = var_names[model]
-        title += f" - V $\geq$" + f" {v} m/s and three speeds"
+        title += f" - V $\geq$" + f" {v} m/s and three heights"
         axs[ix].set(title=title, ylabel=y_label, xlabel="", xlim=(-3, 3))
         mpl.pyplot.locator_params(axis="y", nbins=3)
         stats = {
@@ -2574,12 +2645,10 @@ def plot_bias_distribution_whole_db(
     f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
     ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
     ax2.text(0.025, 0.9, fig_letters[0], fontsize=16, fontweight="bold")
-    ax2.text(0.95, 0.9, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.text(0.55, 0.9, fig_letters[1], fontsize=16, fontweight="bold")
     ax2.axis("off")
     ax2.grid(False)
-    plt.savefig(
-        f"./Manuscript/src/figures/hist_discrepancies_three_heights.png", dpi=300
-    )
+    plt.savefig(f"./Manuscript/src/figures/hist_discrepancies_three_heights.pdf")
     plt.show()
 
 
@@ -2613,7 +2682,7 @@ def plot_bias_distribution_by(variable="building_id"):
             xticklabels="",
         )
         plt.suptitle(model)
-        plt.savefig(f"./Manuscript/src/figures/bias_by_{variable}_{model}.png", dpi=300)
+        plt.savefig(f"./Manuscript/src/figures/bias_by_{variable}_{model}.pdf")
 
 
 def plot_bias_distribution_by_building():
@@ -2643,7 +2712,7 @@ def plot_bias_distribution_by_building():
             xticklabels="",
         )
         plt.suptitle(model)
-        plt.savefig(f"./Manuscript/src/figures/bias_buildings.png", dpi=300)
+        plt.savefig(f"./Manuscript/src/figures/bias_buildings.pdf")
 
 
 def plot_bias_distribution_by_contributor():
@@ -2677,7 +2746,7 @@ def plot_bias_distribution_by_contributor():
             xticklabels="",
         )
         plt.suptitle(model)
-        plt.savefig(f"./Manuscript/src/figures/bias_contributors.png", dpi=300)
+        plt.savefig(f"./Manuscript/src/figures/bias_contributors.pdf")
 
 
 def plot_bias_distribution_by_variable_binned():
@@ -2745,12 +2814,6 @@ def plot_bias_distribution_by_variable_binned():
         df_plot = df_plot.loc[:, ~df_plot.columns.duplicated()].copy()
         # exclude categories with very little data
         if var != "thermal_preference":
-            # df_plot = df_plot[
-            #     df_plot[var] > df_plot[var].quantile(percentiles_to_show[0])
-            # ]
-            # df_plot = df_plot[
-            #     df_plot[var] < df_plot[var].quantile(percentiles_to_show[-1])
-            # ]
             print(
                 var,
                 df_plot[var].quantile(percentiles_to_show[0]),
@@ -2761,18 +2824,6 @@ def plot_bias_distribution_by_variable_binned():
 
         print(df_plot.groupby([var, "model"])["diff_ts"].median())
 
-        # try:
-        #     df_plot[variable_to_split] = pd.cut(
-        #         df_plot[variable_to_split], bins=bins[variable_to_split]
-        #     )
-        # except TypeError:
-        #     pass
-        # df_plot["neutral"] = 1
-        # range_to_keep = [-1, 0, 1]
-        # range_to_keep = [0]
-        # df_plot.loc[
-        #     pd.Index(df_plot[variable_to_split]).isin(range_to_keep), "neutral"
-        # ] = 0
         print(df_plot[df_plot.index.duplicated()])
         sns.boxenplot(
             x=var,
@@ -2783,6 +2834,7 @@ def plot_bias_distribution_by_variable_binned():
             palette=["#9dad33", "#00b0da"],
             linewidth=0.5,
             showfliers=False,
+            alpha=0.8,
         )
         ax.get_legend().remove()
         ax.axhline(-0.5, c="r", ls="--", lw=0.75)
@@ -2818,7 +2870,7 @@ def plot_bias_distribution_by_variable_binned():
     )
     plt.tight_layout(rect=[0, 0, 1, 0.98])
     plt.show()
-    plt.savefig(f"./Manuscript/src/figures/bias_models.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/bias_models.pdf")
 
 
 def table_f1_scores():
@@ -2856,9 +2908,12 @@ def table_f1_scores():
         df_f1["condition"] = f"{condition}"
         df_final = pd.concat([df_final, df_f1])
     print(df_final.to_markdown())
+    df_final.reset_index(inplace=True)
+    df_final = df_final.rename(columns={"index": "F1 score"})
     df_final.to_latex(
         "./Manuscript/src/tables/f1.tex",
         float_format="{:.2f}".format,
+        index=False,
     )
     with open("./Manuscript/src/tables/f1.tex", "r") as f:
         file = f.read()
@@ -3236,7 +3291,7 @@ def compare_pmv_disc():
         axs[ix][0].grid()
         axs[ix][1].grid()
         axs[ix][2].grid()
-    plt.savefig(f"./Manuscript/src/figures/pmv_vs_disc.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/pmv_vs_disc.pdf")
     plt.show()
 
 
@@ -3278,22 +3333,19 @@ def compare_pmv_pmv_ce_comfort_region():
                         }
                     )
 
-    cooling_effect(tdb=23, tr=23, vr=0.2, rh=100, met=met, clo=clo, wme=0)
-    pmv(tdb=23, tr=23, vr=0.2, rh=100, met=met, clo=clo, wme=0, standard="ashrae")
-    pmv(tdb=23, tr=23, vr=0.2, rh=100, met=met, clo=clo, wme=0, standard="iso")
-
     df = pd.DataFrame(results)
 
-    f, axs = plt.subplots(len(df["v"].unique()), 1, figsize=(8.0, 6), sharex=True)
+    f, axs = plt.subplots(len(df["v"].unique()), 1, figsize=(7, 6), sharex=True)
     for ix, v in enumerate(df["v"].unique()):
         df_v = df[df["v"] == v]
         for model in ["iso", "ashrae"]:
             color = "#9dad33" if model == "iso" else "#00b0da"
+            label = "PMV" if model == "iso" else r"PMV$_{CE}$"
             df_model = df_v[df_v["model"] == model]
             t1 = df_model[df_model["pmv_limit"] == -0.5]
             t2 = df_model[df_model["pmv_limit"] == 0.5]
             axs[ix].fill_betweenx(
-                t1["rh"], t1["temp"], t2["temp"], color=color, alpha=0.5, label=model
+                t1["rh"], t1["temp"], t2["temp"], color=color, alpha=0.5, label=label
             )
             rh_50 = df_model[df_model["rh"] == 50].values
             v_offset = -20 if model == "iso" else 20
@@ -3310,25 +3362,21 @@ def compare_pmv_pmv_ce_comfort_region():
                     ha="center",
                     va="center",
                 )
-            # plt.plot(df_plot["temp"], df_plot["rh"], label=model, color=color)
         axs[ix].set(
-            xlabel="RH (%)",
-            ylabel="Temperature (°C)",
-            title=f"V = {v} m/s",
+            ylabel="Relative Humidity (%)",
+            xlabel="Temperature (°C)",
+            title=r"$V$" + f" = {v} m/s",
             ylim=(0, 100),
+            yticks=np.arange(0, 110, 25),
         )
         axs[ix].legend(frameon=False)
     axs[0].set(xlabel="")
-    axs[0].get_legend().remove()
-    plt.suptitle(
-        r"Comfort regions (|PMV| $\leq$ 0.5) for different wind speeds. $M$ = "
-        + str(met)
-        + r" met ; $I_{cl}$ = "
-        + str(clo)
-        + " clo."
+    axs[1].get_legend().remove()
+    axs[0].legend(
+        bbox_to_anchor=(0.77, 0.85), loc="center left", borderaxespad=0, frameon=False
     )
     plt.tight_layout()
-    plt.savefig(f"./Manuscript/src/figures/pmv_comfort_regions.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/pmv_comfort_regions.pdf")
     plt.show()
     # r = pmv(tdb=temp, tr=temp, vr=v, rh=rh, met=met, clo=clo, wme=wme, round=False)
 
@@ -3352,24 +3400,44 @@ if __name__ == "__plot__":
 
     # plot model accuracy using bar chart
     plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0, fig_letters=["a)", "b)"])
-    plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0.2, fig_letters=["c)", "d)"])
+    plot_stacked_bar_predictions_ts(
+        data_=df.copy(), v_min=0.2, fig_letters=["c)", "d)"], fig_letters_height=0.95
+    )
     # only for entries with velocity >= 0.2 m/s and three heights
     plot_stacked_bar_predictions_ts(
         data_=df[df["vel_r"] >= 0.2].dropna(subset="vel_l"),
         v_min=0.2,
-        fig_name="bar_stacked_model_accuracy_0.2_three_heights.png",
+        fig_name="bar_stacked_model_accuracy_0.2_three_heights",
         fig_letters=["a)", "b)"],
+        fig_letters_height=0.95,
     )
+    # # only for entries with velocity >= 0.2 m/s and three heights
+    # plot_stacked_bar_predictions_ts(
+    #     data_=pd.read_csv("data_three_heights.csv"),
+    #     v_min=0.2,
+    #     fig_name="bar_stacked_model_accuracy_0.2_three_heights_filtered",
+    #     fig_letters=["a)", "b)"],
+    #     fig_letters_height=0.95,
+    # )
 
     # print Markdown table of f1-scores
     table_f1_scores()
 
     # plot model results vs TSV
-    plot_bubble_models_vs_tsv(data_=df.copy(), fig_letters=["a)", "b)"],)
+    plot_bubble_models_vs_tsv(
+        data_=df.copy(),
+        fig_letters=["a)", "b)"],
+    )
     plot_bubble_models_vs_tsv(
         data_=df[df["vel_r"] >= 0.2].dropna(subset="vel_l"),
-        fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.png", fig_letters=["a)", "b)"],
+        fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.pdf",
+        fig_letters=["a)", "b)"],
     )
+    # plot_bubble_models_vs_tsv(
+    #     data_=pd.read_csv("data_three_heights.csv"),
+    #     fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.pdf",
+    #     fig_letters=["a)", "b)"],
+    # )
 
     # plot bias distribution
     plot_bias_distribution_whole_db(data_=df.copy())
@@ -3391,9 +3459,9 @@ if __name__ == "__plot__":
     # plot bias by each variable
     plot_bias_distribution_by_variable_binned()
 
-    compare_pmv_disc()
-
     analyse_studies_with_three_speed_measurements(data_=df.copy())
+
+    compare_pmv_disc()
 
     plt.close("all")
     f, axs = plt.subplots(1, 5, constrained_layout=True, sharey=True, sharex=True)
@@ -3406,7 +3474,7 @@ if __name__ == "__plot__":
             # lowess=True,
             ax=axs[ix],
         )
-    plt.savefig(f"./Manuscript/src/figures/scatter_set_vs_models.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/scatter_set_vs_models.pdf")
 
     plt.close("all")
     f, axs = plt.subplots(1, 5, constrained_layout=True, sharey=True, sharex=True)
@@ -3421,7 +3489,7 @@ if __name__ == "__plot__":
             # y_partial="met",
             ci=None,
         )
-    plt.savefig(f"./Manuscript/src/figures/scatter_tsv_vs_hb.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/scatter_tsv_vs_hb.pdf")
 
     plt.close("all")
     # plot_bias_distribution_by_variable_binned()
@@ -3763,7 +3831,7 @@ if __name__ == "__testing_pmv_set_agreement__":
     sns.despine(left=True, bottom=True)
     plt.legend(frameon=False)
     plt.tight_layout()
-    plt.savefig(f"./Manuscript/src/figures/pmv_two_node_comparison.png", dpi=300)
+    plt.savefig(f"./Manuscript/src/figures/pmv_two_node_comparison.pdf")
 
     f, (ax1) = plt.subplots(1, 1, sharex=True, sharey=True, constrained_layout=True)
     sns.kdeplot(df_comb, x="hl_set_iso", color="red", ax=ax1, label="iso")

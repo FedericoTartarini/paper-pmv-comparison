@@ -1,46 +1,35 @@
 \appendix
 
-\section{Analysis of the dataset with air speed measurements at three heights}\label{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}
+\section{Analysis of the Dataset with Air Speed Measurements at Three Heights}\label{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}
 
-In this section, we analyzed the dataset with air speed measurements at three heights.
-Only a limited subset of papers in the \ac{db2} had air speed measurements at three heights with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
-A summary of the papers is provided in Table~\ref{tab:three_heights_papers}.
+In this section, we show the results of the analysis of the dataset with air speed measurements at three heights.
+Only \num{3063} entries in the \ac{db2} had air speed measurements at three heights with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
+A summary of the papers that collected these data is provided in Table~\ref{tab:three_heights_papers}.
 The table also shows the number of measurements for each paper and how much (percentage) each study contributed to the dataset.
 \begin{table}[htb!]
     \centering
     \input{tables/publications_with_three_heights.tex}
-    \caption{The number of entries used in this analysis grouped by the author/publication.}
+    \caption{The number of entries used in this analysis grouped by publication.
+    We did not include papers with less than \num{5} entries.}
     \label{tab:three_heights_papers}
 \end{table}
-The paper by Cena et al.\ (1999), de Dear et al. (1994), and Zhang et al.\ (2013 and 2010) contributed the most to the dataset (\qty{79}{\percent}).
-These \num{3063} entries were used to compare the \ac{pmv} and \ac{pmv-ce} models using the same methodology as in Section~\ref{sec:results}.
+The paper by Cena et al.\ (1999), de Dear et al.\ (1994), and Zhang et al.\ (2013 and 2010) contributed the most to the dataset (\qty{79}{\percent}).
 The air speed distribution at the three heights for each paper is shown in Figure~\ref{fig:boxenplot_wind_speed_three_heights}.
-% todo improvements:
-% - it is Bauman, F. not Fred Baumann. The year is missing. 
-% -The year is missing for the paper of Benton and Brager. 
-% - I would remove the outlier from the graph, the circles. 
-% - I would make the figure a bit bigger vertically, it is too compact. 
-% -capitalize the Head, Chest, Ankle and Relative
-% -order the paper based on their contribution to the dataset
-% - call it air speed, not wind speed. 
 \begin{figure}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/boxenplot_wind_speed_three_heights}
-    \caption{Air speeds distribution at three heights.}
+    \caption{Measured air speeds distribution at three heights and relative air speed adjusted based on the \ac{met} value.
+    We did not include papers with less than \num{5} entries.
+    We are also not showing the outliers.}
     \label{fig:boxenplot_wind_speed_three_heights}
 \end{figure}
-The distribution of air speed at the three heights varies between the papers, hence, it is difficult to make generalizations.
-% todo What do you mean by this? Is the average value close to the chest value? If so, it would be nice to quantify, at least for the overall average of them. 
-However, it should be noted that in most of the studies, the air speed measured at the chest height was a good representation of the air speed at the other two heights.
-This assumption is not valid for Benton et al.\ (1994); however, this study contributed only \qty{1}{\percent} of the dataset.
 The adjustment of \ac{v} based on the \ac{met} significantly increased the base value of the air speed measured by all the studies.
 With the value of \ac{v} being \var{delta_v_mean} higher than the average of the other air speeds combined.
 The discussion on whether this increase is justified is beyond the scope of this paper, since both standards require the user to adjust the air speed based on the \ac{met} value.
 
-In this section, we are not showing the F1-score for the \ac{pmv} and \ac{pmv-ce} models for the different subsets of data, since we have already presented the results in Table~\ref{tab:f1}.
-The F1-macro score for \ac{pmv-ce}~=~\num{.16} was lower than the \ac{pmv}~=~\num{.17} for this subset of data, i.e, \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and \ac{v} measured at three heights.
-As previously discussed, this is an unexpected result, since the \ac{pmv-ce} should be more accurate than the \ac{pmv} model for this subset of data to justify its use.
-In this Appendix, we are not showing the accuracy of the \ac{pmv} and \ac{pmv-ce} model as a function of the \ac{tsv} since we have too little data for this analysis.
+The F1-macro score for \ac{pmv-ce}~=~\num{.16} is lower than for the \ac{pmv}~=~\num{.17} as previously shown in Table~\ref{tab:f1}.
+The \ac{pmv-ce} should be more accurate than the \ac{pmv} model for this subset of data to justify its use.
+In this Appendix, we are not showing the accuracy of the \ac{pmv} and \ac{pmv-ce} model as a function of the \ac{tsv} since this method has limitations.
 
 We, however, plotted the \ac{pmv} and \ac{pmv-ce} values against the \ac{tsv} values and we plotted the \ac{lowess} curves to visualize the prevailing data trend.
 The results are shown in Figure~\ref{fig:bubble_models_vs_tsv_three_heights}.
@@ -53,7 +42,7 @@ The results are shown in Figure~\ref{fig:bubble_models_vs_tsv_three_heights}.
     The brown dashed line represents the identity line, where the slope is 1 and the intercept is 0.}
     \label{fig:bubble_models_vs_tsv_three_heights}
 \end{figure*}
-The results show that the \ac{pmv} model is more accurate than the \ac{pmv-ce} model.
+The \ac{pmv} model is more accurate than the \ac{pmv-ce} model.
 The intercept of the \ac{pmv} model is \num{-.31} while the intercept of the \ac{pmv-ce} model is \num{-.41}.
 Moreover, the \ac{pmv-ce} \ac{lowess} curve is only marginally higher than \num{0} despite participants reporting a \ac{tsv} of \num{3}.
 

@@ -2,16 +2,16 @@
 The \ac{db2} has \var{entries_db_all} independent recordings from various field investigations throughout the world, and it is the largest of its kind~\cite{FoldvaryLicina2018, db2dryad}.
 \Ac{tsv} were collected using a right-here-right-now survey and environmental parameters were measured and logged in the proximity of participants when they completed the survey.
 The \ac{db2} only contains data collected by researchers in cross-sectional field studies that have been published in peer-reviewed journals.
- We compared the results obtained by the \ac{pmv} and the \ac{pmv-ce} with the \ac{tsv}.
 
 \subsection{Data Preparation and Cleaning}\label{subsec:data-processing-and-cleaning}
 Not all researchers measured and logged all six parameters needed to calculate the \ac{pmv} and \ac{pmv-ce}.
 We, therefore, decided to remove all entries that did not have any of the following variables: \ac{tdb}, \ac{tr}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv}.
 This filtered out approximately \var{entries_db_valid} of the data.
-In our analysis, we used the value \ac{v} which is adjusted as a function of \ac{met} and not the \ac{v} measured by the researchers.
+In our analysis, we used the value \ac{v} which is adjusted as a function of \ac{met} and not the air speed measured by the researchers.
 This is because both \ac{pmv} formulations use the \ac{v} adjusted as a function of \ac{met} to calculate the \ac{pmv} value.
 
-Both the \gls{55} and \gls{7730} specify a set of applicability limits, we hence filtered out those data points that did not meet the inclusion criteria of both standards.
+Both the \gls{55} and \gls{7730} specify a set of applicability limits.
+We hence filtered out those data points that did not meet the inclusion criteria of both standards.
 The rationale is that the models' accuracy should only be tested within their applicability ranges.
 The limits we used are as follows:
 \num{10}~$\leq$~\ac{tdb}~$\leq$~\qty{30}{\celsius},
@@ -29,13 +29,19 @@ In addition, it should also be noted that while all the data included in the \ac
 For example, while both thermal comfort standards recommend measuring \ac{v} at three different heights, this was not always done.
 This could introduce a bias in the measurements and, consequently, in the results of the models.
 Moreover, since the two \ac{pmv} formulations only differ when \ac{v}~$\geq$~\qty{0.1}{\m\per\s}, we decided to report three sets of results:
-\begin{enumerate}
-    \item all the data points,
-    \item all the data points with \ac{v}~$\geq$~\qty{0.2}{\m\per\s},
-    \item only the data points with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured \ac{v} at three different heights.
+\begin{enumerate}[ {}1{)} ]
+    \item all the data points with \ac{tdb}, \ac{tr}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv};
+    \item the data points in 1) with \ac{v}~$\geq$~\qty{0.2}{\m\per\s};
+    \item the data points in 1) with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured air speed at three different heights.
     These results are reported in \ref{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}.
 \end{enumerate}
-Comparing the results from these three datasets will allow us to assess the impact of the data quality on the results of the models, because by only including those studies that measured \ac{v} at three different heights, we can reduce the bias introduced by the lack of adherence to the measurement protocol recommended by the standards.
+Comparing the results from these three datasets will allow us to assess the impact of the data quality on the results of the models.
+By only including those studies that measured air speed at three different heights, we can reduce the bias introduced by the lack of adherence to the measurement protocol recommended by both standards.
+We did not use \qty{0.1}{\m\per\s} as a threshold because the original difference between the two models was \qty{0.2}{\m\per\s} and it was changed to \qty{0.1}{\m\per\s} only in the \gls{55}.
+The effect of air movement is perceptible only when the airspeed is sufficiently high to disrupt the body's thermal plume~\cite{zukowska_impact_2012}.
+The threshold in the ASHRAE standard was reduced to \qty{0.1}{\m\per\s} to simplify the usability and achieve one threshold for all the air speeds.
+In \ref{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}, we also present the results generated using those entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured \ac{v} at three different heights.
+We have not included these results here, as they are comparable to those presented in this section and lead to the same conclusions.
 
 We used Python to analyze and visualize the results.
 The \ac{pmv} results were calculated using the function `pythermalcomfort.models.pmv\_ppd' included in pythermalcomfort v2.8.1 a Python package for thermal comfort calculations~\cite{Tartarini2020a}.
@@ -52,16 +58,17 @@ These differences, also known as bias, quantify the success of the model in pred
 However, on their own, are a low-precision estimate of the overall accuracy of the model~\cite{Humphreys2002}.
 These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{v}).
 If the \ac{pmv} or \ac{pmv-ce} formulations are bias-free, the distribution of any batch derived from these differences would have a mean value that is zero.
-The standard deviation would reflect the combined effect of the people's individual differences, as well as any errors in formulation or in the data collection method (accuracy or precision of the instrumentation used)~\cite{Humphreys2002}.
+The standard deviation would reflect the combined effect of the people's individual differences, any errors in the model formulation or, in the data collection method (accuracy or precision of the instrumentation used)~\cite{Humphreys2002}.
 According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between \num{-0.25} and \num{0.25}.
-However, we believe that this range is too narrow since \ac{tsv} is measured using an ordinal scale of integers.
+However, we believe that this range is too narrow since \ac{tsv} is commonly measured using an ordinal scale of integers.
 Consequently, we expanded the range to \num{-.5} and \num{0.5}.
 This is needed to ensure that each \ac{pmv} value can be matched to a \ac{tsv}.
 We are aware that an error of \num{.5} is approximately \qty{7}{\percent} of the total range and ideally, we would want to have the \ac{pmv} to have higher precision, however, this is a necessary limitation introduced by the low resolution of the \ac{tsv} scale.
-Binning data by the independent variables is a better representation over grouping the participants' responses by their \ac{tsv} when the aim is to predict the average thermal sensation of a large group of occupants and not to correctly predict each individual \ac{tsv} of people who reported the same \ac{tsv} vote but could have been in different locations and moments of the year and day.
+When the aim is to predict the average thermal sensation of a large group of occupants, binning data by the independent variables is a better representation.
+Grouping the participants' responses by their \ac{tsv} mixes people who reported the same \ac{tsv} vote but could have been in different locations and moments of the year and day.
 
 \subsection{Performance Metrics}\label{subsec:performance-metrics}
-Simple accuracy can be a misleading metric to use to quantify the performance of a classification predictive model that involves an unbalanced dataset~\cite{Chawla2005}.
+Simple accuracy is a misleading metric to use to quantify the performance of a classification predictive model that involves an unbalanced dataset~\cite{Chawla2005}.
 We then also report the F1 score when determining the performance of the \ac{pmv} and \ac{pmv-ce} in predicting the \ac{tsv}.
 The F1 score is the harmonic mean of the precision and sensitivity, where an F1 score reaches its best value at 1 and the worst score at 0.
 Precision (also called positive predictive value) is the ratio of true positives over all the positive results obtained from the test. 

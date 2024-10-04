@@ -2255,7 +2255,14 @@ def plot_bar(
         ncol=6,
     )
     if y_var == "thermal_comfort":
-        legend_texts = ['1 - Very uncomfortable', '2', '3', '4', '5', '6 - Very Comfortable']
+        legend_texts = [
+            "1 - Very uncomfortable",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6 - Very Comfortable",
+        ]
         for text, new_label in zip(lg.get_texts(), legend_texts):
             text.set_text(new_label)
     ax1.grid(None)
@@ -2272,7 +2279,6 @@ def plot_bar(
     )
     for ix, row in df_count.reset_index().iterrows():
         ax1.text(102, ix, int(row[y_var]), va="center", ha="left")
-
 
     plt.savefig(f"./Manuscript/src/figures/bar_plot_{y_var}_by_{x_var}.pdf")
 
@@ -3474,8 +3480,14 @@ if __name__ == "__plot__":
     plot_bar_tp_by_ts(data_=df.copy())
 
     plot_bar(data_=df.copy(), x_var="thermal_sensation_round", y_var="thermal_comfort")
-    plot_bar(data_=df.copy(), x_var="thermal_sensation_round", y_var="thermal_acceptability")
-    plot_bar(data_=df.copy(), x_var="thermal_sensation_round", y_var="air_movement_preference")
+    plot_bar(
+        data_=df.copy(), x_var="thermal_sensation_round", y_var="thermal_acceptability"
+    )
+    plot_bar(
+        data_=df.copy(),
+        x_var="thermal_sensation_round",
+        y_var="air_movement_preference",
+    )
 
     # plot model accuracy using bar chart
     plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0, fig_letters=["a)", "b)"])
@@ -3490,14 +3502,6 @@ if __name__ == "__plot__":
         fig_letters=["a)", "b)"],
         fig_letters_height=0.95,
     )
-    # # only for entries with velocity >= 0.2 m/s and three heights
-    # plot_stacked_bar_predictions_ts(
-    #     data_=pd.read_csv("data_three_heights.csv"),
-    #     v_min=0.2,
-    #     fig_name="bar_stacked_model_accuracy_0.2_three_heights_filtered",
-    #     fig_letters=["a)", "b)"],
-    #     fig_letters_height=0.95,
-    # )
 
     # print Markdown table of f1-scores
     table_f1_scores()
@@ -3512,18 +3516,34 @@ if __name__ == "__plot__":
         fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.pdf",
         fig_letters=["a)", "b)"],
     )
-    # plot_bubble_models_vs_tsv(
-    #     data_=pd.read_csv("data_three_heights.csv"),
-    #     fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights_filtered.pdf",
-    #     fig_letters=["a)", "b)"],
-    # )
 
     # plot bias distribution
     plot_bias_distribution_whole_db(data_=df.copy())
     plot_bias_distribution_whole_db(
         data_=df.copy(), fig_size=(5, 5), fig_name="bias_whole_db_graphical_abstract"
     )
-    # plot_bias_distribution_whole_db(hb_models=True)
+
+    # plot bias by each variable
+    plot_bias_distribution_by_variable_binned()
+
+    analyse_studies_with_three_speed_measurements(
+        data_=df.copy(), air_speed_limit=0.2, temperature_limit=24
+    )
+
+    plot_bubble_models_vs_tsv(
+        data_=pd.read_csv("data_three_heights.csv"),
+        fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights_limit_t.pdf",
+        fig_letters=["a)", "b)"],
+    )
+
+    # only for entries with velocity >= 0.2 m/s and three heights
+    plot_stacked_bar_predictions_ts(
+        data_=pd.read_csv("data_three_heights.csv"),
+        v_min=0.2,
+        fig_name="bar_stacked_model_accuracy_0.2_three_heights_filtered_limit_t",
+        fig_letters=["a)", "b)"],
+        fig_letters_height=0.95,
+    )
 
     # # plot bias by building
     # plot_bias_distribution_by_building()
@@ -3537,11 +3557,6 @@ if __name__ == "__plot__":
 
     # # plot bias by contributor
     # plot_bias_distribution_by_contributor()
-
-    # plot bias by each variable
-    plot_bias_distribution_by_variable_binned()
-
-    analyse_studies_with_three_speed_measurements(data_=df.copy())
 
     compare_pmv_disc()
 

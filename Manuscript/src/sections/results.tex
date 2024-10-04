@@ -79,9 +79,12 @@ Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figur
         \centering
         \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy_0.2}
     \end{subfigure}
-    \caption{The calculated \ac{pmv} value is grouped by the \ac{tsv} value reported by the participants.
+    \caption{The calculated \ac{pmv} value is grouped by the \ac{tsv} value reported by the participants. 
+    In a) and b) for the entire dataset, while in c and d for the dataset when \ac{v}~$\geq$~\qty{0.2}{\m\per\s}. 
+    In a) and c) are shown the results for the \ac{pmv} model, and in b) and d) for the \ac{pmv-ce} model. 
     The number of data points in each bin of the two charts at the top (a and b) and at the bottom (c and d) is the same, and this allows us to compare the accuracy of both models.
-    The overall prediction accuracy is shown above the chart, while the model accuracy of predicting participants grouped by their \ac{tsv} is shown over each bar.}
+    The overall prediction accuracy is shown above the chart, while the model accuracy of predicting participants grouped by their \ac{tsv} is shown over each bar.
+    A random model would have an accuracy of \qty{14}{\percent}.}
     \label{fig:bar_stacked_model_accuracy}
 \end{figure}
 Both \ac{pmv} formulations underestimate the conditions at which participants are thermally dissatisfied with their environment.
@@ -175,7 +178,7 @@ The x-axis tick label shows the bin range.
 All the boxen-plots have the same area to aid visualization, even though the number of points in each bin is not constant.
 The results depict that the use of the \ac{pmv-ce} model does not improve the bias of the \ac{pmv} results across all input variables.
 On the contrary, the bias of the \ac{pmv-ce} diverges more from 0 and is significantly worse (\num{-.33} versus \num{-0.13}) than the one for the \ac{pmv} for \qty{0.3}{\m\per\s}~$<$~\ac{v}~$\leq$~\qty{0.46}{\m\per\s}.
-Both model have a median bias higher or equal to $\lvert0.5\lvert$ for \ac{tdb}~$\leq$~\qty{21}{\celsius} and \ac{clo}~$\leq$~\qty{.5}{clo}.
+Both models have a median bias higher or equal to $\lvert0.5\lvert$ for \ac{tdb}~$\leq$~\qty{21}{\celsius} and \ac{clo}~$\leq$~\qty{.5}{clo}.
 
 These findings, along with those shown in Table~\ref{tab:f1} and earlier figures, demonstrate that the \ac{pmv-ce} model has lower accuracy and higher bias compared to the \ac{pmv} at elevated air speeds, even though the \ac{pmv-ce} model is more complex and requires more computational resources.
 

@@ -14,7 +14,6 @@ from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.gridspec import GridSpec
 from numba import jit
 from pythermalcomfort.models import (
-    athb,
     cooling_effect,
 )
 from pythermalcomfort.psychrometrics import p_sat_torr
@@ -1230,7 +1229,9 @@ def importing_filtering_processing(load_preprocessed=False):
     )
 
     save_var_latex("entries_db_used", df_.shape[0])
-    save_var_latex("entries_db_filtered_by_limit_inputs", df_valid_input.shape[0] - df_.shape[0])
+    save_var_latex(
+        "entries_db_filtered_by_limit_inputs", df_valid_input.shape[0] - df_.shape[0]
+    )
 
     df_meta = pd.read_csv("./Data/db_metadata.csv")
     df_ = pd.merge(df_, df_meta, on="building_id", how="left")
@@ -1874,7 +1875,8 @@ def analyse_studies_with_three_speed_measurements(
         # )
         # &
         # (
-                df_three_heights["ta"] > temperature_limit
+        df_three_heights["ta"]
+        > temperature_limit
         # )
     ].to_csv("data_three_heights.csv")
 
@@ -2209,6 +2211,71 @@ def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
     ax2.yaxis.tick_right()
     ax2.grid(None)
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.pdf")
+    plt.show()
+
+
+def plot_bar(
+    data_: pd.DataFrame() = None,
+    x_var: str = "thermal_sensation_round",
+    y_var: str = "thermal_comfort",
+) -> None:
+    # list of colors from matplotlib colormap
+    n = data_[y_var].nunique()
+    binary_cmap = plt.get_cmap("cividis")
+    binary_colors = [binary_cmap(i / (n - 1)) for i in range(n)]
+
+    df_count = data_.groupby(x_var)[[y_var]].count()
+
+    fig, ax1 = plt.subplots(constrained_layout=True)
+    df_plot = data_.groupby(x_var)[y_var].value_counts(normalize=True) * 100
+    df_plot.unstack(y_var).plot.barh(
+        stacked=True, ax=ax1, linewidth=0, width=0.85, color=binary_colors
+    )
+    for ix, row in df_plot.unstack(y_var).round(0).reset_index(drop=True).iterrows():
+        x_shift = 0
+        print(ix)
+        for el in row:
+            print(el)
+            if el > 3:
+                ax1.text(
+                    x_shift + el / 2,
+                    ix,
+                    f"{int(el)}%",
+                    c="white",
+                    ha="center",
+                    va="center",
+                )
+            x_shift += el
+    ax1.set(xlabel="Percentage (%)", ylabel=var_names[x_var])
+    lg = ax1.legend(
+        bbox_to_anchor=(0.5, 0.975),
+        loc="lower center",
+        borderaxespad=0,
+        frameon=False,
+        ncol=6,
+    )
+    if y_var == "thermal_comfort":
+        legend_texts = ['1 - Very uncomfortable', '2', '3', '4', '5', '6 - Very Comfortable']
+        for text, new_label in zip(lg.get_texts(), legend_texts):
+            text.set_text(new_label)
+    ax1.grid(None)
+    ax1.set_yticklabels(
+        [
+            "Cold",
+            "Cool",
+            "Sl. Cool",
+            "Neutral",
+            "Sl. Warm",
+            "Warm",
+            "Hot",
+        ],
+    )
+    for ix, row in df_count.reset_index().iterrows():
+        ax1.text(102, ix, int(row[y_var]), va="center", ha="left")
+
+
+    plt.savefig(f"./Manuscript/src/figures/bar_plot_{y_var}_by_{x_var}.pdf")
+
     plt.show()
 
 
@@ -2620,9 +2687,7 @@ def plot_bias_distribution_whole_db(
     )
 
     for ix, model in enumerate(models):
-        df_plot = pd.read_csv("data_three_heights.csv")[
-            f"diff_ts_{model}"
-        ]
+        df_plot = pd.read_csv("data_three_heights.csv")[f"diff_ts_{model}"]
         interval = 0.5
         bins_plot = np.arange(-3, 3, interval / 2)
         axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
@@ -2657,7 +2722,9 @@ def plot_bias_distribution_whole_db(
     ax2.text(0.55, 0.9, fig_letters[1], fontsize=16, fontweight="bold")
     ax2.axis("off")
     ax2.grid(False)
-    plt.savefig(f"./Manuscript/src/figures/hist_discrepancies_three_heights_filtered.pdf")
+    plt.savefig(
+        f"./Manuscript/src/figures/hist_discrepancies_three_heights_filtered.pdf"
+    )
     plt.show()
 
 
@@ -3387,7 +3454,6 @@ def compare_pmv_pmv_ce_comfort_region():
     plt.tight_layout()
     plt.savefig(f"./Manuscript/src/figures/pmv_comfort_regions.pdf")
     plt.show()
-    # r = pmv(tdb=temp, tr=temp, vr=v, rh=rh, met=met, clo=clo, wme=wme, round=False)
 
 
 if __name__ == "__main__":
@@ -3406,6 +3472,10 @@ if __name__ == "__plot__":
 
     # Figure 3
     plot_bar_tp_by_ts(data_=df.copy())
+
+    plot_bar(data_=df.copy(), x_var="thermal_sensation_round", y_var="thermal_comfort")
+    plot_bar(data_=df.copy(), x_var="thermal_sensation_round", y_var="thermal_acceptability")
+    plot_bar(data_=df.copy(), x_var="thermal_sensation_round", y_var="air_movement_preference")
 
     # plot model accuracy using bar chart
     plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0, fig_letters=["a)", "b)"])
@@ -3450,7 +3520,9 @@ if __name__ == "__plot__":
 
     # plot bias distribution
     plot_bias_distribution_whole_db(data_=df.copy())
-    plot_bias_distribution_whole_db(data_=df.copy(), fig_size=(5, 5), fig_name="bias_whole_db_graphical_abstract")
+    plot_bias_distribution_whole_db(
+        data_=df.copy(), fig_size=(5, 5), fig_name="bias_whole_db_graphical_abstract"
+    )
     # plot_bias_distribution_whole_db(hb_models=True)
 
     # # plot bias by building

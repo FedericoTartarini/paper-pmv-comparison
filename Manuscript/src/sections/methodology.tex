@@ -19,7 +19,9 @@ The limits we used are as follows:
 \num{0}~$\leq$~\ac{v}~$\leq$~\qty{1}{\m\per\s},
 \num{0}~$\leq$~\ac{clo}~$\leq$~\qty{1.5}{clo},
 \num{0}~$\leq$~water vapor partial pressure~$\leq$~\qty{2000}{\pascal},
-and \num{1}~$\leq$~\ac{met}~$\leq$~\qty{4}{met}.
+and \num{1}~$\leq$~\ac{met}~$\leq$~\qty{4}{met
+% todo add the number below, Federico, please specify how many datapoint were removed from the used dataset due to this criteria. Besically, we want to say how many points are out because they are not in the applicability range of the standard. 
+This criteria removed XXX datapoints. 
 The adjusted total clothing insulation and relative airspeed, as required by both standards, were used to calculate the \ac{pmv} and \ac{pmv-ce} values.
 
 Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
@@ -78,4 +80,4 @@ The F1-micro score calculates metrics globally by counting the total true positi
 The F1-macro calculates metrics for each label and finds their unweighted mean.
 The F1-weighted calculate metrics for each label and find their average weighted by support (the number of true instances for each label).
 For the interpretation of our results, F1-macro is arguably the most important because it is not affected by the unbalanced data distribution (most of the data are for thermal neutrality) and gives equal importance to predicting each of the thermal sensation votes. 
-F1-micro is the least important because it is heavenly skewed by the unbalance of the classes.
+F1-micro is the least important because it is heavily skewed by the unbalance of the classes.

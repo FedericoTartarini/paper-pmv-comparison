@@ -3399,8 +3399,6 @@ if __name__ == "__plot__":
     # filter data outside standard applicability limits
     df = importing_filtering_processing(load_preprocessed=True)
 
-    analyse_studies_with_three_speed_measurements(data_=df.copy())
-
     compare_pmv_pmv_ce_comfort_region()
 
     # Figure 1 and 2
@@ -3470,6 +3468,8 @@ if __name__ == "__plot__":
 
     # plot bias by each variable
     plot_bias_distribution_by_variable_binned()
+
+    analyse_studies_with_three_speed_measurements(data_=df.copy())
 
     compare_pmv_disc()
 

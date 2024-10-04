@@ -122,9 +122,6 @@ applicability_limits = {
     "thermal_sensation": [-3.5, 3.5],
     "pmv": [-3.49999, 3.5],
     "pmv_ce": [-3.49999, 3.5],
-    "pmv_set": [-3.49999, 3.5],
-    "pmv_gagge": [-3.49999, 3.5],
-    "pmv_toby": [-3.49999, 3.5],
     "rh": [0, 100],
     "pa": [0, 2700],
 }
@@ -174,7 +171,7 @@ var_units = {
 models_to_test = [
     "pmv",
     "pmv_ce",
-]  # ["pmv", "pmv_ce", "pmv_set", "pmv_gagge", "athb", "pmv_toby"]
+]
 
 
 @jit(nopython=True)
@@ -1168,9 +1165,7 @@ def importing_filtering_processing(load_preprocessed=False):
     )
 
     if load_preprocessed:
-        data_ = pd.read_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
-        df_meta = pd.read_csv("./Data/db_metadata.csv")
-        return pd.merge(data_, df_meta, on="building_id", how="left")
+        return pd.read_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
 
     pa_arr = []
     for i, row in df_.iterrows():
@@ -1187,18 +1182,6 @@ def importing_filtering_processing(load_preprocessed=False):
             & (df_[key] <= applicability_limits[key][1])
         ]
 
-    two_nodes_results = two_nodes(
-        tdb=df_.ta,
-        tr=df_.tr,
-        v=df_.vel,
-        rh=df_.rh,
-        met=df_.met,
-        clo=df_.clo,
-    )
-
-    df_["pmv_gagge"] = two_nodes_results["pmv_gagge"]
-    df_["pmv_set"] = two_nodes_results["pmv_set"]
-
     results_pmv_ppd = pmv_ppd(
         tdb=df_.ta,
         tr=df_.tr,
@@ -1206,7 +1189,7 @@ def importing_filtering_processing(load_preprocessed=False):
         rh=df_.rh,
         met=df_.met,
         clo=df_.clo_d,
-        standard="ISO",
+        standard="iso",
         limit_inputs=False,
     )
 
@@ -1227,24 +1210,6 @@ def importing_filtering_processing(load_preprocessed=False):
     df_["pmv_ce"] = results_pmv_ppd["pmv"]
     df_["ppd_ce"] = results_pmv_ppd["ppd"]
 
-    # estimate thermal sensation using toby's model
-    df_["pmv_toby"] = list(
-        pd.cut(
-            df_["ta"],
-            [-90, 15, 18, 20, 25, 27, 30, 90],
-            labels=[-3, -2, -1, 0, 1, 2, 3],
-        )
-    )
-
-    df_["athb"] = athb(
-        tdb=df_.ta,
-        tr=df_.tr,
-        vr=df_.vel_r,
-        rh=df_.rh,
-        met=df_.met,
-        t_running_mean=df_.t_mot_isd,
-    )
-
     for key in applicability_limits.keys():
         if "pmv" in key:
             df_ = df_[
@@ -1253,46 +1218,22 @@ def importing_filtering_processing(load_preprocessed=False):
             ]
 
     # calculate rounded variables and differences
-    for model in models_to_test:
-        rounded_col = f"{model}_round"
-        diff_col = f"diff_ts_{model}"
-        df_[rounded_col] = df_[model].round()
-        df_[diff_col] = df_[["thermal_sensation", model]].diff(axis=1)[model]
-        # calculate the heat balance value
-        if model != "athb":
-            df_[f"{model}_hb"] = df_[model] / (
-                0.303 * np.exp(-0.036 * df_["met"] * 58.15) + 0.028
-            )
-        else:
-            met_adapted = df_["met"] - (0.234 * df_["t_mot_isd"]) / 58.2
-            df_[f"{model}_hb"] = df_[model] / (
-                0.303 * np.exp(-0.036 * met_adapted * 58.15) + 0.028
-            )
+    for model_ in models_to_test:
+        rounded_col = f"{model_}_round"
+        diff_col = f"diff_ts_{model_}"
+        df_[rounded_col] = df_[model_].round()
+        df_[diff_col] = df_[["thermal_sensation", model_]].diff(axis=1)[model_]
 
     df_["thermal_sensation_round"] = df_["thermal_sensation"].round()
     df_["thermal_sensation_round - pmv_ce_round"] = (
         df_["thermal_sensation"] - df_["pmv_ce_round"]
     )
 
-    # estimate thermal sensation as a function of heat balance, met and clothing
-    for model in models_to_test[:-1]:
-        df_reg = df_[
-            [f"{model}_hb", "met", "clo", "thermal_sensation_round", "record_id"]
-        ].dropna()
-        clf = LogisticRegression(random_state=0, class_weight="balanced").fit(
-            df_reg[[f"{model}_hb", "met", "clo"]], df_reg["thermal_sensation_round"]
-        )
-        df_reg[f"lr_hb_{model}"] = clf.predict(df_reg[[f"{model}_hb", "met", "clo"]])
-        df_ = df_.merge(
-            df_reg[[f"lr_hb_{model}", "record_id"]], on="record_id", how="left"
-        )
-        df_[f"lr_hb_{model}_round"] = df_[f"lr_hb_{model}"].round()
-        df_[f"diff_ts_lr_hb_{model}"] = df_[
-            ["thermal_sensation", f"lr_hb_{model}"]
-        ].diff(axis=1)[f"lr_hb_{model}"]
-
     save_var_latex("entries_db_used", df_.shape[0])
     save_var_latex("entries_db_filtered_by_limit_inputs", df_valid_input.shape[0] - df_.shape[0])
+
+    df_meta = pd.read_csv("./Data/db_metadata.csv")
+    df_ = pd.merge(df_, df_meta, on="building_id", how="left")
 
     df_.to_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
 

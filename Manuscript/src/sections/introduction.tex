@@ -65,9 +65,11 @@ The rationale for using the \ac{pmv-ce} model is that the original \ac{pmv} form
 However, this method has some limitations.
 Firstly, it should be noted that over the years, the critical value of \ac{v} has been changed, from \qty{0.15}{\m\per\s} in \mycite{Schiavon2014} to \qty{0.2}{\m\per\s} in the ASHRAE 55--2017~\cite{ASHRAE552017, arens_moving_2009} to \qty{0.1}{\m\per\s} in \gls{55}~\cite{ashrae552023}.
 Secondly, calculating the \ac{pmv-ce} is more computationally intensive and complex since it requires the user to solve two heat balance equations, the \ac{pmv} and the \ac{set}.
-Thirdly, we could not find any peer-reviewed scientific publication that quantified the accuracy improvements of this model over the original \ac{pmv}.
+Thirdly, we could not find any peer-reviewed scientific publication that quantified the accuracy improvements of this model over the original \ac{pmv}
 Finally, the \ac{set} temperature which is used to calculate the \ac{ce}, is defined as the hypothetical isothermal environment at a \ac{rh} of \qty{50}{\percent}, \ac{v}~$\leq$~\qty{0.1}{\m\per\s}, and \ac{tr}~=~\ac{tdb} in which the total heat loss from the skin of an imaginary occupant wearing clothing, standardized for the activity concerned, is the same as that from a person in the actual environment with actual clothing and activity level~\cite{ashrae552023}.
 However, while \ac{v}, used to calculate the \ac{pmv-ce}, is set to \qty{0.1}{\m\per\s} the value of \ac{rh} and \ac{clo} are not adjusted to compensate for the fact that \ac{set} fixed the \ac{rh} to \qty{50}{\percent} and standardized the clothing to the activity.
+Assuming \ac{rh} to remain constant is incorrect since the \ac{ce} is subtracted from both the \ac{tdb} and \ac{tr} to calculate the \ac{pmv-ce}.
+Consequently, the \ac{rh} should be re-calculated, potentially assuming the humidity ratio to be constant, to reflect the new \ac{tdb} and \ac{tr} values.
 We could not find a rationale for this choice in the available literature.
 
 \subsection{Other \ac{pmv} Formulations}\label{subsec:other-pmv-formulations}

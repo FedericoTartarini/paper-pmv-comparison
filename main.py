@@ -1813,9 +1813,13 @@ def plot_distribution_variable():
     )
 
 
-def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
+def analyse_studies_with_three_speed_measurements(
+    data_: pd.DataFrame = None,
+    air_speed_limit: float = 0.2,
+    temperature_limit: float = 24.0,
+):
     # [['contributor', 'publication', 'region', 'country', 'city']]
-    df_three_heights = data_[data_["vel_r"] >= 0.2].dropna(subset="vel_l")
+    df_three_heights = data_[data_["vel_r"] >= air_speed_limit].dropna(subset="vel_l")
     df_three_heights.replace(
         {
             "https://doi.org/10.1016/j.buildenv.2010.05.024": "Zhang, Y. et al. (2010).",
@@ -1875,7 +1879,7 @@ def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
         index=False,
     )
 
-    authors_to_show = df_publications['publication'].tolist()
+    authors_to_show = df_publications["publication"].tolist()
 
     df_delta_v = df_three_heights["vel_r"] - df_three_heights[
         ["vel_h", "vel_m", "vel_l"]
@@ -1918,14 +1922,25 @@ def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
     # )
     # plt.show()
 
-    df_three_heights[df_three_heights["publication"].isin(
-        [
-            'Zhang, Y., Chen, H., Meng, Q. (2013)', 'Zhang, Y. et al. (2010)', 'Tartarini, F., Cooper, P., Fleming, R. (2018)'
-        ]
-    )].to_csv("data_three_heights.csv")
+    df_three_heights[
+        # df_three_heights["publication"].isin(
+        #     [
+        #         "Zhang, Y., Chen, H., Meng, Q. (2013)",
+        #         "Zhang, Y. et al. (2010)",
+        #         "Tartarini, F., Cooper, P., Fleming, R. (2018)",
+        #     ]
+        # )
+        # &
+        # (
+                df_three_heights["ta"] > temperature_limit
+        # )
+    ].to_csv("data_three_heights.csv")
 
     plt.close("all")
-    df_plot = df_three_heights.loc[df_three_heights['publication'].isin(authors_to_show), ["vel_h", "vel_m", "vel_l", "vel_r", "publication"]]
+    df_plot = df_three_heights.loc[
+        df_three_heights["publication"].isin(authors_to_show),
+        ["vel_h", "vel_m", "vel_l", "vel_r", "publication"],
+    ]
     df_plot.publication = df_plot.publication.astype("category")
     df_plot.publication = df_plot.publication.cat.set_categories(authors_to_show)
     df_plot = df_plot.sort_values(["publication"])
@@ -1966,7 +1981,7 @@ def analyse_studies_with_three_speed_measurements(data_: pd.DataFrame = None):
 
     # ax2 = plt.axes([0, 0.07, 1, 0.929], facecolor=(1, 1, 1, 0))
     y_value = -0.5
-    for ix in range(0, len(authors_to_show)+1):
+    for ix in range(0, len(authors_to_show) + 1):
         ax.axhline(
             y_value,
             0,
@@ -2649,6 +2664,57 @@ def plot_bias_distribution_whole_db(
     ax2.axis("off")
     ax2.grid(False)
     plt.savefig(f"./Manuscript/src/figures/hist_discrepancies_three_heights.pdf")
+    plt.show()
+
+    # plot bias distribution only for entries with three air speeds
+    f, axs = plt.subplots(
+        1,
+        len(models),
+        sharex=True,
+        sharey="row",
+        constrained_layout=True,
+        figsize=(7, 2.5),
+    )
+
+    for ix, model in enumerate(models):
+        df_plot = pd.read_csv("data_three_heights.csv")[
+            f"diff_ts_{model}"
+        ]
+        interval = 0.5
+        bins_plot = np.arange(-3, 3, interval / 2)
+        axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
+        axs[ix].hist(
+            df_plot[(df_plot >= -interval) & (df_plot < interval)],
+            bins=bins_plot,
+            color=c_brown,
+        )
+        y_label = "Number of data points" if ix == 0 else ""
+        title = var_names[model]
+        title += f" - V $\geq$" + f" 0.2 m/s and three heights"
+        axs[ix].set(title=title, ylabel=y_label, xlabel="", xlim=(-3, 3))
+        mpl.pyplot.locator_params(axis="y", nbins=3)
+        stats = {
+            "median": df_plot.median().round(2),
+        }
+        y_text = 50
+        axs[ix].text(
+            2.3,
+            y_text,
+            f"Median = {stats['median']}\nIQR = {df_plot.quantile(.25).round(2)},"
+            f" {df_plot.quantile(.75).round(2)}",
+            va="center",
+            ha="center",
+        )
+        axs[ix].grid(axis="x")
+        axs[ix].axvline(0, c="k", ls="--")
+
+    f.supxlabel(r"Difference between PMV$_i$ and TSV$_i$")
+    ax2 = plt.axes([0, 0, 1, 1], facecolor=(1, 1, 1, 0))
+    ax2.text(0.025, 0.9, fig_letters[0], fontsize=16, fontweight="bold")
+    ax2.text(0.55, 0.9, fig_letters[1], fontsize=16, fontweight="bold")
+    ax2.axis("off")
+    ax2.grid(False)
+    plt.savefig(f"./Manuscript/src/figures/hist_discrepancies_three_heights_filtered.pdf")
     plt.show()
 
 
@@ -3390,6 +3456,8 @@ if __name__ == "__plot__":
     # filter data outside standard applicability limits
     df = importing_filtering_processing(load_preprocessed=True)
 
+    analyse_studies_with_three_speed_measurements(data_=df.copy())
+
     compare_pmv_pmv_ce_comfort_region()
 
     # Figure 1 and 2
@@ -3435,7 +3503,7 @@ if __name__ == "__plot__":
     )
     # plot_bubble_models_vs_tsv(
     #     data_=pd.read_csv("data_three_heights.csv"),
-    #     fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.pdf",
+    #     fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights_filtered.pdf",
     #     fig_letters=["a)", "b)"],
     # )
 
@@ -3458,8 +3526,6 @@ if __name__ == "__plot__":
 
     # plot bias by each variable
     plot_bias_distribution_by_variable_binned()
-
-    analyse_studies_with_three_speed_measurements(data_=df.copy())
 
     compare_pmv_disc()
 

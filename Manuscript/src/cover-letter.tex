@@ -15,6 +15,8 @@
 % adjust the page margins
 \usepackage[scale=0.8]{geometry}
 \usepackage{enumitem}
+\usepackage[range-phrase=--, range-units=single, per-mode=symbol, range-phrase = ~--~]{siunitx}
+\usepackage{mathtools}
 \setlist[enumerate]{align=left}
 %\setlength{\hintscolumnwidth}{3cm}                % if you want to change the width of the column with the dates
 %\setlength{\makecvtitlenamewidth}{10cm}           % for the 'classic' style, if you want to force the width allocated to your name and avoid line breaks. be careful though, the length is normally calculated to avoid any overlap with your personal info; use this at your own typographical risks...
@@ -23,12 +25,12 @@
 % personal data
 \name{}{Dr. Federico Tartarini}
 % \title{Postdoctoral scholar}                               % optional, remove / comment the line if not wanted
-\address{Postdoctoral scholar at SinBerBEST, Berkeley Education Alliance for Research in Singapore}{1 Create Way, \#11-01, CREATE Tower}{Singapore 138602} % optional, remove / comment the line if not wanted; the "postcode city" and and "country" arguments can be omitted or provided empty
+\address{Senior Lecturer, The University of Sydney}{Wilkinson Building, 148 A36, Camperdown}{Sydney, NSW, Australia, 2050} % optional, remove / comment the line if not wanted; the "postcode city" and and "country" arguments can be omitted or provided empty
 % \phone[mobile]{000-000-000-000}                   % optional, remove / comment the line if not wanted
 % \phone[fixed]{+2~(345)~678~901}                    % optional, remove / comment the line if not wanted
 % \phone[fax]{+3~(456)~789~012}                      % optional, remove / comment the line if not wanted
 % todo change text below
-\email{federicotartarini@berkeley.edu}                               % optional, remove / comment the line if not wanted
+\email{federico.tartarini@sydney.edu.au}                               % optional, remove / comment the line if not wanted
 %\homepage{www.johndoe.com}                         % optional, remove / comment the line if not wanted
 % \extrainfo{Berkeley Education Alliance for Research in Singapore}                 % optional, remove / comment the line if not wanted
 %\photo[64pt][0.4pt]{picture}                       % optional, remove / comment the line if not wanted; '64pt' is the height the picture must be resized to, 0.4pt is the thickness of the frame around it (put it to 0pt for no frame) and 'picture' is the name of the picture file
@@ -53,31 +55,45 @@
 \recipient{Cover letter to the Editor}{of the journal of Building and Environment}
 \date{\today}
 % todo change text below
-\opening{Dear Professor Nesreen K. Ghaddar,}
+\opening{Dear Editors,}
 
 \makelettertitle
 
 % todo change text below
-We submit an original research article entitled ``'' for consideration to be published in XXXXXXXXXXXX.
-The authors are XXXXXXXXXXXXXXXXXXX.
-We are experts in XXXXXXXXXXXXXXXXXXX.
-We confirm that this manuscript it is not currently under consideration for publication in any other journal.
+We submit an original research article titled ``Comparative analysis of PMV Models accuracy implemented in the ISO 7730:2005 and ASHRAE 55:2023'' for consideration for publication in Building and Environment.
 
-% todo summarized key findings
+The study compares the accuracy of the PMV model, as used in the ISO 7730:2005 standard, and its modified version, the PMV$_{CE}$ model, included in the ASHRAE 55:2023 standard.
+The PMV$_{CE}$ was intentionally developed to more accurately estimate the effect of elevated air movement.
+The two model formulations only differ when the air speed is greater than \qty{0.1}{\m\per\s}.
+We determined the predictive accuracy of the PMV and PMV$_{CE}$ models by comparing their results to 49,282 thermal sensation votes available in the ASHRAE Global Thermal Comfort Database II v2.1.
 
-% todo summarize methodology
+We found that both models have low and similar prediction accuracy ($ \approx$\qty{34}{\percent}) and the PMV$_{CE}$ has higher bias than PMV in predicting thermal sensation in the subset of data with air speed greater than \qty{0.2}{\m\per\s}.
+Both models have an accuracy lower or equal to \qty{7}{\percent} when predicting either `warm,' `hot,' or `cold.'
+This value is lower than random guessing (\qty{14}{\percent}), meaning they are misleading the users.
 
-% todo summarize conclusions
+Based on our results, we recommend restricting the use of the PMV only to values $\lvert \textrm{PMV} \lvert \leq 0.5$ since the PMV models cannot determine the degree to which people are dissatisfied.
+Moreover, we recommend using the PMV model over the PMV$_{CE}$ model, as the latter is more complex and computationally intensive to run, while not being more accurate than the original PMV model.
+Moreover, we challenge the assumption that individuals who feel `slightly warm' or `slightly cool' are thermally neutral.
 
-% todo summarize impact
+We believe our findings will significantly contribute to the ongoing discourse on thermal comfort modeling and have practical applications in building design, engineering, and architecture.
+Particularly because the PMV model is used by both the ISO 7730:2005 and ASHRAE 55:2023 standards.
 
+We confirm that this manuscript has not been published elsewhere and is not under consideration by another journal.
+
+All authors have approved the manuscript and agree with its submission to Building and Environment.
+
+We have no conflicts of interest to disclose.
+
+Thank you for considering our manuscript for publication.
 Please do not hesitate to contact me if I can be of any further assistance.
-Thank you in advance for considering our research for publication.
+Please address all correspondence to Dr. Federico Tartarini at \href{mailto:federico.tartarini@sydney.edu.au}{federico.tartarini@sydney.edu.au}.
+We look forward to your positive response.
 
 \bigskip
 
 % todo change text below
 Dr. Federico Tartarini, PhD\\
-Postdoctoral scholar at SinBerBEST, BEARS
+Senior Lecturer\\
+The University of Sydney\\
 
 \end{document}

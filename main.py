@@ -1292,6 +1292,7 @@ def importing_filtering_processing(load_preprocessed=False):
         ].diff(axis=1)[f"lr_hb_{model}"]
 
     save_var_latex("entries_db_used", df_.shape[0])
+    save_var_latex("entries_db_filtered_by_limit_inputs", df_valid_input.shape[0] - df_.shape[0])
 
     df_.to_pickle(r"./Data/db_analysis.pkl.gz", compression="gzip")
 
@@ -2546,6 +2547,7 @@ def plot_bias_distribution_whole_db(
     data_: pd.DataFrame = None,
     fig_name: str = "hist_discrepancies",
     fig_letters: list[str] = ["a)", "b)", "c)", "d)"],
+    fig_size: tuple[int, int] = (7, 4.5),
 ):
 
     models = models_to_test
@@ -2560,7 +2562,7 @@ def plot_bias_distribution_whole_db(
         sharex=True,
         sharey="row",
         constrained_layout=True,
-        figsize=(7, 4.5),
+        figsize=fig_size,
     )
 
     for row, v in enumerate([0, 0.2]):
@@ -3509,6 +3511,7 @@ if __name__ == "__plot__":
 
     # plot bias distribution
     plot_bias_distribution_whole_db(data_=df.copy())
+    plot_bias_distribution_whole_db(data_=df.copy(), fig_size=(5, 5), fig_name="bias_whole_db_graphical_abstract")
     # plot_bias_distribution_whole_db(hb_models=True)
 
     # # plot bias by building

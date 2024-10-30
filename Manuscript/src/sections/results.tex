@@ -33,23 +33,36 @@ This limits our analysis to young adults and does not allow us to determine the 
 The \ac{db2} does not contain information about the health status of the participants.
 Approximately \var{running_mean_10_25} of the running mean outdoor temperature values are between \qtyrange{10}{25}{\celsius}.
 
-The percentage of \ac{tpv} grouped by each \ac{tsv} is shown on the left side of Figure~\ref{fig:bar_plot_tp_by_ts}.
+The percentage of \ac{tpv} grouped by each \ac{tsv} is shown in Figure~\ref{fig:bar_plot_tp_by_ts} a).
 \begin{figure*}[htb!]
     \centering
-    \includegraphics[width=\textwidth]{figures/bar_plot_tp_by_ts}
-    \caption{The graph on the left shows the percentage of \ac{tpv} for each thermal sensation vote.
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/bar_plot_tp_by_ts}
+        \caption{Figure a) shows the percentage of \ac{tpv} for each thermal sensation vote.
     The numbers on the right side of each bar show the number of points for each \ac{tsv}.
-    The graph on the right shows the total number of data points grouped by \ac{tsv}.
+        Figure b) shows the total number of data points grouped by \ac{tsv}.
     Each bin in the right figure has more data points than in the left figure, since less data on \ac{tpv} were available.}
     \label{fig:bar_plot_tp_by_ts}
+    \end{subfigure}
+    \par\bigskip % force a bit of vertical whitespace
+    \begin{subfigure}[b]{\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/bar_plot_thermal_acceptability_by_thermal_sensation_round}
+    \caption{
+        Figure c) shows the percentage of participants who consider the space thermally acceptable for each thermal sensation vote.}
+        \label{fig:thermal_acceptability_by_ts}
+    \end{subfigure}
+    \caption{The distribution of \ac{tpv} and thermal acceptability grouped by each \ac{tsv}.}
 \end{figure*}
 Only \var{entries_with_tp} entries have information about both \ac{tsv} and \ac{tpv}.
 Thus, on the right, we show a bar chart depicting the distribution of all the \ac{tsv} votes, we analyzed in the paper.
 The \ac{tsv} dataset is unbalanced.
-Approximately \var{perc_tsv_neutral} of all the entries have a \ac{tsv} of `Neutral'.
-While less than \var{perc_tsv_hot} of the total sample of participants reported to be either `Hot' or `Cold'.
-
+Approximately \var{perc_tsv_neutral} of all the entries have a \ac{tsv} of `neutral'.
+While less than \var{perc_tsv_hot} of the total sample of participants reported to be either `hot' or `cold'.
 In thermal comfort research, it is generally assumed that people who are `slightly warm' or `slightly cool' are thermally comfortable~\cite{Fanger1970, schweiker2020evaluating}.
+Fanger, in his seminal book on thermal comfort wrote that ``The dissatisfied are defined here as those who vote \num{-2} (cool) or \num{-3} (cold), \num{2} (warm) or \num{3} (hot).
+One could perhaps object that those voting \num{-1} or \num{1} were not included also, but as evidenced by Gagge et al., real discomfort is first expressed by those voting higher than \num{2} or lower than \num{-2}.''~\cite{Fanger1970}.
 However, \qty{68}{\percent} of participants who were `slightly warm' wanted to be `cooler' and \qty{54}{\percent} of participants who were `slightly cool' wanted to be `warmer'.
 This finding challenges the above assumption.
 Assuming that people who are `slightly warm' or `slightly cool' are comfortable leads to under-counting thermal discomfort.
@@ -59,9 +72,10 @@ Similarly, but in reverse, among those who reported being `warm' \qty{13}{\perce
 This result highlights one of the major limitations of the \ac{tsv} scale.
 The thermal preference scale is better suited to determine how people perceive their thermal environment and more clearly provides a signal to decide whether to change or not the thermal environment.
 On the contrary, the \ac{tsv} is ambiguous and does not allow determining if an action should be taken to increase the participant's thermal comfort.
-As illustrated in Figure 5c, over \qty{80}{\percent} of occupants who feel `slightly warm' or `slightly cool' consider the space thermally acceptable. 
+As illustrated in Figure~\ref{fig:thermal_acceptability_by_ts}, over \qty{80}{\percent} of occupants who feel `slightly warm' or `slightly cool' consider the space thermally acceptable.
 However, thermal comfort is defined as ``the state of mind that expresses satisfaction with the thermal environment,'' rather than simply finding the space acceptable. 
-This distinction highlights that while many may tolerate slight deviations from their preferred temperature, true thermal comfort involves a higher level of satisfaction with the surrounding thermal conditions. 
+This distinction highlights that while many may tolerate slight deviations from their preferred temperature, true thermal comfort involves a higher level of satisfaction with the surrounding thermal conditions.
+We did not analyze the thermal comfort data since in the \ac{db2} it is unclear which scale was used to collect the data.
 
 \subsection{Comparison of PMV Accuracy in Predicting Thermal Sensation}\label{subsec:model-accuracy-comparison-in-predicting-thermal-sensation}
 The \ac{pmv} was developed with the primary aim of predicting \ac{tsv}, consequently, we compared the predicted value from the two models with measured \ac{tsv}.
@@ -77,7 +91,7 @@ Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figur
         \centering
         \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy_0}
     \end{subfigure}
-\par\bigskip % force a bit of vertical whitespace
+    \par\bigskip % force a bit of vertical whitespace
     \begin{subfigure}[b]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy_0.2}
@@ -193,7 +207,7 @@ The issues are reported in order of importance of what we believe may affect the
 \paragraph{Heat Balance Equation and Calculation of the PMV Value}
 The \ac{pmv} model uses simplified heat balance equations to estimate the heat losses and gains from the human body to its surrounding environment.
 This is a possible source of error since the model considers the human body to be a cylinder with constant width all uniformly covered with clothing where the heat is all generated in its core.
-This is a significant simplification, as it overlooks several important factors, such as the uneven coverage of clothing across different parts of the body, the non-uniformity of metabolic heat generation, and the variations of mass-to-surface ratios. 
+This is a significant simplification, as it overlooks several important factors, such as the uneven coverage of clothing across different parts of the body, the non-uniformity of metabolic heat generation, and the variations of mass-to-surface ratios.
 It also ignores vasoconstriction and vasodilation.
 Additionally, the \ac{pmv} model erroneously assumes that the human body is always losing or gaining heat from its surrounding environment.
 In reality, under most indoor conditions, the body activates control mechanisms to maintain a stable core temperature~\cite{romanovsky_thermoregulation_2018}.

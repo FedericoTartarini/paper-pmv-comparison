@@ -13,9 +13,7 @@ import seaborn as sns
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.gridspec import GridSpec
 from numba import jit
-from pythermalcomfort.models import (
-    cooling_effect,
-)
+from pythermalcomfort.models import cooling_effect, two_nodes
 from pythermalcomfort.psychrometrics import p_sat_torr
 from pythermalcomfort.utilities import check_standard_compliance_array
 from scipy import optimize
@@ -32,6 +30,11 @@ warnings.filterwarnings("ignore")
 
 psychrolib.SetUnitSystem(psychrolib.SI)
 
+
+results = two_nodes(29, 29, 0.15, 80, 1, 0.5, 0)
+results["w"]
+results = cooling_effect(29, 29, 0.15, 80, 1, 0.5, 0)
+print(results)
 
 palette_tp = [
     "#06A6EE",
@@ -1759,8 +1762,7 @@ def plot_distribution_variable():
 def analyse_studies_with_three_speed_measurements(
     data_: pd.DataFrame = None,
     air_speed_limit: float = 0.2,
-    temperature_limit: float = 24.0,
-):
+) -> pd.DataFrame:
     # [['contributor', 'publication', 'region', 'country', 'city']]
     df_three_heights = data_[data_["vel_r"] >= air_speed_limit].dropna(subset="vel_l")
     df_three_heights.replace(
@@ -1865,21 +1867,6 @@ def analyse_studies_with_three_speed_measurements(
     # )
     # plt.show()
 
-    df_three_heights[
-        # df_three_heights["publication"].isin(
-        #     [
-        #         "Zhang, Y., Chen, H., Meng, Q. (2013)",
-        #         "Zhang, Y. et al. (2010)",
-        #         "Tartarini, F., Cooper, P., Fleming, R. (2018)",
-        #     ]
-        # )
-        # &
-        # (
-        df_three_heights["ta"]
-        > temperature_limit
-        # )
-    ].to_csv("data_three_heights.csv")
-
     plt.close("all")
     df_plot = df_three_heights.loc[
         df_three_heights["publication"].isin(authors_to_show),
@@ -1938,6 +1925,8 @@ def analyse_studies_with_three_speed_measurements(
     # ax.grid(False)
     plt.savefig("./Manuscript/src/figures/boxenplot_wind_speed_three_heights.pdf")
     plt.show()
+
+    return df_three_heights
 
     # df_perc = (
     #     (
@@ -2105,7 +2094,7 @@ def plot_bubble_models_vs_tsv(
     plt.show()
 
 
-def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
+def plot_bar_tp_by_ts(data_: pd.DataFrame() = None, fig_letters=["a)", "b)"]) -> None:
     x_var, y_var = "thermal_sensation_round", "thermal_preference"
     save_var_latex(
         f"entries_with_tp",
@@ -2170,6 +2159,8 @@ def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
         ncol=3,
     )
     ax1.grid(None)
+    ax1.text(-20, 6.5, fig_letters[0], fontsize=16, fontweight="bold")
+
     ax1.set_yticklabels(
         [
             "Cold",
@@ -2182,7 +2173,7 @@ def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
         ],
     )
     for ix, row in df_count.reset_index().iterrows():
-        ax1.text(102, ix, int(row[y_var]), va="center", ha="left")
+        ax1.text(102, ix, int(row[y_var]), va="center", ha="left", color="gray")
 
     ax2 = fig.add_subplot(gs[0, -1])
     data_.groupby(x_var)[x_var].count().plot.bar(
@@ -2197,6 +2188,7 @@ def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
     ax2.set(
         yticklabels=(f"{int(x)} K" for x in ax2.get_yticks() / 1000),
     )
+
     ax2.set_xticklabels(
         [
             "Cold",
@@ -2208,6 +2200,8 @@ def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
             "Hot",
         ],
     )
+
+    ax2.text(-1, 21350, fig_letters[1], fontsize=16, fontweight="bold")
     ax2.yaxis.tick_right()
     ax2.grid(None)
     plt.savefig(f"./Manuscript/src/figures/bar_plot_tp_by_ts.pdf")
@@ -2217,31 +2211,36 @@ def plot_bar_tp_by_ts(data_: pd.DataFrame() = None) -> None:
 def plot_bar(
     data_: pd.DataFrame() = None,
     x_var: str = "thermal_sensation_round",
-    y_var: str = "thermal_comfort",
+    y_var: str = "thermal_acceptability",
 ) -> None:
     # list of colors from matplotlib colormap
+    data_.loc[:, y_var] = data_[y_var].str.capitalize()
     n = data_[y_var].nunique()
     binary_cmap = plt.get_cmap("cividis")
     binary_colors = [binary_cmap(i / (n - 1)) for i in range(n)]
+    if y_var == "thermal_acceptability":
+        binary_colors = [c_blue, c_gold]
 
     df_count = data_.groupby(x_var)[[y_var]].count()
 
-    fig, ax1 = plt.subplots(constrained_layout=True)
+    fig, ax1 = plt.subplots(constrained_layout=True, figsize=(7, 3))
     df_plot = data_.groupby(x_var)[y_var].value_counts(normalize=True) * 100
     df_plot.unstack(y_var).plot.barh(
         stacked=True, ax=ax1, linewidth=0, width=0.85, color=binary_colors
     )
+    if y_var == "thermal_acceptability":
+        text_colors = ["white", "black"]
     for ix, row in df_plot.unstack(y_var).round(0).reset_index(drop=True).iterrows():
         x_shift = 0
-        print(ix)
-        for el in row:
-            print(el)
+        # print(ix)
+        for text_color, el in zip(text_colors, row):
+            # print(el)
             if el > 3:
                 ax1.text(
                     x_shift + el / 2,
                     ix,
                     f"{int(el)}%",
-                    c="white",
+                    c=text_color,
                     ha="center",
                     va="center",
                 )
@@ -2265,7 +2264,9 @@ def plot_bar(
         ]
         for text, new_label in zip(lg.get_texts(), legend_texts):
             text.set_text(new_label)
+
     ax1.grid(None)
+    ax1.text(-10, 6.5, "c)", fontsize=16, fontweight="bold")
     ax1.set_yticklabels(
         [
             "Cold",
@@ -2278,7 +2279,7 @@ def plot_bar(
         ],
     )
     for ix, row in df_count.reset_index().iterrows():
-        ax1.text(102, ix, int(row[y_var]), va="center", ha="left")
+        ax1.text(102, ix, int(row[y_var]), va="center", ha="left", color="gray")
 
     plt.savefig(f"./Manuscript/src/figures/bar_plot_{y_var}_by_{x_var}.pdf")
 
@@ -2682,6 +2683,18 @@ def plot_bias_distribution_whole_db(
     plt.savefig(f"./Manuscript/src/figures/hist_discrepancies_three_heights.pdf")
     plt.show()
 
+
+def plot_bias_distribution_three_heights(
+    data_: pd.DataFrame = None,
+    fig_letters: list[str] = ["a)", "b)"],
+    fig_size: tuple[int, int] = (7, 2.5),
+    fig_name: str = "./Manuscript/src/figures/hist_discrepancies_three_heights.pdf",
+):
+    t_limit = float(data_["ta"].min())
+    y_text = 150
+    if t_limit > 20:
+        y_text = 75
+    models = models_to_test
     # plot bias distribution only for entries with three air speeds
     f, axs = plt.subplots(
         1,
@@ -2689,11 +2702,11 @@ def plot_bias_distribution_whole_db(
         sharex=True,
         sharey="row",
         constrained_layout=True,
-        figsize=(7, 2.5),
+        figsize=fig_size,
     )
 
     for ix, model in enumerate(models):
-        df_plot = pd.read_csv("data_three_heights.csv")[f"diff_ts_{model}"]
+        df_plot = data_[f"diff_ts_{model}"]
         interval = 0.5
         bins_plot = np.arange(-3, 3, interval / 2)
         axs[ix].hist(df_plot, bins=bins_plot, color=c_gold)
@@ -2710,7 +2723,7 @@ def plot_bias_distribution_whole_db(
         stats = {
             "median": df_plot.median().round(2),
         }
-        y_text = 50
+
         axs[ix].text(
             2.3,
             y_text,
@@ -2728,9 +2741,7 @@ def plot_bias_distribution_whole_db(
     ax2.text(0.55, 0.9, fig_letters[1], fontsize=16, fontweight="bold")
     ax2.axis("off")
     ax2.grid(False)
-    plt.savefig(
-        f"./Manuscript/src/figures/hist_discrepancies_three_heights_filtered.pdf"
-    )
+    plt.savefig(fig_name)
     plt.show()
 
 
@@ -3526,23 +3537,30 @@ if __name__ == "__plot__":
     # plot bias by each variable
     plot_bias_distribution_by_variable_binned()
 
-    analyse_studies_with_three_speed_measurements(
-        data_=df.copy(), air_speed_limit=0.2, temperature_limit=24
+    df_three = analyse_studies_with_three_speed_measurements(
+        data_=df.copy(), air_speed_limit=0.2
     )
 
+    plot_bias_distribution_three_heights(data_=df_three.copy())
+
     plot_bubble_models_vs_tsv(
-        data_=pd.read_csv("data_three_heights.csv"),
+        data_=df_three.copy(),
         fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights_limit_t.pdf",
         fig_letters=["a)", "b)"],
     )
 
-    # only for entries with velocity >= 0.2 m/s and three heights
-    plot_stacked_bar_predictions_ts(
-        data_=pd.read_csv("data_three_heights.csv"),
-        v_min=0.2,
-        fig_name="bar_stacked_model_accuracy_0.2_three_heights_filtered_limit_t",
-        fig_letters=["a)", "b)"],
-        fig_letters_height=0.95,
+    # # only for entries with velocity >= 0.2 m/s and three heights
+    # plot_stacked_bar_predictions_ts(
+    #     data_=df_three.copy(),
+    #     v_min=0.2,
+    #     fig_name="bar_stacked_model_accuracy_0.2_three_heights_filtered_limit_t",
+    #     fig_letters=["a)", "b)"],
+    #     fig_letters_height=0.95,
+    # )
+
+    plot_bias_distribution_three_heights(
+        data_=df_three[df_three["ta"] > 24].copy(),
+        fig_name="./Manuscript/src/figures/hist_discrepancies_three_heights_limit_t.pdf",
     )
 
     # # plot bias by building

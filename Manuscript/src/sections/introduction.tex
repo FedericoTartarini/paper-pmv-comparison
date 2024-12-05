@@ -61,9 +61,9 @@ We plotted the results in Figure~\ref{fig:comfort_regios_pmv_pmvce}.
 The results show that for \ac{v}~=~\qty{0.4}{\m\per\s} and \ac{rh}~=~\qty{50}{\percent} the comfort regions estimated using the \ac{pmv-ce} is \qty{0.7}{\celsius} wider than the one calculated using the \ac{pmv} and shifted towards warmer temperatures.
 For \ac{v}~=~\qty{0.2}{\m\per\s}, the same difference is \qty{0.4}{\celsius}.
 
-The rationale for the development of the \ac{pmv-ce} model is that the original \ac{pmv} formulation does accurately estimate the convective and evaporative heat losses from the skin to the environment~\cite{huang_applicability_2014}.
-It is true that the \ac{pmv} does not accurately estimate the evaporative heat losses trough sweating.
-The \ac{pmv} model assumes that sweating is minimal and constant, for a specific \ac{met}, hence if sweating would be required to maintain the body in thermal equilibrium the \ac{pmv} model return a positive \ac{pmv} value.
+The rationale for the development of the \ac{pmv-ce} model is that the original \ac{pmv} formulation does not accurately estimate convective and evaporative heat losses from the skin to the environment~\cite{huang_applicability_2014}.
+The \ac{pmv} does not accurately estimate evaporative heat losses trough sweating because it assumes that sweating is constant and only varies as a function of \ac{met}. 
+Hence, if sweating is required to maintain the body in thermal equilibrium, the \ac{pmv} model assumes that the body would gain heat.
 The human body, on the other hand, uses sweating to maintain a constant body temperature in `warm' environments.
 However, despite this limitation of the \ac{pmv} model, we have identified several limitations of the \ac{pmv-ce} model, which we list below.
 % \mycite{huang_applicability_2014}, using 19 averaged data points obtained from a set of experiments involving 30 subjects, showed the \ac{set} model could be used to estimate the thermal sensation with two different ways of estimating the airspeed. 
@@ -81,7 +81,7 @@ However, despite this limitation of the \ac{pmv} model, we have identified sever
     Even after reducing both \ac{tdb} and \ac{tr} by the \ac{ce}, the person is still estimated to be sweating.
     Therefore, in this scenario, the \ac{pmv-ce} model also cannot accurately predict the \ac{tsv}.
     \item The previous example, highlights another limitation of the \ac{pmv-ce}.
-    The assumption of keeping \ac{rh} constant after adjusting \ac{tdb} and \ac{tr} is incorrect, since the value of \ac{rh} is dependent on \ac{tdb}.
+    The assumption of keeping \ac{rh} constant after adjusting \ac{tdb} and \ac{tr} is thermodynamically incorrect since the value of \ac{rh} is dependent on \ac{tdb}.
     The \ac{rh} should be re-calculated, potentially assuming the humidity ratio to be constant, to reflect the new \ac{tdb} value.
     \item It should be noted that over the years, the critical value of \ac{v} has been changed from \qty{0.15}{\m\per\s} in the ASHRAE~55:2013~\cite{ASHRAE552013} to \qty{0.2}{\m\per\s} in the ASHRAE~55:2017~\cite{ASHRAE552017, arens_moving_2009} to \qty{0.1}{\m\per\s} in \gls{55}~\cite{ashrae552023}.
     \item The \ac{set} temperature which is used to calculate the \ac{ce}, is defined as the hypothetical isothermal environment at a \ac{rh} of \qty{50}{\percent}, \ac{v}~$\leq$~\qty{0.1}{\m\per\s}, and \ac{tr}~=~\ac{tdb} in which the total heat loss from the skin of an imaginary occupant wearing clothing, standardized for the activity concerned, is the same as that from a person in the actual environment with actual clothing and activity level~\cite{ashrae552023}.

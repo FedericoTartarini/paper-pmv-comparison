@@ -1,4 +1,16 @@
 \section{Introduction}\label{sec:introduction}
+
+\todo[inline]{General notes:  
+The objective of the ASHRAE Std 55 approach is to substitute the Pierce two-node model for the PMV model for modeling heat loss under elevated air speeds in warm conditions.  
+The CE method is intended to provide a PMV sensation prediction from the more physiologically comprehensive two-node model.  
+The work on this paper has raised a number of interesting future research topics that we should discuss.}
+\todo[inline, color=blue!40]{
+FT: I agree that it would be ideal if Std 55 replaced the PMV with a more accurate model, but in its current form, Std 55 2023 still fundamentally uses the PMV model to calculate the thermal sensation.
+The PMV CE is a modified version of the PMV, which is not more physiologically comprehensive than the PMV model since as shown in the flow chart the PMV CE uses the same code as the PMV to calculate the thermal sensation.
+Only temperature is adjusted to account for elevated air movement but the other environmental or personal parameters are not adjusted.
+Moreover, as highlighted in Section 1.1 the use of the CE introduces several errors.
+}
+
 \mycite{Fanger1970} developed the \ac{pmv} model, which is now incorporated into the \gls{7730} standard~\cite{iso7730} in its original form.
 The \ac{pmv} is an index that aims to predict the mean value of the thermal sensation votes (self-reported perceptions) of a large group of people on a sensation scale expressed from \num{-3} to \num{3} corresponding to the categories `cold,' `cool,' `slightly cool,' `neutral,' `slightly warm,' `warm,' and `hot.'~\cite{iso7730, ashrae552023}.
 The \ac{pmv} model has been widely used worldwide by researchers and practitioners.
@@ -7,6 +19,19 @@ A search within the article title, abstract, and keyword on Scopus with the sear
 Out of those \num{1200} are scientific peer-reviewed articles published in the research area of engineering, environmental science, social sciences, and energy.
 This highlights this model's extensive adoption and use among the scientific community.
 To this date, the \ac{pmv} remains to be the most utilized thermal comfort model even though several studies have highlighted that the \ac{pmv} has low accuracy in predicting thermal sensation votes~\cite{Cheung2019, Yao2022, Humphreys2002, doherty_evaluation_1988}.
+
+\todo[inline]{General notes:  
+The PMV model consists of a heat balance model and an empirical equation that predicts thermal sensation (PMV) from heat balance.  (need to describe this further, especially the simplified way that sweating is treated by the heat balance model).  
+In 2010 ASHRAE Std 55 modified the PMV heat balance calculation to make it more capable of predicting the cooling caused by elevated air movement under warm conditions.  It uses the Gagge two-node model to compute the convective and evaporative heat loss from the body.  This model explicitly models physiological cooling in warm conditions where evaporation of sweat becomes a significant source of heat loss.  The model output can be expressed as Standard Effective Temperature (SET) (provide citations to Gagge/Foblets).  SET is implemented in Std 55 as an index to quantify the equivalent temperature reduction caused by air movement cooling.  The reduced temperature is entered into the PMV heat balance model in a still air condition, from which the PMV index is calculated.  This approach is intended to minimize errors introduced by the Fanger heat balance model’s reduced evaporative capacity on the predicted PMV result.
+}
+\todo[inline, color=blue!40]{
+FT similar to my previous comment. Firstly, I would like to mention here that the PMV does not at all try to estimate sweating. This is a problem, but neither the PMV nor the PMV CE do that.
+The Std 55 did not modify the PMV heat balance equation, instead it simply and only reduced the air and mean radiant temperatures by the cooling effect, this is not equivalent to doing an accurate heat balance calculation.
+The PMV CE consequently does not: 1) uses the Gagge two-node model to compute the convective and evaporative heat loss from the body 2) model explicitly models physiological cooling in warm conditions where evaporation of sweat becomes a significant source of heat loss.
+In addition, another comment about the PMV CE is that the cooling effect is not only applied in warm conditions but in fact it is applied in any conditions.
+SET is also a rather confusing variable since it is calculated not for a reference environment with standardised clo and met. But rather it is the temperature of a hypothetical isothermal environment at 50\% rh, <0.1 m/s (20 fpm) average air speed Va, and in which the total heat loss from the skin of an imaginary occupant wearing clothing, standardized for the activity concerned, is the same as that from a person in the actual environment with actual clothing and activity level.
+Finally, as you mentioned, \textit{The reduced temperature is entered into the PMV heat balance model in a still air condition, from which the PMV index is calculated.} this however do not ensure that the person is not feeling hot in this condition or sweating, consequently does not solve the issues that the original PMV has.
+}
 
 \subsection{\ac{pmv-ce} model}\label{subsec:pmv-ce-limitations}
 The \gls{55} standard uses a modified version of the original model, the \ac{pmv-ce}~\cite{ashrae552023}.
@@ -43,6 +68,8 @@ The process used to calculate the \ac{pmv-ce} in the \gls{55} is summarized in t
 In summary, when the \ac{v} exceeds \qty{0.1}{\m\per\s} the \gls{55} prescribes the use of the \ac{ce}.
 \ac{v} is not the measured value by air speed sensors.
 According to the standard, the measured value should be adjusted using this equation \ac{v} = \ac{v}$+ 0.3 ($\acs{met}$-1)$ if \ac{met}~$>$~\qty{1}{met}.
+\todo[size=\small]{you might explain that this equation is used in the ISO Standard as well}
+\todo[inline, color=blue!40]{Thank you for the feedback I will also create a flowchart for the PMV ISO and include it in the appendix.}
 The value of \ac{ce} is calculated using the \ac{set} equation.
 The \ac{ce} is then subtracted from both the \ac{tdb} and \ac{tr}.
 The resulting values become the new inputs in the \ac{pmv} model.
@@ -51,6 +78,8 @@ The other three input parameters (\ac{clo}, \ac{rh}, \ac{met}) remain unchanged.
 Consequently, for a given thermal environment, results of the two \ac{pmv} formulations differ only when the value of \ac{v} is higher than \qty{0.1}{\m\per\s}.
 To illustrate the extent of the differences between the outputs of the two models, we calculated the comfort regions ($\mid$\ac{pmv}$\mid \leq 0.5$) for different values of \ac{v} using the \ac{pmv} and \ac{pmv-ce} models assuming \ac{met}~=~\qty{1.2}{met} and \ac{clo}~=~\qty{0.5}{clo}.
 We plotted the results in Figure~\ref{fig:comfort_regios_pmv_pmvce}.
+\todo{It would be great to add 0.6m/s to this figure.   That would be the objective for ceiling fan designs.  There are plenty of lab studies that have measured results in that region.}
+\todo[inline, color=blue!40]{FT. I can include a Figure for 0.6m/s but I did not since based on the ASHRAE DB 2 we hardly reach that value in buildings.}
 \begin{figure}[!htb]
     \centering
     \includegraphics[width=1\textwidth]{figures/pmv_comfort_regions}
@@ -61,11 +90,14 @@ We plotted the results in Figure~\ref{fig:comfort_regios_pmv_pmvce}.
 The results show that for \ac{v}~=~\qty{0.4}{\m\per\s} and \ac{rh}~=~\qty{50}{\percent} the comfort regions estimated using the \ac{pmv-ce} is \qty{0.7}{\celsius} wider than the one calculated using the \ac{pmv} and shifted towards warmer temperatures.
 For \ac{v}~=~\qty{0.2}{\m\per\s}, the same difference is \qty{0.4}{\celsius}.
 
-The rationale for the development of the \ac{pmv-ce} model is that the original \ac{pmv} formulation does not accurately estimate convective and evaporative heat losses from the skin to the environment~\cite{huang_applicability_2014}.
+The rationale for the development of the \ac{pmv-ce} model is that the original \ac{pmv} formulation does not accurately estimate convective and evaporative heat losses from the skin to the environment under elevated air speeds ~\cite{huang_applicability_2014}.
 The \ac{pmv} does not accurately estimate evaporative heat losses trough sweating because it assumes that sweating is constant and only varies as a function of \ac{met}. 
 Hence, if sweating is required to maintain the body in thermal equilibrium, the \ac{pmv} model assumes that the body would gain heat.
 The human body, on the other hand, uses sweating to maintain a constant body temperature in `warm' environments.
-However, despite this limitation of the \ac{pmv} model, we have identified several limitations of the \ac{pmv-ce} model, which we list below.
+While the \ac{pmv} model has its limitations, our analysis has revealed additional limitations specific to the \ac{pmv-ce} model, as outlined below.
+\todo{This is a confusing dichotomy}
+\todo[color=blue!40]{FT. Is the new sentence better?}
+
 % \mycite{huang_applicability_2014}, using 19 averaged data points obtained from a set of experiments involving 30 subjects, showed the \ac{set} model could be used to estimate the thermal sensation with two different ways of estimating the airspeed. 
 % They developed a model to relate the SET and the TSV. 
 % They also plotted the \ac{pmv} versus the TSV and provided a visual analysis of its performance. They concluded that the SET is better than the \ac{pmv} model in predicting thermal sensation votes when subjects are exposed to air movements, but they did not report the performance of the \ac{pmv} model.
@@ -73,6 +105,9 @@ However, despite this limitation of the \ac{pmv} model, we have identified sever
 
 \begin{enumerate}
     \item We could not find a peer-reviewed scientific publication that quantified the accuracy improvements of the model as implemented in the ASHRAE standard over the original \ac{pmv} model.
+    \todo[inline]{true enough, but in the standard the objective is to have a rational physiology model. 
+    The Gagge models are as well or better documented than the Fanger heat balance model, and have been available to Standards users in the ASHRAE Handbook of Fundamentals.}
+    \todo[inline, color=blue!40]{FT. The PMV CE and the Gagge model are very different, hence, publications about the latter do not justify the implementation proposed in the Std 55}
     \item Although the \ac{ce} is used to better account for convective heat losses from the skin to the environment due to the air movement, the \ac{pmv-ce} model uses the same underlying equations as the \ac{pmv} model.
     For example, let's assume that a person is exposed to the following environmental conditions \ac{tdb}~=~\ac{tr}~=~\qty{29}{\celsius}, \ac{rh}~=~\qty{80}{\percent}, \ac{v}~=~\qty{0.15}{\m\per\s}, they have a \ac{met} of \qty{1}{met} and a \ac{clo} of \qty{0.5}{clo}.
     According to the Gagge's two-node model, which is used to calculate the \ac{set}, this hypothetical person would have \qty{30}{\percent} of their skin covered with sweat.
@@ -80,24 +115,32 @@ However, despite this limitation of the \ac{pmv} model, we have identified sever
     However, the only difference between the \ac{pmv} and \ac{pmv-ce} in this scenario, is that the \ac{pmv-ce} accounts for the cooling effect due to the air movement (delta between \qty{0.15}{\m\per\s} and \qty{0.1}{\m\per\s}) which is equal to \qty{.17}{\celsius}.
     Even after reducing both \ac{tdb} and \ac{tr} by the \ac{ce}, the person is still estimated to be sweating.
     Therefore, in this scenario, the \ac{pmv-ce} model also cannot accurately predict the \ac{tsv}.
+    \todo[inline]{This is really confusing.  
+    You are evaluating the Cooling Effect in still air, when there is basically no Cooling Effect to evaluate.    
+    You are using as an example 29C in still air and 80\% RH which of course will cause sweating.  
+    You are citing skin wettedness values that have not been introduced in this paper (and are not part of any standard).  Where did they come from?  You allude to results from Huang 2014 that the reader is supposed to know about.  The skin wettedness discussion is irrelevant unless you go into a lot more physiological detail here.}
     \item The previous example, highlights another limitation of the \ac{pmv-ce}.
     The assumption of keeping \ac{rh} constant after adjusting \ac{tdb} and \ac{tr} is thermodynamically incorrect since the value of \ac{rh} is dependent on \ac{tdb}.
     The \ac{rh} should be re-calculated, potentially assuming the humidity ratio to be constant, to reflect the new \ac{tdb} value.
     \item It should be noted that over the years, the critical value of \ac{v} has been changed from \qty{0.15}{\m\per\s} in the ASHRAE~55:2013~\cite{ASHRAE552013} to \qty{0.2}{\m\per\s} in the ASHRAE~55:2017~\cite{ASHRAE552017, arens_moving_2009} to \qty{0.1}{\m\per\s} in \gls{55}~\cite{ashrae552023}.
+    \todo[inline]{(where does the term ‘critical temperature’ come from?  It is a threshold value and not critical to any predicted outcome.   The changes over the years were due to converting from historical graphics, objections from diffuser manufacturers concerned about lawsuits, Peter Simmonds, etc.  None of them constitute a ‘limitation’ to the model}
     \item The \ac{set} temperature which is used to calculate the \ac{ce}, is defined as the hypothetical isothermal environment at a \ac{rh} of \qty{50}{\percent}, \ac{v}~$\leq$~\qty{0.1}{\m\per\s}, and \ac{tr}~=~\ac{tdb} in which the total heat loss from the skin of an imaginary occupant wearing clothing, standardized for the activity concerned, is the same as that from a person in the actual environment with actual clothing and activity level~\cite{ashrae552023}.
     However, while \ac{v}, used to calculate the \ac{pmv-ce}, is set to \qty{0.1}{\m\per\s} the value of \ac{rh} and \ac{clo} are not adjusted to compensate for the fact that \ac{set} fixed the \ac{rh} to \qty{50}{\percent} and standardized the clothing to the activity.
+    \todo[inline]{I think this argument is incorrect.  SET is only used as a consistent method of obtaining a meaningful delta operative temperature.  It does not change the environment.  The environment is kept at the original RH.}
     \item Calculating the \ac{pmv-ce} is more computationally intensive and complex since it requires the user to solve two heat balance equations, the \ac{pmv} and the \ac{set} model.
+    \todo[inline]{This may or may not be significant.  If it is significant, the process could be simplified to a total of three calculations while remaining a rational method.  What’s in there now was Tyler’s (CBE’s) choice.  Charlie and I have used it in the simpler way.  We could propose this to the Standards Committee if we wanted to.  We would have to calculate two validation tables for the two approaches.  }
 \end{enumerate}
 
 \subsection{Other \ac{pmv} Formulations}\label{subsec:other-pmv-formulations}
 Several other formulations of the \ac{pmv} model have been proposed.
-Among the most notable formulations there are the \ac{pmvs}~\cite{GaggeSET}, \ac{pmvg}~\cite{GaggeSET}, \ac{epmv}~\cite{Toftum2002}, and \ac{athb}~\cite{Schweiker2022}.
+Among the most notable formulations there are the \ac{pmvs}~\cite{GaggeSET}, \ac{pmvg}~\cite{GaggeSET}, \todo{explain how this differs from the CE approach since it looks like the same thing} \ac{epmv}~\cite{Toftum2002}, and \ac{athb}~\cite{Schweiker2022}.
 \mycite{Yao2022} provides a comprehensive review of different thermal comfort models and compares and describes some of the above-mentioned models.
 Here, we decided to focus on the \ac{pmv} and \ac{pmv-ce} models since they are incorporated in the most widely referenced thermal comfort standards worldwide (\gls{7730} and \gls{55}).
 
 \subsection{Comparison of \ac{pmv} and \ac{pmv-ce}}\label{subsec:comparision-of-pmv-formulations}
 To our knowledge, no previous study compared in detail the accuracy of the \ac{pmv} and \ac{pmv-ce} models.
 Some notable works that tried to determine the accuracy of the \ac{pmv} model include the work from \mycite{doherty_evaluation_1988} who evaluated the ability of the \ac{pmv} and \ac{set} models to predict several physiological variables (i.e., skin temperature, core temperature, and skin wettedness) under a wide range of still air environments and metabolic rates.
+\todo{Doherty and I did not evaluate air movement which hardly anyone was considering back then.}
 They concluded that the \ac{pmv} model is accurate for simulations of resting subjects, but its accuracy decreases as a function of metabolic rate.
 Humphreys and Nicol estimated the effects of measurement and formulation error on predicting thermal sensation using the \ac{pmv}~\cite{Humphreys2000}.
 They used the ASHRAE Global Thermal Comfort database~I and determined that the measurement error and the error introduced by the \ac{pmv} model formulation had a similar and non-negligible contribution.

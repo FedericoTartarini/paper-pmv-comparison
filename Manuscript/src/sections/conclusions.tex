@@ -28,7 +28,9 @@ Several peer-reviewed papers \cite{Cheung2019, Yao2022, kim2019thermal, tartarin
 
 We also recommend restricting the ranges on both environmental and personal factors set by both \gls{55} and \gls{7730} standards.
 Currently, these limits extend far beyond the range of data contained in the \ac{db2} dataset.
+\todo{But this statement is incorrect for ASHRAE Std 55, which only defines its single comfort zone using +/-0.5}
 Being the \ac{db2} the largest thermal comfort dataset in the world and containing data from all continents, we deem it not to be necessary to have such wide applicability limits for both \gls{55} and \gls{7730} standards when these environmental variables are rarely observed in buildings across the world.
+\todo{unclear what limits you are talking about, or who the audience is for your suggestions.  The ComfortTool allows extrapolation to high PMVs, but that is not true for ASHRAE 55 itself.  Your suggestions are actually just aimed at yourselves as keepers of the ComfortTool}
 The lack of data available beyond the ranges depicted in Figure~\ref{fig:dist_input_data} did not allow us to test the accuracy of both the \ac{pmv} and \ac{pmv-ce} above those ranges.
 Consequently, we suggest reducing both standards' applicability limits to the ranges shown in Table~\ref{tab:ranges}, until more data are collected.
 \begin{table}[htb!]
@@ -51,11 +53,13 @@ Consequently, we suggest reducing both standards' applicability limits to the ra
 \mycite{Humphreys2002} reached a similar conclusion and observed that the ranges of inputs consistent with a valid use of PMV are much narrower than those given in \gls{7730}.
 The limit on \ac{met} is also corroborated by evidence provided by \mycite{doherty_evaluation_1988}.
 We then recommend that the \gls{55} should change back the upper value of \ac{met} to \qty{2}{met} as it was in the 2020 version of the standard.
+\todo{and why not the ISO Standard also?  After all, ASHRAE was copying ISO on that one}
 
 The \ac{tsv} is ambiguous and does not allow determining if an action should be taken to increase the participant's thermal comfort.
 Assuming that people who are `slightly warm' or `slightly cool' are thermally neutral leads to undercounting thermal discomfort in our dataset, which is not a valid assumption.
 We recommend the use of the thermal preference scale to determine how people perceive their thermal environment. 
 This scale more clearly allows an HVAC system to decide whether to change or not the thermal environment.
+\todo{This is a major suggestion with very significant implications for energy etc that have not been discussed in the paper.  There are surely reasons people have not used that scale on its own, for this purpose.}
 
 \section*{Acknowledgements}\label{sec:acknowledgements}
 We would like to thank Prof. Edward Arens and Dr. Paul Raftery for their comments and suggestions on the manuscript.

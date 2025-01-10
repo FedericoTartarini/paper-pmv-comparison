@@ -1,0 +1,140 @@
+\documentclass[a4paper, 10pt]{letter}
+
+% package to highlight text
+\usepackage{color,soul}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=false,
+}
+
+\usepackage{graphicx}
+
+% Name of sender
+\name{Federico Tartarini}
+
+% Signature of the sender
+\signature{Federico Tartarini}
+
+\newcommand{\response}[1]{\textcolor{blue}{\textbf{Author response:} #1}}
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO}: #1}}
+
+%--------------------------------------------------------------------------%
+
+\begin{document}
+
+% Name and address of the receiver
+    \begin{letter}
+    {
+        Response to reviewers' comments.
+    }
+
+% Opening statement
+        \opening{Dear Athanasios Tzempelikos and Reviewers,}
+
+% Letter body
+
+        We would like to thank you for your time and your valuable feedback.
+        Please find below our answers to all your comments.
+
+        \textbf{Reviewer 1}
+        Dear Authors,
+        This manuscript is well-written and showcases your strong capabilities in addressing thermal comfort issues. 
+        I have just a few comments to share with you Wishing you a Merry Christmas and a Happy New Year.
+
+        \begin{enumerate}
+
+            \item P4 L17. Icl is the basic clothing insulation. Total clothing insulation accounts for the air insulation and the clothing area factor (see ISO 9920).
+            
+            \response{
+            Here our response
+            }
+
+            \item P4 L34-38. "The rationale for the development of the PMVCE model is that the original PMV
+formulation does not accurately estimate convective and evaporative heat losses from
+the skin to the environment [10]." If this is the rationale, why CE is subtracted from both
+the dry-bulb air temperature (tdb) and mean radiant temperature (tr)? Please provide evidence.
+
+\response{
+            Here our response
+            }
+
+\item P7 L28-32. The authors address (also in methods and in the section 3.3) a highly relevant issue: the impact of microclimatic measurements on the accurate evaluation of thermal comfort. Unfortunately, thermal comfort databases suffer from significant biases due to several factors, including the absence of standardized measurement protocols (such as representative positions and height above the ground), incorrect or arbitrary assumptions (for instance, the belief in uniform and stable conditions), the use of inaccurate measurement devices, deficiencies in software, and the failure to assess clothing insulation. As a result, the PMV (Predicted Mean Vote) value can appear random, making it difficult to evaluate the category of indoor environmental quality. These issues have been previously discussed (e.g., in 10.1016/j.buildenv.2011.01.001) and should be emphasized more prominently in the current investigation. Such problems impact all PMV-related models, including adaptive models, where the operative temperature is often assumed to be the same as the air temperature.
+
+\response{
+            Here our response
+            }
+
+\item The database used for this investigation also includes high air velocity measurements (v>0.2 m/s). However, this does not rule out the possibility of local discomfort caused by draughts. What about the impact of these draughts on the overall thermal comfort as quantified by the Thermal Sensation Vote (TSV)? Are the authors confident that the TSV values collected at high air velocity are not influenced by local discomfort? Please provide a brief explanation.
+
+\response{
+            Here our response
+            }
+
+        \end{enumerate}
+
+        % \textbf{Reviewer 2}
+        % The paper introduces the authors' developed toolkit, CBE Clima Tool, a web application designed for analyzing and visualizing climate data. 
+        % This tool has the potential to provide valuable practical support to AEC designers and engineers and has achieved significant success in terms of user adoption and applications. 
+        % However, for publication as an academic journal paper, the authors should address the following aspects to more effectively showcase the originality and innovation of their work:
+
+        % \begin{enumerate}
+        %     \item It is important to clarify the key features that set the tool apart from existing weather tools. 
+        %     Is the web-based or interactive feature the primary distinguishing factor? 
+        %     To enhance the discussion, the authors should provide a detailed exploration of these features. For instance:
+        %     What specific advantages does this web application offer over traditional software that performs local computation?
+        %     Is there any empirical data available to quantify its interactive performance?
+            
+        %     \response{
+        %     Thank you for the extremely valuable suggestions.
+        %     Based on your feedback we have added a new sub-section within the Introduction section in which we describe in detail the reason why we believe our tool is extremely valuable to AEC designers and engineers.
+        %     This sub-section is titled 2.4 Contribution.
+        %     In this section, we also clarify the key features that set the tool apart from existing weather tools.
+        %     Finally, we list the specific advantages that a web application tool offers over traditional software that performs local computation.
+        %     }
+
+        %     \item Which components of the tool are integral to highlighting its innovation? 
+        %     While the paper introduces various models, such as UTCI and the adaptive thermal comfort model, it remains unclear which elements are at the core of the innovation. 
+        %     In Section 5, the Sun Path Chart and Psychrometric Chart are presented as illustrative examples, but it should be acknowledged that other tools can also fulfil these functions.
+            
+        %     \response{
+        %     We appreciate the reviewer's thoughtful feedback and would like to clarify the key features that distinguish CBE Clima Tool as an innovative solution for climate analysis tailored to sustainable building design.
+        %     The core innovation of Clima extends beyond the calculation of thermal comfort indices, a capability shared by several cloud-based and desktop applications. 
+        %     What sets Clima apart is its commitment to universal accessibility. 
+        %     It empowers users worldwide with the ability to swiftly and reliably analyze and visualize intricate climate data.
+        %     While other tools may offer similar graphical outputs, Clima stands out due to its exceptional ease of use, interactivity, and the superior quality of its graphical representations. 
+        %     These features are invaluable to architects, engineers, students, and educators in effectively conveying climate-adapted building design concepts.
+        %     Clima's web-based nature eliminates the need for local installations, ensuring cross-platform compatibility and seamless accessibility. 
+        %     Furthermore, a fundamental innovation lies in its status as a free and open-source tool. 
+        %     This transparency allows users to scrutinize and validate the underlying algorithms and calculations, fostering trust and confidence in the tool's capabilities.
+        %     Our commitment to an open-source approach also encourages community-based development, facilitating collaborative enhancements and guaranteeing that Clima evolves through input from a diverse array of contributors. 
+        %     Additionally, it grants users the opportunity to incorporate Clima's code into their own applications, further extending its impact within the research and engineering communities.
+        %     In summary, the innovation of CBE Clima Tool lies in its global accessibility, user-friendliness, transparency, and its capacity to foster collaborative development, making it a valuable asset for sustainable building design professionals and researchers alike.
+        %     We have summarised this answer in Sub-Section 2.4 of the revised manuscript.
+        %     }
+
+        %     \item Furthermore, the paper currently reads more like a report. To align with the style of an academic journal paper, it is recommended that the authors revise certain sections. For instance, the introduction could be enhanced by breaking down the lengthy one-page paragraph into several well-structured paragraphs.
+
+        %     \response{
+        %     We would like to express our gratitude to the reviewer for their constructive feedback and recommendations regarding the structure of our manuscript. 
+        %     We acknowledge the importance of aligning the manuscript with the style and standards of an academic journal paper.
+        %     Based on your suggestion, we have thoroughly revised the Introduction chapter. 
+        %     Specifically, we have broken down the lengthy one-page paragraph into several well-structured paragraphs to enhance readability and clarity. 
+        %     This restructuring allows for a more systematic presentation of the key concepts and objectives of our work.
+        %     The revised Introduction now provides a more concise and focused overview of the background, motivation, and significance of CBE Clima Tool. 
+        %     We have carefully organized the content to guide readers through the rationale behind our research, the challenges addressed by the tool, and its potential impact on the field of sustainable building design.
+        %     We believe that these improvements will assist readers in comprehending the context and importance of our work.
+        %     }
+
+        % \end{enumerate}
+
+% Closing statement
+        Kind regards,
+
+        \vspace*{5px}
+
+        Federico Tartarini
+
+    \end{letter}
+\end{document}
+%-----------------------------------------------------------------------------%

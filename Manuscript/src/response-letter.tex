@@ -10,6 +10,8 @@
 
 \usepackage{graphicx}
 
+\usepackage[textsize=scriptsize]{todonotes}
+
 % Name of sender
 \name{Federico Tartarini}
 
@@ -17,7 +19,6 @@
 \signature{Federico Tartarini}
 
 \newcommand{\response}[1]{\textcolor{blue}{\textbf{Author response:} #1}}
-\newcommand{\todo}[1]{\textcolor{red}{\textbf{TODO}: #1}}
 
 %--------------------------------------------------------------------------%
 
@@ -48,6 +49,7 @@
             Icl is the basic clothing insulation.
             Total clothing insulation accounts for the air insulation and the clothing area factor (see ISO 9920).
 
+            \todo[color=yellow]{Federico - check what the PMV model uses for clothing insulation as input and change the text accordingly}
             \response{
                 Here our response
             }
@@ -59,8 +61,13 @@
             the dry-bulb air temperature (tdb) and mean radiant temperature (tr)?
             Please provide evidence.
 
+            \todo{Stefano - is the following answer true? Did not you pulish the paper which explains why the CE is subtracted from both the tdb and tr?}
             \response{
-                Here our response
+                Thank you for pointing this issue out, this is clearly a important issue about the PMVCE model.
+                Unfortunately we are not certain why the PMVCE subtracts the cooling effect from both the air and mean radiant temperature, as we were not involved in the model's development.
+                In Section 1.1 we have tried to summarise all the knowledge we have on the PMVCE model, in particular we stated explained that while the ASHRAE 55:2023 standard explains how the PMVCE works.
+                There is no peer-reviewed publication that quantifies the accuracy improvements of the model as implemented in the ASHRAE standard over the original PMV model.
+                Arens et al. (2009) and Yang et al. (2015) provide a partial justification for the PMVCE model, they do not fully explain why these specific changes to the PMV inputs were made.
             }
 
             \item P7 L28-32.
@@ -70,17 +77,25 @@
             These issues have been previously discussed (e.g., in 10.1016/j.buildenv.2011.01.001) and should be emphasized more prominently in the current investigation.
             Such problems impact all PMV-related models, including adaptive models, where the operative temperature is often assumed to be the same as the air temperature.
 
+            \todo[color=yellow]{Federico - add the following sentences and reference them in the comment below}
             \response{
-                Here our response
+                We agree with the reviewer that the accuracy of the PMV model is influenced by the quality of the input data.
+                We have added a sentence in the introduction to highlight the importance of the quality of the input data.
+                We have also added a sentence in the limitations section to acknowledge the limitations of the PMV model.
             }
 
             \item The database used for this investigation also includes high air velocity measurements (v>0.2 m/s).
             However, this does not rule out the possibility of local discomfort caused by draughts.
-            What about the impact of these draughts on the overall thermal comfort as quantified by the Thermal Sensation Vote (TSV)? Are the authors confident that the TSV values collected at high air velocity are not influenced by local discomfort?
+            What about the impact of these draughts on the overall thermal comfort as quantified by the Thermal Sensation Vote (TSV)?
+            Are the authors confident that the TSV values collected at high air velocity are not influenced by local discomfort?
             Please provide a brief explanation.
 
+            \todo{Stefano shall we consider adding a sentence about the local discomfort in the paper?
+            Can we say that this is potentially a limitation of the PMV model?}
             \response{
-                Here our response
+                We agree with the reviewer that draughts can be the cause local discomfort and consequently influence the overall thermal comfort.
+                However, the PMV model does not estimate local discomfort and can be used to predict thermal sensation in a space with air speeds up to 0.2 m/s.
+                This, with other factors, can lead to a discrepancy between the PMV and the TSV.
             }
 
         \end{enumerate}
@@ -96,15 +111,42 @@
             When Professor Fanger initially proposed the PMV model, there were certain applicable conditions.
             Does the article aim to explore the accuracy of the PMV model, or the inappropriate application of this model in the two standards?
 
-            \response{Here our reply}
-            \item It is stated in the abstract that `` The ISO7730:2005 and ASHRAE55:2023 are the most widely referenced thermal comfort standards worldwide, and their different PMV formulations are a source of confusion.`` However, it does not actually clarify what kind of confusion has been caused.
+            \todo{Stefano - I cannot fully understand the question, can you help me?}
+            \response{This manuscript aims to explore the accuracy of the PMV model implemented in the ISO 7730:2005 and ASHRAE 55:2023 standards.
+            We did this by comparing the results of the PMV model with the thermal sensation votes collected in the ASHRAE Global Thermal Comfort Database II v2.1.
+            In addition to comparing the accuracy of the two PMV models, we also discussed in the paper that the PMV model is inappropriately used by some authors to predict thermal sensation of individuals outside its range of applicability.
+            As a consequence, we recommend limiting the applicability of the PMV model to the range specified in the Table 2 of the manuscript.
+            }
 
-            \response{Here our reply}
+            \item It is stated in the abstract that `` The ISO7730:2005 and ASHRAE55:2023 are the most widely referenced thermal comfort standards worldwide, and their different PMV formulations are a source of confusion.``
+            However, it does not actually clarify what kind of confusion has been caused.
 
-            \item In lines 32--34, ``Consequently, for a given thermal environment, results of the two PMV formulations differ only when the value of V is higher than 0.1m/s.`` In the calculation of PMVCE, the metabolic rate and clothing thermal resistance will also be corrected.
-            So why does it claim that there are differences in the calculation results of the two models only when the ``V`` is greater than 0.1? Besides, does the ``V`` that the author wants to express refer to the original measured value or the adjusted V value?
+            \todo[color=yellow]{Federico - add the following sentences and reference it in the comment below}
+            \response{Thank you for pointing this out.
+            We should have explained this better in the manuscript.
+            The confusion arises from the fact that the two standards use different PMV formulations and the results of the two models can differ.
+            Consequently, for a given thermal environment, a user may obtain different results depending on the standard used.
+            This can lead to confusion when comparing results from different studies or when trying to apply the results in practice.
+            We have added a sentence in the introduction to clarify this point.
+            }
 
-            \response{Here our reply}
+            \item In lines 32--34, ``Consequently, for a given thermal environment, results of the two PMV formulations differ only when the value of V is higher than 0.1m/s.``
+            In the calculation of PMVCE, the metabolic rate and clothing thermal resistance will also be corrected.
+            So why does it claim that there are differences in the calculation results of the two models only when the ``V`` is greater than 0.1?
+            Besides, does the ``V`` that the author wants to express refer to the original measured value or the adjusted V value?
+
+            \todo[color=yellow]{Federico - add the following sentences and reference it in the comment below}
+            \response{
+            Please let us clarify this point.
+            1) Neither the PMV nor the PMVCE model correct the metabolic rate.
+            2) Both the PMV and PMVCE models correct the clothing insulation based on the metabolic rate.
+            3) Both the PMV and PMVCE models correct the air speed based on the metabolic rate using the same equation.
+                The value of V refers to the adjusted air speed.
+                We have spedified this in the nomeclature section of the manuscript.
+                However, we strongly agree with the reviewer that this point is not clear and this issue arises from how the ASHRAE 55:2023 standard is written.
+                The authors of the ASHRAE 55:2023 standard voted not to have two variables one for the measured air speed and one for the adjusted air speed.
+                We have added a sentence in the manuscript to raise this issue about the wording of the ASHRAE 55:2023 standard.
+            }
 
             \item In the description of limitations on line 50, the first item does not seem to be a limitation of the model itself.
             It is recommended to include it in the statement of the research purpose and significance.

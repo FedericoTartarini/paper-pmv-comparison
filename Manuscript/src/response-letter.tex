@@ -8,6 +8,9 @@
     colorlinks=false,
 }
 
+% package to strike out text
+\usepackage[normalem]{ulem}
+
 \usepackage{graphicx}
 
 \usepackage[textsize=scriptsize]{todonotes}
@@ -65,9 +68,10 @@
             \response{
                 Thank you for pointing this issue out, this is clearly a important issue about the PMVCE model.
                 Unfortunately we are not certain why the PMVCE subtracts the cooling effect from both the air and mean radiant temperature, as we were not involved in the model's development.
-                In Section 1.1 we have tried to summarise all the knowledge we have on the PMVCE model, in particular we stated explained that while the ASHRAE 55:2023 standard explains how the PMVCE works.
-                There is no peer-reviewed publication that quantifies the accuracy improvements of the model as implemented in the ASHRAE standard over the original PMV model.
+                In Section 1.1 we have tried to summarise all the publicly available information on the PMVCE model.
+                While the ASHRAE 55:2023 standard explains how the PMVCE works, there is no peer-reviewed publication that quantifies the accuracy improvements of the model as implemented in the ASHRAE standard over the original PMV model.
                 Arens et al. (2009) and Yang et al. (2015) provide a partial justification for the PMVCE model, they do not fully explain why these specific changes to the PMV inputs were made.
+                Moreover, we were not able to find any other peer-reviewed publication that explains in detail why the PMVCE model subtracts the cooling effect from both the air and mean radiant temperature.
             }
 
             \item P7 L28-32.
@@ -79,12 +83,15 @@
 
             \todo[color=yellow]{Federico - add the following sentences and reference them in the comment below}
             \response{
-                We agree with the reviewer that the accuracy of the PMV model is influenced by the quality of the input data.
+                We agree with the reviewer that the accuracy of the PMV model is influenced by the quality of the input data and that the ASHRAE Global Thermal Comfort Database II v2.1 has limitations.
                 We have added a sentence in the introduction to highlight the importance of the quality of the input data.
                 We have also added a sentence in the limitations section to acknowledge the limitations of the PMV model.
+                However, despite the fact that this database has some limitations, we decided to use it because, to the best of our knowledge, the ASHRAE Global Thermal Comfort Database II v2.1 is the most comprehensive database available for thermal comfort research.
+                The database is widely used in the field, and only includes data published in peer-reviewed studies.
+                Moreover we belive that errors in the inputs data, if not systematic, should be mitigated by the large number of data points in the database.
             }
 
-            \item The database used for this investigation also includes high air velocity measurements (v>0.2 m/s).
+            \item The database used for this investigation also includes high air velocity measurements (v$>$0.2 m/s).
             However, this does not rule out the possibility of local discomfort caused by draughts.
             What about the impact of these draughts on the overall thermal comfort as quantified by the Thermal Sensation Vote (TSV)?
             Are the authors confident that the TSV values collected at high air velocity are not influenced by local discomfort?
@@ -92,10 +99,16 @@
 
             \todo{Stefano shall we consider adding a sentence about the local discomfort in the paper?
             Can we say that this is potentially a limitation of the PMV model?}
+            \todo[color=yellow]{Federico - add the following sentences and reference them in the comment below}
             \response{
-                We agree with the reviewer that draughts can be the cause local discomfort and consequently influence the overall thermal comfort.
-                However, the PMV model does not estimate local discomfort and can be used to predict thermal sensation in a space with air speeds up to 0.2 m/s.
-                This, with other factors, can lead to a discrepancy between the PMV and the TSV.
+                We agree with the reviewer that draughts can be the cause local discomfort and consequently influence the overall thermal comfort sensation.
+                This is a limitation of the PMV model, as it does not account for local discomfort.
+                Dspite the fact that the PMV model does not estimate local discomfort, both standards state that it can be used to predict thermal sensation in a space with air speeds up to 1.0 m/s.
+                Hence, we decided to test the PMV model in the range of air speeds up to 1.0 m/s.
+                This, with other factors, can lead to a discrepancy observed between the PMV and the TSV.
+                Interestingly, we observed that both PMV models have a higher accuracy and lower bias in predicting thermal sensation in the subset of data with air speed greater than 0.2 m/s.
+                This would suggest that while local discomfort due to air movement may affect the overall predicion of the PMV model, it did not affect the results of our analysis.
+                We decided to include a sentence in the manuscipt to highlight the role that local discomfort can play in the overall thermal comfort sensation and the fact that the PMV model does not account for it.
             }
 
         \end{enumerate}
@@ -112,36 +125,39 @@
             Does the article aim to explore the accuracy of the PMV model, or the inappropriate application of this model in the two standards?
 
             \todo{Stefano - I cannot fully understand the question, can you help me?}
-            \response{This manuscript aims to explore the accuracy of the PMV model implemented in the ISO 7730:2005 and ASHRAE 55:2023 standards.
+            \response{This manuscript aims to determine and compare the accuracy of the PMV models implemented in the ISO 7730:2005 and ASHRAE 55:2023 standards.
             We did this by comparing the results of the PMV model with the thermal sensation votes collected in the ASHRAE Global Thermal Comfort Database II v2.1.
             In addition to comparing the accuracy of the two PMV models, we also discussed in the paper that the PMV model is inappropriately used by some authors to predict thermal sensation of individuals outside its range of applicability.
             As a consequence, we recommend limiting the applicability of the PMV model to the range specified in the Table 2 of the manuscript.
             }
 
-            \item It is stated in the abstract that `` The ISO7730:2005 and ASHRAE55:2023 are the most widely referenced thermal comfort standards worldwide, and their different PMV formulations are a source of confusion.``
+            \item It is stated in the abstract that ``The ISO7730:2005 and ASHRAE55:2023 are the most widely referenced thermal comfort standards worldwide, and their different PMV formulations are a source of confusion.''
             However, it does not actually clarify what kind of confusion has been caused.
 
             \todo[color=yellow]{Federico - add the following sentences and reference it in the comment below}
             \response{Thank you for pointing this out.
             We should have explained this better in the manuscript.
-            The confusion arises from the fact that the two standards use different PMV formulations and the results of the two models can differ.
-            Consequently, for a given thermal environment, a user may obtain different results depending on the standard used.
+            The confusion arises from the fact that the two standards use different PMV formulations and the results of the two models are different for the same thermal environment when the air speed is higher than 0.1 m/s.
             This can lead to confusion when comparing results from different studies or when trying to apply the results in practice.
             We have added a sentence in the introduction to clarify this point.
             }
 
-            \item In lines 32--34, ``Consequently, for a given thermal environment, results of the two PMV formulations differ only when the value of V is higher than 0.1m/s.``
+            \item In lines 32--34, ``Consequently, for a given thermal environment, results of the two PMV formulations differ only when the value of V is higher than 0.1m/s.
             In the calculation of PMVCE, the metabolic rate and clothing thermal resistance will also be corrected.
-            So why does it claim that there are differences in the calculation results of the two models only when the ``V`` is greater than 0.1?
-            Besides, does the ``V`` that the author wants to express refer to the original measured value or the adjusted V value?
+            So why does it claim that there are differences in the calculation results of the two models only when the ``V'' is greater than 0.1?
+            Besides, does the ``V'' that the author wants to express refer to the original measured value or the adjusted V value?
 
             \todo[color=yellow]{Federico - add the following sentences and reference it in the comment below}
+            \todo{Stefano - Shall we consider changing how we refer to the air speed and relative air speed in the manuscript?}
+            \todo[color=red]{Federico - check point 2 since we may decide to change the dynamic clothing insulation for the PMV model}
+            \todo[color=red]{Federico - check how we refer to the air speed in the manuscript}
             \response{
-            Please let us clarify this point.
-            1) Neither the PMV nor the PMVCE model correct the metabolic rate.
-            2) Both the PMV and PMVCE models correct the clothing insulation based on the metabolic rate.
-            3) Both the PMV and PMVCE models correct the air speed based on the metabolic rate using the same equation.
-                The value of V refers to the adjusted air speed.
+                Please let us clarify this point by answering the questions raised by the reviewr separately:
+                1) Neither the PMV nor the PMVCE model correct the metabolic rate.
+                Both models use as an input the metabolic rate of the participants which is wither measured or estimated by the researcher.
+                2) Both the PMV and PMVCE models correct the clothing insulation based on the metabolic rate using the same equation.
+                3) Both the PMV and PMVCE models correct the air speed based on the metabolic rate using the same equation.
+                The value of V in the paper refers to the adjusted air speed.
                 We have spedified this in the nomeclature section of the manuscript.
                 However, we strongly agree with the reviewer that this point is not clear and this issue arises from how the ASHRAE 55:2023 standard is written.
                 The authors of the ASHRAE 55:2023 standard voted not to have two variables one for the measured air speed and one for the adjusted air speed.
@@ -151,20 +167,49 @@
             \item In the description of limitations on line 50, the first item does not seem to be a limitation of the model itself.
             It is recommended to include it in the statement of the research purpose and significance.
 
-            \response{Here our reply}
+            \response{
+                We completely agree with the reviewer that the first limitation is not a limitation of the model itself.
+                Hence, we have removed it from the limitations section and moved it to the beginning of Section 1.1.
+            }
 
             \item In the data selection, there is no selection of environmental types.
             If the aim is to test the accuracy of the PMV model, were data from naturally ventilated environments, outdoor environments, etc.\ also selected?
 
-            \response{Here our reply}
+            \response{
+                We made the decision to include all the data in the ASHRAE Global Thermal Comfort Database II v2.1 in the analysis regardless of the environmental type.
+                This is because the PMV model, being a heat balance model, can be used to predict thermal sensation in a wide range of environments.
+                Our aims was to determine the accuracy of the PMV model in predicting thermal sensation as a function of the input parameters.
+                Environmental type is not an input parameter of the PMV model, hence we did not consider it in the analysis.
+                We are aware that previous studies have shown that the PMV model may have limitations in predicting thermal sensation in non mechanically ventilated environments.
+                However, since both standards do not specify the type of environments for which the PMV model can be used, we decided to include all the data in the ASHRAE Global Thermal Comfort Database II v2.1 in the analysis.
+                It should be noted that we did not include data from outdoor environments in the analysis since the ASHRAE Global Thermal Comfort Database II v2.1 only includes data from ``real'' buildings occupied by ``real'' people doing their normal day-to-day activities.
+                The database does not include data from outdoor environments nor from climate chambers studies.
+            }
 
             \item In the data selection in lines 168--171, it has been stated that ``the PMV should only be used when its absolute value is lower than 2``.
             So why were data with |PMV| $\leq$ 3.5 retained?
-            Regarding the retention of TSV data, it is said that ``thermal sensation was measured with at least a seven-point scale``, which indicates that there are different scales.
+
+            \response{
+            We retained data with |PMV| $\leq$ 3.5 because the PMV model is scientific peer-reviewed papers is widely used to predict the thermal sensation of people even when its absolute value is higher than 2.
+            Moreover, as explained in the paper the thermal snesation votes in the ASHRAE Global Thermal Comfort Database II v2.1 are collected using a 7-point scale which ranges from -3 to +3.
+            Consequently, we decided to retain data with |PMV| $\leq$ 3.5 and |TSV| $\leq$ 3 in the analysis to compare the accuracy of the PMV model in predicting thermal sensation over the full range of the thermal sensation scale.
+            However, since the PMV model is not recommended to be used when its absolute value is higher than 2, we strived always to presented the accuracy of the model within its range of applicability.
+            For example, in Figure 6 we present the accuracy of the PMV model in predicting each thermal sensation category separately.
+            In Table 1, we present the F1 score of the PMV model in predicting thermal sensation when its absolute value is lower than 1.5.
+            We acknowledge that we did not report the bias of the PMV model in predicting thermal sensation when its absolute value is higher than 2.
+            We may include this figure if the reviewers believe it is necessary.
+            }
+
+            \item Regarding the retention of TSV data, it is said that ``thermal sensation was measured with at least a seven-point scale'', which indicates that there are different scales.
             When the scale sizes are different, the same number represents different meanings.
             Is it reasonable to retain data in the form of |TSV| $\leq$ 3?
 
-            \response{Here our reply}
+            \response{
+            Thank you for pointing this out.
+            We made a mistake in the body manuscript and we should have written that the ``thermal sensation was measured with \sout{at least} a seven-point scale''.
+            The peer-reviewed paper which describe the ASHRAE Global Thermal Comfort Database II v2.1 states that the thermal sensation votes were collected using a seven-point scale and coded as follows ``-3 cold, -2 cool, -1 slightly cool, 0 neutral, +1 slightly warm, +2 warm, +3 hot''.
+            We have corrected this mistake in the manuscript.
+            }
 
             \item There are problems in the analysis of Figure 5i.
             The figure shows that subjects with slightly warm and slightly cold thermal sensations have the intention to further change the environment, but this does not mean that they are in an uncomfortable state.
@@ -172,20 +217,38 @@
             The expectation of changing the environment and the evaluation of the current environment should not be confused.
             It is recommended to re-analyze after clarifying the meanings of thermal comfort, thermal sensation, and thermal preference.
 
+            \todo{Stefano - Let's discuss this point during the meeting}
             \response{Here our reply}
 
             \item It should be noted that the PMV model proposed by Fanger is applicable to steady-state indoor thermal environments that do not deviate too much from neutrality.
             Therefore, it is unreasonable to use overheated or overcooled data to verify the accuracy of the PMV model, and the demonstrated accuracy will also be relatively low.
 
-            \response{Here our reply}
+            \response{
+            We agree with the reviewer that the PMV model is applicable to steady-state indoor thermal environments that do not deviate too much from neutrality.
+            However, the PMV model is widely used in the scientific literature to predict thermal sensation in a wide range of thermal environments.
+            While the ISO 7730 specifies that the PMV model should only be used when its absolute value is lower than 2, the ASHRAE 55 does not specify the range of applicability of the PMV model.
+            Consequently, as preiously explained we decided to include all the data in the ASHRAE Global Thermal Comfort Database II v2.1 in the analysis.
+            We, however, tried to further analyze the accuracy of the PMV model in predicting thermal sensation within its range of applicability, for example in Table 1 where we present the F1 score of the PMV model in predicting thermal sensation when its absolute value is lower than 1.5.
+            }
 
             \item For highlights 4--5, whether in field studies or laboratory studies, PMV values generally ranging from -1 to 1 are defined as thermal comfort, which is appropriate for steady-state indoor environments close to neutrality.
             However, if it is narrowed down to -0.5 to 0.5, the thermal comfort range is greatly reduced, which will increase the building operation energy consumption and is not recommended.
 
-            \response{Here our reply}
+            \response{
+            Thank you for pointing out this potential issue.
+            We agree that limiting the applicability of the PMV model to the range -0.5 to 0.5 may in some instances increase the building operation energy consumption.
+            However, we also show that if the building is correctly designed and operated, for example by providing individual control over the air speed, this may not be the case.
+            For example, in Figure 2 of the manuscript we show that the PMV predicts that occupants (met=1.2 and clo=0.5) are comfortable at t=27.7C when the air speed is 0.4 m/s.
+            An indoor air temperature of 27.7C is higher than the average indoor air temperature in offices in the US, Europe, AU and Singapore in which is generally in the range of 22-24C.
+            Consequently, we believe that mechanically ventilated buildings are not efficient not because the PMV mode is too restrictive, but because the buildings are not correctly designed and operated and participants do not have individual control over the indoor environment.
+            This, however, is a discussion that goes beyond the scope of this paper.
+            It should also be noted that we recommend limiting the applicability of the PMV model to the range -0.5 to 0.5 only because our results show that the PMV model has a low accuracy in predicting thermal sensation outside this range.
+            }
 
             \item Some conclusion contents lack data and theoretical support.
 
+            \todo{Stefano - Is the reviewer referring to the section about the assumption that people who are ‘slightly warm’ or
+            ‘slightly cool’ are thermally comfortable is incorrect?}
             \response{Here our reply}
 
         \end{enumerate}
@@ -201,50 +264,78 @@
             \item I have a only a specific few comments, which are listed below.
             However, my main concern deals with the way the records representing individuals in the comfort DB are used to first calculate PMV for individuals and then compare with individual TSVs.
             As the authors write ``The intended aim of the PMV model is not to accurately predict each individual thermal response from participants.
-            The PMV model was developed to predict the average thermal sensation of an undefined large group of occupants sharing the same environment.`` But isn't this analysis relying on calculation of each individual TSV without considering that this is not what the model should be used for?
+            The PMV model was developed to predict the average thermal sensation of an undefined large group of occupants sharing the same environment.``
+            But isn't this analysis relying on calculation of each individual TSV without considering that this is not what the model should be used for?
             The approach is the same across a wealth of studies that examine the accuracy of the model, but that does not make it more correct.
             I actually doubt that the DB can be reliably used to estimate the prediction accuracy, as there is no information of the mean TSV of groups of people exposed to the same thermal environment.
 
+            \todo{Stefano - Would you like to answer this question? I have the same concern as the reviewer but I know that you have a different opinion}
             \response{Here our response}
 
-            \item Although less critical, another general comment is that it is not clear what is meant by low predicition accuracy, as is written already in the abstract - when is the prediction accurqacy low?
+            \item Although less critical, another general comment is that it is not clear what is meant by low predicition accuracy, as is written already in the abstract - when is the prediction accuracy low?
             We aim to estimate what people perceive, which seriously suffers from individual differences and many others challenges.
             What is the prediction accuracy of related models?
             Or is the low prediction accuracy an outcome of using the prediction model wrongly (see first general comment).
 
-            \response{Here our response}
+            \todo[color=yellow]{Federico - add a few more additional sentences about the bias in the manuscript}
+            \response{
+            As previously explained we acknowledge that the PMV model is not intended to predict the thermal sensation of each individual participant.
+            We have acknowledged this limitation in the manuscript and discussed it in Section 3.2.
+            To compensate for this limitation of our analysis, we calculated the bias of the model as previously done by Humphreys and Nicol (2002) to determine if the model is systematically over or under predicting the thermal sensation of the participants.
+            Individual differences in human subjects can be assumed to be random and distributed around the mean.
+            This is the same assumption that PMV model also does when trying to predict the average thermal sensation of a large group of occupants.
+            Consequently, we believe that calcualting the bias of the model is a valid approach to determine the overall accuracy of the model.
+            }
 
             \item Ln. 103 - what is meant by formulation error?
             Unsuitable equations or constants that are wrong?
 
-            \response{Here our response}
+            \response{
+            We apologize for the confusion.
+            We meant both the formulation of the PMV model and the constants used in the model.
+            We have added a sentence in the manuscript to clarify this point.
+            }
 
             \item Sources of error.
             Order of importance - is it really the heat transfer calculation that is the most important - not the attempt to calculate thermal sensation based on physical variables
 
+            \todo{Stefano - do you understand this comment?}
             \response{Here our response}
 
             \item ``Additionally, the PMV model erroneously assumes that the human body is always losing or gaining heat from its surrounding environment.
-            In reality, under most indoor conditions, the body activates control mechanisms to maintain a stable core temperature [24].`` Indeeed, the thermoregulatory system maintains a stable body temperature, but the body still exchanges heat with the environment, so suggest to revise this sentence.
+            In reality, under most indoor conditions, the body activates control mechanisms to maintain a stable core temperature [24].``
+            Indeeed, the thermoregulatory system maintains a stable body temperature, but the body still exchanges heat with the environment, so suggest to revise this sentence.
 
-            \response{Here our response}
+            \response{
+            We apologize for the confusion.
+            We have revised the sentence to clarify this point.
+            }
 
             \item P 23 ln 416.
             Calculation of heat loss by sweating.
             Actually, this equation applies to people in thermal comfort, which should probably be added to the statement, so heat lost due to sweating does not appear to be related only with met rate.
 
+            \todo{Stefano - I do not understand this comment, can you help me?}
             \response{Here our response}
 
             \item ``The PMV model uses the overall heat losses or gains to calculate a PMV value which should represent a TSV vote.`` This is wrong - the PMV was never meant to represent a TSV vote, but the average of TSV votes of a large group of people.
 
-            \response{Here our response}
+            \response{
+            Thank you for pointing this out.
+            We changed the sentence as follows: ``The PMV model uses the overall heat losses or gains to calculate a PMV value which should represent the average thermal sensation of a large group of occupants.''
+            }
 
             \item Comment on measurement of air speed.
             ISO7726, which is used as a guide for measurements in ISO7730, recommends measurement of air speed only at abdomen level in homogeneous environments in both class C (comfort) and S (stress).
             The air speed measured in this height should be used to calculate the PMV\@.
             When comparing 7730 and 55, especially with emphasis on air speed, this should probably be taken into account.
 
-            \response{Here our response}
+            \todo{Stefano - How shall we address this comment?}
+            \response{
+            Thank you for pointing this out.
+            Most of the studies in the ASHRAE Global Thermal Comfort Database II v2.1 measured air speed one single height.
+            When we specifically compared the the PMV and PMVCE models in predicting thermal sensation in the subset of data with air speed greater than 0.2 m/s and for those studies that measured air speed at three different heights, we used the same input data for both models since also the PMV ISO specifies that in non homogeneous environments the air speed should be measured at different heights.
+            }
 
         \end{enumerate}
 

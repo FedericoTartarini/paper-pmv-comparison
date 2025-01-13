@@ -35,8 +35,10 @@ Finally, as you mentioned, \textit{The reduced temperature is entered into the P
 
 \subsection{\ac{pmv-ce} model}\label{subsec:pmv-ce-limitations}
 The \gls{55} standard uses a modified version of the original model, the \ac{pmv-ce}~\cite{ashrae552023}.
-The best source to see how \ac{pmv-ce} works is the standard itself, but the standard does not explain why some changes to the \ac{pmv} inputs were implemented.
+The best source to see how \ac{pmv-ce} works is the standard itself, but the standard does not explain why some changes to the \ac{pmv} inputs were implemented, nor for example, why the \ac{ce} is subtracted from the \ac{tdb} and \ac{tr}.
 A partial justification of the model is mainly described in \mycite{arens_moving_2009} and secondarily in \mycite{yang_cooling_2015}.
+However, we could not find a peer-reviewed scientific publication that quantified the accuracy improvements of the model as implemented in the \gls{55} over the original \ac{pmv} model.
+
 The process used to calculate the \ac{pmv-ce} in the \gls{55} is summarized in the flowchart depicted in Figure~\ref{fig:flowchart_pmv_ce}.
 \begin{figure}[!htb]
     \centering
@@ -104,7 +106,6 @@ While the \ac{pmv} model has its limitations, our analysis has revealed addition
 % Moreover, they did not compare the accuracy of the \ac{pmv-ce} with the \ac{pmv} model.
 
 \begin{enumerate}
-    \item We could not find a peer-reviewed scientific publication that quantified the accuracy improvements of the model as implemented in the ASHRAE standard over the original \ac{pmv} model.
     \todo[inline]{true enough, but in the standard the objective is to have a rational physiology model. 
     The Gagge models are as well or better documented than the Fanger heat balance model, and have been available to Standards users in the ASHRAE Handbook of Fundamentals.}
     \todo[inline, color=blue!40]{FT. The PMV CE and the Gagge model are very different, hence, publications about the latter do not justify the implementation proposed in the Std 55}
@@ -142,7 +143,7 @@ To our knowledge, no previous study compared in detail the accuracy of the \ac{p
 Some notable works that tried to determine the accuracy of the \ac{pmv} model include the work from \mycite{doherty_evaluation_1988} who evaluated the ability of the \ac{pmv} and \ac{set} models to predict several physiological variables (i.e., skin temperature, core temperature, and skin wettedness) under a wide range of still air environments and metabolic rates.
 \todo{Doherty and I did not evaluate air movement which hardly anyone was considering back then.}
 They concluded that the \ac{pmv} model is accurate for simulations of resting subjects, but its accuracy decreases as a function of metabolic rate.
-Humphreys and Nicol estimated the effects of measurement and formulation error on predicting thermal sensation using the \ac{pmv}~\cite{Humphreys2000}.
+Humphreys and Nicol estimated the effects of measurement and formulation error (i.e., incorrect equations or constants) on predicting thermal sensation using the \ac{pmv}~\cite{Humphreys2000}.
 They used the ASHRAE Global Thermal Comfort database~I and determined that the measurement error and the error introduced by the \ac{pmv} model formulation had a similar and non-negligible contribution.
 They also determined the validity of the \ac{pmv} for predicting comfort votes collected in field studies~\cite{Humphreys2002}.
 They concluded that the \ac{pmv} range of applicability should be significantly reduced and it fails to predict the extent of thermal dissatisfaction of people in buildings.

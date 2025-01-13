@@ -39,7 +39,7 @@ The percentage of \ac{tpv} grouped by each \ac{tsv} is shown in Figure~\ref{fig:
     \begin{subfigure}[b]{\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figures/bar_plot_tp_by_ts}
-        \caption{Figure a) shows the percentage of \ac{tpv} for each thermal sensation vote.
+        \caption{Figure a) shows the percentage of \ac{tpv} for each \ac{tsv}.
     The numbers on the right side of each bar show the number of points for each \ac{tsv}.
         Figure b) shows the total number of data points grouped by \ac{tsv}.
     Each bin in the right figure has more data points than in the left figure, since less data on \ac{tpv} were available.}
@@ -50,7 +50,7 @@ The percentage of \ac{tpv} grouped by each \ac{tsv} is shown in Figure~\ref{fig:
         \centering
         \includegraphics[width=\textwidth]{figures/bar_plot_thermal_acceptability_by_thermal_sensation_round}
     \caption{
-        Figure c) shows the percentage of participants who consider the space thermally acceptable for each thermal sensation vote.}
+        Figure c) shows the percentage of participants who consider the space thermally acceptable for each \ac{tsv}.}
         \label{fig:thermal_acceptability_by_ts}
     \end{subfigure}
     \caption{The distribution of \ac{tpv} and thermal acceptability grouped by each \ac{tsv}.}
@@ -110,7 +110,7 @@ The overall accuracy of both \ac{pmv} models increase to \qty{34}{\percent} and 
 The \ac{pmv-ce} model outperforms the \ac{pmv} model for \ac{tsv}~=~0 and -1.
 However, the \ac{pmv} model outperforms the \ac{pmv-ce} model when considering \ac{tsv}~=~1.
 The number of data points in each \ac{tsv} bin is different.
-\mycite{Cheung2019} grouped people based on the same heat loss or gains (same \ac{pmv} ranges), not the same thermal sensation vote as we did here, and then quantified the sensitivity of the model, i.e., how many times the \ac{pmv} model correctly predicted \ac{tsv}.
+\mycite{Cheung2019} grouped people based on the same heat loss or gains (same \ac{pmv} ranges), not the same \ac{tsv} as we did here, and then quantified the sensitivity of the model, i.e., how many times the \ac{pmv} model correctly predicted \ac{tsv}.
 They found that the accuracy of \ac{pmv} in predicting \ac{tsv} was only \qty{34}{\percent} \mycite{Cheung2019}.
 
 Being the classification problem unbalanced, the simple accuracy is not an optimal metric to rate the model prediction accuracy, since a default strategy of guessing the majority class would lead to a high overall model accuracy.
@@ -166,7 +166,7 @@ We report the median and inter-quantile ranges since data are not normally distr
     \centering
     \includegraphics[width=\textwidth]{figures/hist_discrepancies}
     \caption{Overall bias of the \ac{pmv} and \ac{pmv-ce} models for the subset of data with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
-    The x-axis shows the discrepancy (bias) between the predicted and self-reported thermal sensation vote.
+    The x-axis shows the discrepancy (bias) between the predicted and self-reported \ac{tsv}.
     We have binned the data into intervals of equal width.
     We colored the bars in the range from \num{-.5} to \num{.5} to highlight the number of responses that are within this range.
     The chart also shows the median and inter-quantile ranges of the data.
@@ -210,17 +210,17 @@ The \ac{pmv} model uses simplified heat balance equations to estimate the heat l
 This is a possible source of error since the model considers the human body to be a cylinder with constant width all uniformly covered with clothing where the heat is all generated in its core.
 This is a significant simplification, as it overlooks several important factors, such as the uneven coverage of clothing across different parts of the body, the non-uniformity of metabolic heat generation, and the variations of mass-to-surface ratios.
 It also ignores vasoconstriction and vasodilation.
-Additionally, the \ac{pmv} model erroneously assumes that the human body is always losing or gaining heat from its surrounding environment.
-In reality, under most indoor conditions, the body activates control mechanisms to maintain a stable core temperature~\cite{romanovsky_thermoregulation_2018}.
+Additionally, the \ac{pmv} model erroneously assumes that the human body is not capable of maintaining a stable core temperature.
+A \ac{pmv} value higher than \num{.5} or lower than \num{-.5} indicate that the hypothetical cylinder is either gaining or losing heat and consequently it is getting warmer or colder, respectively.
 Moreover, the \ac{pmv} model has been developed based on the assumption of steady-state heat transfer; however, this never precisely occurs.
-The human thermoregulatory system, in healthy humans, is constantly actively engaged to ensure a stable core temperature.
+The human thermoregulatory system, in healthy humans, is constantly actively engaged to ensure a stable core temperature~\cite{romanovsky_thermoregulation_2018}.
 The \ac{pmv} model also assumes that the human body is constantly losing a certain amount of heat through sweating and this heat loss (W/m\textsuperscript{2}) only varies as a function of \ac{met} and it is calculated using the following equation $0.42\times($\ac{met}$\times58.15 - 58.15)$~\cite{Fanger1970}.
 This amount of heat loss is included in the equation even if the cylinder has a negative heat gain, or in other words, the person is estimated to be feeling cold.
 
-The \ac{pmv} model uses the overall heat losses or gains to calculate a \ac{pmv} value which should represent a \ac{tsv} vote.
+The \ac{pmv} model uses the overall heat losses or gains to calculate a \ac{pmv} value which should represent the average \ac{tsv} of a large group of occupants.
 Heat losses or gains are only a proxy for the thermoregulation effort that the human body has to undergo to maintain a constant internal temperature.
 Fanger created this equation based on a limited dataset collected in a laboratory, and this equation was never updated or revisited~\cite{Fanger1970}.
-In the \ac{pmv} model the heat losses and gains are mapped using constant coefficients to a thermal sensation vote, disregarding the fact that the human body employs different strategies, i.e., vasodilation and vasoconstriction to cope with warm and cold conditions~\cite{romanovsky_thermoregulation_2018}.
+In the \ac{pmv} model the heat losses and gains are mapped using constant coefficients to a \ac{tsv}, disregarding the fact that the human body employs different strategies, i.e., vasodilation and vasoconstriction to cope with warm and cold conditions~\cite{romanovsky_thermoregulation_2018}.
 
 It is, therefore, not surprising to observe that the \ac{pmv} model has an `acceptable' accuracy only in determining when people are `neutral'.
 This is equivalent to no heat losses or gains (i.e., \ac{pmv}=0) which means that the body is dissipating all the internal metabolic heat production through conduction, convection, or radiation without needing to thermoregulate using sweating, shivering, vasoconstriction, vasodilation, behavioral adjustments, and non-shivering thermogenesis~\cite{ romanovsky_thermoregulation_2018}.

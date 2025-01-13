@@ -18,7 +18,6 @@ from pythermalcomfort.psychrometrics import p_sat_torr
 from pythermalcomfort.utilities import check_standard_compliance_array
 from scipy import optimize
 from scipy import stats
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import r2_score, mean_absolute_error

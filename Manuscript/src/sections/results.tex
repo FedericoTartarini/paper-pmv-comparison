@@ -14,10 +14,10 @@ We were not able to determine the accuracy of the \ac{pmv} and \ac{pmv-ce} formu
 For example, only \qty{2.5}{\percent} of the available dataset had a \ac{tdb}~$\leq$ than \var{ta_95_perc_min}, this is a problem since both thermal comfort standards' applicability limits extend to \qty{10}{\celsius}.
 This can be explained by the fact that only a few buildings in the world operate at \ac{tdb} lower than this value.
 Mainly because an indoor \ac{tdb} lower than \var{ta_95_perc_min} would be deemed to be unsatisfactory by a great number of occupants~\cite{iso7730}.
-This lack of data in the \ac{db2} is particularly relevant for \ac{v}.
-The \ac{pmv} and \ac{pmv-ce} only differ when the value of \ac{v}~$\geq$~\qty{0.1}{\m\per\s}.
+This lack of data in the \ac{db2} is particularly relevant for \ac{vr}.
+The \ac{pmv} and \ac{pmv-ce} only differ when the value of \ac{vr}~$\geq$~\qty{0.1}{\m\per\s}.
 The median value in the \ac{db2} is \var{v_median} suggesting that most of the data points were collected in buildings with low air movement.
-We also could not reliably test the accuracy of the \ac{pmv} formulations for values of \ac{v}~$\geq$~\var{v_95_perc_max}.
+We also could not reliably test the accuracy of the \ac{pmv} formulations for values of \ac{vr}~$\geq$~\var{v_95_perc_max}.
 
 Figure~\ref{fig:dist_other_data} shows the distribution of age, height, weight, and running mean outdoor temperature.
 \begin{figure*}[htb!]
@@ -79,10 +79,10 @@ We did not analyze the thermal comfort data since in the \ac{db2} it is unclear 
 
 \subsection{Comparison of PMV Accuracy in Predicting Thermal Sensation}\label{subsec:model-accuracy-comparison-in-predicting-thermal-sensation}
 The \ac{pmv} was developed with the primary aim of predicting \ac{tsv}, consequently, we compared the predicted value from the two models with measured \ac{tsv}.
-However, since the two models only differ when \ac{v}~$>$~\qty{0.1}{\m\per\s};
-we also present the results for a subset of the data where \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
+However, since the two models only differ when \ac{vr}~$>$~\qty{0.1}{\m\per\s};
+we also present the results for a subset of the data where \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
 In this subset of data, the differences in the outputs of the two models are more pronounced.
-We set the limit to \qty{0.2}{\m\per\s} and not a higher value since, as previously shown in Figure~\ref{fig:dist_input_data}, we could only reliably test the accuracy of the models up to \ac{v} of \var{v_95_perc_max}.
+We set the limit to \qty{0.2}{\m\per\s} and not a higher value since, as previously shown in Figure~\ref{fig:dist_input_data}, we could only reliably test the accuracy of the models up to \ac{vr} of \var{v_95_perc_max}.
 
 Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figure~\ref{fig:bar_stacked_model_accuracy} we grouped participants' responses by \ac{tsv} and reported the simple accuracy of the different \ac{pmv} formulations over each sub-figure.
 \begin{figure}[htb!]
@@ -97,7 +97,7 @@ Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figur
         \includegraphics[width=\textwidth]{figures/bar_stacked_model_accuracy_0.2}
     \end{subfigure}
     \caption{The calculated \ac{pmv} value is grouped by the \ac{tsv} value reported by the participants.
-    In a) and b) for the entire dataset, while in c and d for the dataset when \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
+    In a) and b) for the entire dataset, while in c and d for the dataset when \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
     In a) and c) are shown the results for the \ac{pmv} model, and in b) and d) for the \ac{pmv-ce} model.
     The number of data points in each bin of the two charts at the top (a and b) and at the bottom (c and d) is the same, and this allows us to compare the accuracy of both models.
     The overall prediction accuracy is shown above the chart, while the model accuracy of predicting participants grouped by their \ac{tsv} is shown over each bar.
@@ -106,7 +106,7 @@ Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figur
 \end{figure}
 Both \ac{pmv} formulations underestimate the conditions at which participants are thermally dissatisfied with their environment.
 The overall accuracies of the \ac{pmv} and \ac{pmv-ce} are \qty{33}{\percent} and \qty{34}{\percent}, respectively, when using the whole dataset.
-The overall accuracy of both \ac{pmv} models increase to \qty{34}{\percent} and \qty{35}{\percent}, respectively when only considering entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
+The overall accuracy of both \ac{pmv} models increase to \qty{34}{\percent} and \qty{35}{\percent}, respectively when only considering entries with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
 The \ac{pmv-ce} model outperforms the \ac{pmv} model for \ac{tsv}~=~0 and -1.
 However, the \ac{pmv} model outperforms the \ac{pmv-ce} model when considering \ac{tsv}~=~1.
 The number of data points in each \ac{tsv} bin is different.
@@ -116,7 +116,7 @@ They found that the accuracy of \ac{pmv} in predicting \ac{tsv} was only \qty{34
 Being the classification problem unbalanced, the simple accuracy is not an optimal metric to rate the model prediction accuracy, since a default strategy of guessing the majority class would lead to a high overall model accuracy.
 A model that always predicts `neutral' would achieve an overall accuracy of \var{perc_tsv_neutral}, the number of participants who voted \ac{tsv}~=~0.
 
-In Table~\ref{tab:f1}, we report the F1 scores for both models, i) using the whole dataset, ii) only keeping entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}, iii) only keeping data points that have \ac{v} measured at three heights with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}, and iv) for those with a $\lvert \textrm{PMV}\lvert \leq 1.5$ and $\lvert \textrm{TSV}\lvert \leq 1.5$.
+In Table~\ref{tab:f1}, we report the F1 scores for both models, i) using the whole dataset, ii) only keeping entries with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}, iii) only keeping data points that have \ac{vr} measured at three heights with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}, and iv) for those with a $\lvert \textrm{PMV}\lvert \leq 1.5$ and $\lvert \textrm{TSV}\lvert \leq 1.5$.
 \begin{table}[htb!]
     \centering
     \input{tables/f1}
@@ -124,8 +124,8 @@ In Table~\ref{tab:f1}, we report the F1 scores for both models, i) using the who
     \label{tab:f1}
 \end{table}
 The F1-macro score, which is free from label imbalance, depicts that the accuracy of both models across all metrics is marginally better than random guessing (i.e., \qty{14}{\percent}) for all data.
-For the subset of data with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} the F1-macro scores of the \ac{pmv} and \ac{pmv-ce} models only slightly improved.
-We then analyzed the subset of data with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and with \ac{v} measured at three heights.
+For the subset of data with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} the F1-macro scores of the \ac{pmv} and \ac{pmv-ce} models only slightly improved.
+We then analyzed the subset of data with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} and with \ac{vr} measured at three heights.
 Both F1-macro scores decrease and the \ac{pmv-ce} (\num{0.16}) is lower than the value for the \ac{pmv}~ (\num{0.17}).
 Our results show that the assumption that the \ac{pmv-ce} better takes into account the effect of elevated air speed is false.
 All the F1 scores significantly increase when analyzing the dataset with $\lvert \textrm{PMV}\lvert \leq 1.5$ and $\lvert \textrm{TSV}\lvert \leq 1.5$.
@@ -159,13 +159,13 @@ the slope of the curve was significantly lower than 1.
 We calculated the overall bias of the model as previously done by \mycite{Humphreys2002} by subtracting the \ac{pmv} and \ac{pmv-ce} models prediction from the self-reported \ac{tsv}.
 Figure~\ref{fig:hist_discrepancies} contains the summary statistics.
 Overall both the \ac{pmv} and \ac{pmv-ce} models have a median bias lower than half of a thermal sensation interval.
-The results highlight that the \ac{pmv-ce} has a higher bias than the \ac{pmv} both when calculating the bias for all the data and for the subset of data with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
+The results highlight that the \ac{pmv-ce} has a higher bias than the \ac{pmv} both when calculating the bias for all the data and for the subset of data with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
 We report the median and inter-quantile ranges since data are not normally distributed.
 %  We cannot change into a letter value plot since in that case, it would be hard to highlight the number of responses that are within the range from -.5 to 5.
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/hist_discrepancies}
-    \caption{Overall bias of the \ac{pmv} and \ac{pmv-ce} models for the subset of data with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
+    \caption{Overall bias of the \ac{pmv} and \ac{pmv-ce} models for the subset of data with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
     The x-axis shows the discrepancy (bias) between the predicted and self-reported \ac{tsv}.
     We have binned the data into intervals of equal width.
     We colored the bars in the range from \num{-.5} to \num{.5} to highlight the number of responses that are within this range.
@@ -173,11 +173,11 @@ We report the median and inter-quantile ranges since data are not normally distr
     }
     \label{fig:hist_discrepancies}
 \end{figure*}
-When including only the data with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} the median bias of the \ac{pmv} model reduces to \var{bias_median_pmv_0.2} from \var{bias_median_pmv_0}, meaning that at higher speed the \ac{pmv} model improves.
+When including only the data with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} the median bias of the \ac{pmv} model reduces to \var{bias_median_pmv_0.2} from \var{bias_median_pmv_0}, meaning that at higher speed the \ac{pmv} model improves.
 The median bias for the \ac{pmv-ce} also decreases to \var{bias_median_pmv_ce_0.2} from \var{bias_median_pmv_ce_0} but it is higher than the one for the \ac{pmv}.
 
 \subsubsection{Model Bias as Function of Five Input Variables}\label{subsubsec:model-bias-variable}
-Here we present the model bias as a function of the five input variables \ac{tdb}, \ac{v}, \ac{rh}, \ac{met}, and \ac{clo}.
+Here we present the model bias as a function of the five input variables \ac{tdb}, \ac{vr}, \ac{rh}, \ac{met}, and \ac{clo}.
 Results are shown in Figure~\ref{fig:bias_models}.
 \begin{figure*}[htb!]
     \centering
@@ -194,7 +194,7 @@ In each sub-figure, we have binned the results into discrete intervals.
 The x-axis tick label shows the bin range.
 All the boxen-plots have the same area to aid visualization, even though the number of points in each bin is not constant.
 The results depict that the use of the \ac{pmv-ce} model does not improve the bias of the \ac{pmv} results across all input variables.
-On the contrary, the bias of the \ac{pmv-ce} diverges more from 0 and is significantly worse (\num{-.33} versus \num{-0.13}) than the one for the \ac{pmv} for \qty{0.3}{\m\per\s}~$<$~\ac{v}~$\leq$~\qty{0.46}{\m\per\s}.
+On the contrary, the bias of the \ac{pmv-ce} diverges more from 0 and is significantly worse (\num{-.33} versus \num{-0.13}) than the one for the \ac{pmv} for \qty{0.3}{\m\per\s}~$<$~\ac{vr}~$\leq$~\qty{0.46}{\m\per\s}.
 Both models have a median bias higher or equal to $\lvert0.5\lvert$ for \ac{tdb}~$\leq$~\qty{21}{\celsius} and \ac{clo}~$\leq$~\qty{.5}{clo}.
 
 These findings, along with those shown in Table~\ref{tab:f1} and earlier figures, demonstrate that the \ac{pmv-ce} model has lower accuracy and higher bias compared to the \ac{pmv} at elevated air speeds, even though the \ac{pmv-ce} model is more complex and requires more computational resources.

@@ -565,6 +565,123 @@ def pmv(tdb, tr, vr, rh, met, clo, wme=0, standard="ISO", **kwargs):
     return pmv_ppd(tdb, tr, vr, rh, met, clo, wme, standard, **kwargs)["pmv"]
 
 
+def clothing_correction(clo, met, v):
+    i_cl_st = clo * 0.155
+    fcl = 1 + 0.3 * clo
+    # Static boundary layer thermal insulation in quiet air
+    i_a_st = 0.111
+    # Total static insulation
+    i_tot_st = i_cl_st + i_a_st / fcl
+    walk_sp = 0.0052 * (met - 58)
+    if walk_sp > 0.7:
+        walk_sp = 0.7
+    v_r = v
+    v_ux = v_r
+    if v_r > 3:
+        v_ux = 3
+    w_a_ux = walk_sp
+    if walk_sp > 1.5:
+        w_a_ux = 1.5
+    # correction for the dynamic total dry thermal insulation at or above 0.6 clo
+    corr_cl = 1.044 * math.exp(
+        (0.066 * v_ux - 0.398) * v_ux + (0.094 * w_a_ux - 0.378) * w_a_ux
+    )
+    if corr_cl > 1:
+        corr_cl = 1
+    # correction for the dynamic total dry thermal insulation at 0 clo
+    corr_ia = math.exp((0.047 * v_r - 0.472) * v_r + (0.117 * w_a_ux - 0.342) * w_a_ux)
+    if corr_ia > 1:
+        corr_ia = 1
+    corr_tot = corr_cl
+    if clo <= 0.6:
+        corr_tot = ((0.6 - clo) * corr_ia + clo * corr_cl) / 0.6
+    # total dynamic clothing insulation
+    i_tot_dyn = i_tot_st * corr_tot
+    # dynamic boundary layer thermal insulation
+    i_a_dyn = corr_ia * i_a_st
+    return i_tot_dyn - i_a_dyn / fcl
+
+
+def _correction_nude(_vr, _vw):
+    return np.exp(
+        -0.533 * (_vr - 0.15) + 0.069 * (_vr - 0.15) ** 2 - 0.462 * _vw + 0.201 * _vw**2
+    )
+
+
+def _correction_normal_clothing(_vr, _vw):
+    return np.exp(
+        -0.281 * (_vr - 0.15) + 0.044 * (_vr - 0.15) ** 2 - 0.492 * _vw + 0.176 * _vw**2
+    )
+
+
+def clo_total_insulation(
+    i_t,
+    vr,
+    v_walk,
+    i_a_static,
+    i_cl,
+):
+    """Calculates the total insulation of the clothing ensemble (`I`:sub:`T,r`) which is
+    the actual thermal insulation from the body surface to the environment, considering
+    all clothing, enclosed air layers, and boundary air layers under given environmental
+    conditions and activities. It accounts for the effects of movements and wind. The
+    ISO 7790 standard [iso9920]_ provides different equations to calculate it as a function
+    of the total thermal insulation of clothing (`I`:sub:`T`), the insulation of the
+    boundary air layer (`I`:sub:`a`), the walking speed (`v`:sub:`walk`), and the
+    relative air speed (`v`:sub:`r`). These different equations are used if the person
+    is clothed in normal clothing (0.6 clo < (`I`:sub:`cl`) < 1.4 clo or 1.2 clo <
+    (`I`:sub:`T`) < 2.0 clo), nude (`I`:sub:`cl` = 0 clo), and if the person is clothed
+    in very light clothing (`I`:sub:`cl` < 0.6 clo). Here we have not implemented the
+    equation for high clothing (`I`:sub:`T` > 2.0 clo). Hence the applicability of this
+    function is limited to 0 clo < (`I`:sub:`T`) < 2.0 clo). You can find all the inputs
+    required in this function in the ISO 9920:2009 standard [iso9920]_ Annex A.
+
+    Parameters
+    ----------
+    i_t: float or list of floats
+        total thermal insulation of clothing under static reference conditions [clo]
+    vr: float or list of floats
+        relative air speed, [m/s]
+    v_walk: float or list of floats
+        walking speed, [m/s]
+    i_a_static: float or list of floats
+        static boundary air layer insulation, [clo]
+    i_cl: float or list of floats
+        intrinsic insulation of the clothing ensemble, this is the thermal insulation
+        from the skin surface to the outer clothing surface [clo]
+
+    Returns
+    -------
+    i_t_r: float or list of floats
+        total insulation of the clothing ensemble, [clo]
+    """
+    i_t = np.array(i_t)
+    vr = np.array(vr)
+    v_walk = np.array(v_walk)
+    i_a_static = np.array(i_a_static)
+    i_cl = np.array(i_cl)
+
+    def normal_clothing(_vr, _vw, _i_t):
+        return _i_t * _correction_normal_clothing(_vw=_vw, _vr=_vr)
+
+    def nude(_vr, _vw, _i_a_static):
+        return _i_a_static * _correction_nude(_vr=_vr, _vw=_vw)
+
+    def low_clothing(_vr, _vw, _i_a_static, _i_cl, _i_t):
+        return (
+            (0.6 - _i_cl) * nude(_vr, _vw, _i_a_static)
+            + _i_cl * normal_clothing(_vr, _vw, _i_t)
+        ) / 0.6
+
+    i_t_r = np.where(
+        i_cl <= 0.6,
+        low_clothing(_vr=vr, _vw=v_walk, _i_a_static=i_a_static, _i_cl=i_cl, _i_t=i_t),
+        normal_clothing(_vr=vr, _vw=v_walk, _i_t=i_t),
+    )
+    i_t_r = np.where(i_cl == 0, nude(_vr=vr, _vw=v_walk, _i_a_static=i_a_static), i_t_r)
+    return i_t_r
+
+
 @jit(nopython=True)
 def two_nodes_optimized(
     tdb,
@@ -1183,13 +1300,57 @@ def importing_filtering_processing(load_preprocessed=False):
             & (df_[key] <= applicability_limits[key][1])
         ]
 
+    # # calculation in accordance with the PHS model
+    # corr_clo = []
+    # for ix, row in df_.iterrows():
+    #     corr_clo.append(clothing_correction(row.clo, row.met, row.vel))
+    # df_["i_cl_r"] = corr_clo
+    # df_["i_cl_r"] /= 0.155
+    # # df_["i_t_r"] = i_t_r
+    # # df_["i_t"] = i_t
+    # df_[["i_cl_r", "clo_d", "clo"]].describe().round(2)
+    # f, ax = plt.subplots(constrained_layout=True)
+    # sns.boxenplot(df_[["i_cl_r", "clo_d", "clo"]], ax=ax)
+    # ax.set(ylabel="Clothing insulation [clo]")
+
+    # calculation in accordance with the ISO 9920
+    i_a = 0.7  # todo 9920 default value
+    f_cl = 1 + 0.28 * df_.clo
+    i_t = df_.clo + i_a / f_cl
+    v_walk = 0.3 * (df_.met - 1)
+    # v_walk = 0  # todo check what to use
+    # v_walk[v_walk > 0.7] = 0.7
+    v_r = df_.vel + 0.3 * (df_.met - 1)
+    # v_r[v_r < df_.vel] = df_.vel
+    i_t_r = clo_total_insulation(
+        i_t=i_t, vr=v_r, v_walk=v_walk, i_a_static=i_a, i_cl=df_.clo.values
+    )
+    i_a_r = (
+        np.exp(
+            -0.533 * (v_r - 0.15)
+            + 0.069 * (v_r - 0.15) ** 2
+            - 0.462 * v_walk
+            + 0.201 * v_walk**2
+        )
+        * i_a
+    )
+    i_cl_r = i_t_r - i_a_r / f_cl
+    df_["i_cl_r"] = i_cl_r
+    # df_["i_t_r"] = i_t_r
+    # df_["i_a_r"] = i_a_r
+    # df_["i_t"] = i_t
+    # df_[["i_cl_r", "clo_d", "clo"]].describe().round(2)
+    # f, ax = plt.subplots(constrained_layout=True)
+    # sns.boxenplot(df_[["i_cl_r", "clo_d", "clo", "i_a_r", "i_t_r"]], ax=ax)
+    # ax.set(ylabel="Clothing insulation [clo]")
+
     results_pmv_ppd = pmv_ppd(
         tdb=df_.ta,
         tr=df_.tr,
         vr=df_.vel_r,
         rh=df_.rh,
         met=df_.met,
-        clo=df_.clo_d,
+        clo=df_["i_cl_r"],
         standard="iso",
         limit_inputs=False,
     )
@@ -3019,7 +3180,7 @@ def table_f1_scores():
         file = file.replace(r"micro", r"\specialrule{.01em}{.05em}{.05em} micro")
         file = file.replace(r"\specialrule{.01em}{.05em}{.05em}", r"", 1)
         file = file.replace(
-            r"('vel_r', 0.2)", r"\multirow{3}{*}{\ac{v} $\geq$ \qty{0.2}{\m\per\s}}", 1
+            r"('vel_r', 0.2)", r"\multirow{3}{*}{\ac{vr} $\geq$ \qty{0.2}{\m\per\s}}", 1
         )
         file = file.replace(
             "('vel_r', 0.2)",
@@ -3036,7 +3197,7 @@ def table_f1_scores():
         )
         file = file.replace(
             "('good_vel', None)",
-            r"\multirow{3}{*}{\ac{v} $\geq$ \qty{0.2}{\m\per\s} at three heights}",
+            r"\multirow{3}{*}{\ac{vr} $\geq$ \qty{0.2}{\m\per\s} at three heights}",
             1,
         )
         file = file.replace(

@@ -3,7 +3,7 @@
 \section{Analysis of the Dataset with Air Speed Measurements at Three Heights}\label{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}
 
 In this section, we show the results of the analysis of the dataset with air speed measurements at three heights.
-Only \num{3063} entries in the \ac{db2} had air speed measurements at three heights with \ac{v}~$\geq$~\qty{0.2}{\m\per\s}.
+Only \num{3063} entries in the \ac{db2} had air speed measurements at three heights with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
 A summary of the papers that collected these data is provided in Table~\ref{tab:three_heights_papers}.
 The table also shows the number of measurements for each paper and how much (percentage) each study contributed to the dataset.
 \begin{table}[htb!]
@@ -23,8 +23,8 @@ The air speed distribution at the three heights for each paper is shown in Figur
     We are also not showing the outliers.}
     \label{fig:boxenplot_wind_speed_three_heights}
 \end{figure}
-The adjustment of \ac{v} based on the \ac{met} significantly increased the base value of the air speed measured by all the studies.
-With the value of \ac{v} being \var{delta_v_mean} higher than the average of the other air speeds combined.
+The adjustment of \ac{vr} based on the \ac{met} significantly increased the base value of the air speed measured by all the studies.
+With the value of \ac{vr} being \var{delta_v_mean} higher than the average of the other air speeds combined.
 The discussion on whether this increase is justified is beyond the scope of this paper, since both standards require the user to adjust the air speed based on the \ac{met} value.
 
 The F1-macro score for \ac{pmv-ce}~=~\num{.16} is lower than for the \ac{pmv}~=~\num{.17} as previously shown in Table~\ref{tab:f1}.
@@ -37,7 +37,7 @@ The results are shown in Figure~\ref{fig:bubble_models_vs_tsv_three_heights}.
     \centering
     \includegraphics[width=\textwidth]{figures/bubble_models_vs_tsv_three_heights}
     \caption{Comparison between the \ac{pmv} and \ac{pmv-ce} models for the dataset with air speed measured at three heights. 
-    The \ac{lowess} curve shows the relationship between the raw \ac{pmv} and \ac{tsv} data for the dataset with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and measured at three heights.
+    The \ac{lowess} curve shows the relationship between the raw \ac{pmv} and \ac{tsv} data for the dataset with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} and measured at three heights.
     Raw data were then binned and a bubble chart (circle area is proportional to the number of votes in that bin) was superimposed over the regression curve to aid the visualization of a large dataset.
     The brown dashed line represents the identity line, where the slope is 1 and the intercept is 0.}
     \label{fig:bubble_models_vs_tsv_three_heights}
@@ -57,8 +57,8 @@ The \ac{pmv} model has a bias of \num{-.28} while the \ac{pmv-ce} model has a bi
 The interquartile range for the \ac{pmv} model is more centered around \num{0} than the \ac{pmv-ce} model.
 These results allow us to conclude that the \ac{pmv} model is more accurate than the \ac{pmv-ce} model for the dataset with air speed measured at three heights.
 
-\subsection{Dataset with \ac{v} measured at three heights and \ac{tdb}~$\geq$~\qty{24}{\celsius}}\label{subsec:dataset-with-v-measured-at-three-heights-and-tdb-geq-24-celsius}
-We are showing here the results for the subset of data with \ac{v} measured at three heights and \ac{tdb}~$\geq$~\qty{24}{\celsius}.
+\subsection{Dataset with \ac{vr} measured at three heights and \ac{tdb}~$\geq$~\qty{24}{\celsius}}\label{subsec:dataset-with-v-measured-at-three-heights-and-tdb-geq-24-celsius}
+We are showing here the results for the subset of data with \ac{vr} measured at three heights and \ac{tdb}~$\geq$~\qty{24}{\celsius}.
 We are reporting these results since the \ac{pmv-ce} aims to more accurately predict the thermal sensation, compared to the \ac{pmv}, when air movement is used to cool the occupants.
 The results are shown in Figure~\ref{fig:hist_discrepancies_three_heights_limit_t}.
 \begin{figure*}[htb!]

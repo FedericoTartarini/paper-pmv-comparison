@@ -7,8 +7,8 @@ The \ac{db2} only contains data collected by researchers in cross-sectional fiel
 Not all researchers measured and logged all six parameters needed to calculate the \ac{pmv} and \ac{pmv-ce}.
 We, therefore, decided to remove all entries that did not have any of the following variables: \ac{tdb}, \ac{tr}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv}.
 This filtered out approximately \var{entries_db_valid} of the data.
-In our analysis, we used the value \ac{v} which is adjusted as a function of \ac{met} and not the air speed measured by the researchers.
-This is because both \ac{pmv} formulations use the \ac{v} adjusted as a function of \ac{met} to calculate the \ac{pmv} value.
+In our analysis, we used the value \ac{vr} which is adjusted as a function of \ac{met} and not the air speed measured by the researchers.
+This is because both \ac{pmv} formulations use the \ac{vr} adjusted as a function of \ac{met} to calculate the \ac{pmv} value.
 
 Both the \gls{55} and \gls{7730} specify a set of applicability limits.
 We hence filtered out those data points that did not meet the inclusion criteria of both standards.
@@ -16,7 +16,7 @@ The rationale is that the models' accuracy should only be tested within their ap
 The limits we used are as follows:
 \num{10}~$\leq$~\ac{tdb}~$\leq$~\qty{30}{\celsius},
 \num{10}~$\leq$~\ac{tr}~$\leq$~\qty{40}{\celsius},
-\num{0}~$\leq$~\ac{v}~$\leq$~\qty{1}{\m\per\s},
+\num{0}~$\leq$~\ac{vr}~$\leq$~\qty{1}{\m\per\s},
 \num{0}~$\leq$~\ac{clo}~$\leq$~\qty{1.5}{clo},
 \num{0}~$\leq$~water vapor partial pressure~$\leq$~\qty{2000}{\pascal},
 and \num{1}~$\leq$~\ac{met}~$\leq$~\qty{4}{met}.
@@ -30,11 +30,11 @@ However, since the thermal sensation was measured with a seven-point scale and t
 In addition, it should also be noted that while all the data included in the \ac{db2} are published in peer-reviewed papers, not all entries were collected using the same methodology.
 For example, while both thermal comfort standards recommend measuring \ac{v} at three different heights, this was not always done.
 This could introduce a bias in the measurements and, consequently, in the results of the models.
-Moreover, since the two \ac{pmv} formulations only differ when \ac{v}~$\geq$~\qty{0.1}{\m\per\s}, we decided to report three sets of results:
+Moreover, since the two \ac{pmv} formulations only differ when \ac{vr}~$\geq$~\qty{0.1}{\m\per\s}, we decided to report three sets of results:
 \begin{enumerate}[ {}1{)} ]
     \item all the data points with \ac{tdb}, \ac{tr}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv};
-    \item the data points in 1) with \ac{v}~$\geq$~\qty{0.2}{\m\per\s};
-    \item the data points in 1) with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured air speed at three different heights.
+    \item the data points in 1) with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s};
+    \item the data points in 1) with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured air speed at three different heights.
     These results are reported in \ref{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}.
 \end{enumerate}
 Comparing the results from these three datasets will allow us to assess the impact of the data quality on the results of the models.
@@ -42,7 +42,7 @@ By only including those studies that measured air speed at three different heigh
 We did not use \qty{0.1}{\m\per\s} as a threshold because the original difference between the two models was \qty{0.2}{\m\per\s} and it was changed to \qty{0.1}{\m\per\s} only in the \gls{55}.
 The effect of air movement is perceptible only when the airspeed is sufficiently high to disrupt the body's thermal plume~\cite{zukowska_impact_2012}.
 The threshold in the ASHRAE standard was reduced to \qty{0.1}{\m\per\s} to simplify the usability and achieve one threshold for all the air speeds.
-In \ref{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}, we also present the results generated using those entries with \ac{v}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured \ac{v} at three different heights.
+In \ref{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}, we also present the results generated using those entries with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured \ac{v} at three different heights.
 We have not included these results here, as they are comparable to those presented in this section and lead to the same conclusions.
 
 We used Python to analyze and visualize the results.
@@ -58,7 +58,7 @@ The latter were sometimes collected using a continuous scale and not a discrete 
 To remove this rounding error, we subtracted the \ac{tsv} value from the \ac{pmv} and \ac{pmv-ce} values.
 These differences, also known as bias, quantify the success of the model in predicting \ac{tsv}.
 However, on their own, are a low-precision estimate of the overall accuracy of the model~\cite{Humphreys2002}.
-These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{v}).
+These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{vr}).
 If the \ac{pmv} or \ac{pmv-ce} formulations are bias-free, the distribution of any batch derived from these differences would have a mean value that is zero.
 The standard deviation would reflect the combined effect of the people's individual differences, any errors in the model formulation or, in the data collection method (accuracy or precision of the instrumentation used)~\cite{Humphreys2002}.
 According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between \num{-0.25} and \num{0.25}.

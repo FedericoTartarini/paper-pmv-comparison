@@ -1,14 +1,12 @@
 \section{Methodology}\label{sec:methodology}
 The \ac{db2} has \var{entries_db_all} independent recordings from various field investigations throughout the world, and it is the largest of its kind~\cite{FoldvaryLicina2018, db2dryad}.
 \Ac{tsv} were collected using a right-here-right-now survey and environmental parameters were measured and logged in the proximity of participants when they completed the survey.
-The \ac{db2} only contains data collected by researchers in cross-sectional field studies that have been published in peer-reviewed journals.
+The \ac{db2} only contains data collected indoors by researchers in cross-sectional field studies that have been published in peer-reviewed journals.
 
 \subsection{Data Preparation and Cleaning}\label{subsec:data-processing-and-cleaning}
 Not all researchers measured and logged all six parameters needed to calculate the \ac{pmv} and \ac{pmv-ce}.
 We, therefore, decided to remove all entries that did not have any of the following variables: \ac{tdb}, \ac{tr}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv}.
 This filtered out approximately \var{entries_db_valid} of the data.
-In our analysis, we used the value \ac{vr} which is adjusted as a function of \ac{met} and not the air speed measured by the researchers.
-This is because both \ac{pmv} formulations use the \ac{vr} adjusted as a function of \ac{met} to calculate the \ac{pmv} value.
 
 Both the \gls{55} and \gls{7730} specify a set of applicability limits.
 We hence filtered out those data points that did not meet the inclusion criteria of both standards.
@@ -25,23 +23,32 @@ Consequently, the final dataset used for the analysis contains \var{entries_db_u
 The adjusted total clothing insulation and relative airspeed, as required by both standards, were used to calculate the \ac{pmv} and \ac{pmv-ce} values.
 
 Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
-However, since the thermal sensation was measured with a seven-point scale and the \ac{pmv} has no upper or lower boundary, we decided to keep the data that felt within the following ranges $|$\ac{tsv}$|$~$\leq$~\num{3} or $|$\ac{pmv}$|$~$\leq$~\num{3.5}.
+However, since the thermal sensation was measured with a seven-point scale, the \ac{pmv} has no upper or lower boundary, and the \gls{55} does not specify the range of applicability of the \ac{pmv-ce} model, we decided to keep the data that felt within the following ranges $|$\ac{tsv}$|$~$\leq$~\num{3} or $|$\ac{pmv}$|$~$\leq$~\num{3.5}.
 
-In addition, it should also be noted that while all the data included in the \ac{db2} are published in peer-reviewed papers, not all entries were collected using the same methodology.
+In addition, it should also be noted that while all the data included in the \ac{db2} are published in peer-reviewed papers, not all entries were collected using the same standardised methodology.
 For example, while both thermal comfort standards recommend measuring \ac{v} at three different heights, this was not always done.
-This could introduce a bias in the measurements and, consequently, in the results of the models.
-Moreover, since the two \ac{pmv} formulations only differ when \ac{vr}~$\geq$~\qty{0.1}{\m\per\s}, we decided to report three sets of results:
+The absence of standardized measurement protocols, the use of inaccurate or un-calibrated sensors, and the use of different reference tables to estimate \ac{clo} and \ac{met} may all introduce an error in the measurements and, consequently, in the results of both models.
+This issue has been already evidenced in the literature by \mycite{dambrosio_alfano_role_2011}.
+They showed that the reliability of the \ac{pmv} model is strongly affected by the accuracy of the input data.
+In our analysis, we compensate this issue by:
+\begin{enumerate}[ {}1{)} ]
+    \item comparing the results of the two models using the same dataset; hence, the different in the output is mainly due to the different formulations of the models;
+    \item using a large dataset to reduce the bias introduced by the lack of adherence to the measurement protocol recommended by both standards since it can be assumed that measurement errors random across different studies.
+    \item using only datasets that have been published in peer-reviewed journals.
+%    \item excluding all those studies that did not measure all the environmental parameters needed to calculate the \ac{pmv} and \ac{pmv-ce}.
+\end{enumerate}
+
+In addition, since the two \ac{pmv} formulations mainly differ when \ac{vr}~$\geq$~\qty{0.1}{\m\per\s}, we decided to report three sets of results:
 \begin{enumerate}[ {}1{)} ]
     \item all the data points with \ac{tdb}, \ac{tr}, \ac{rh}, \ac{v}, \ac{clo}, \ac{met}, and \ac{tsv};
     \item the data points in 1) with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s};
-    \item the data points in 1) with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured air speed at three different heights.
+    \item the data points in 1) with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured \ac{v} at three different heights.
     These results are reported in \ref{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}.
 \end{enumerate}
 Comparing the results from these three datasets will allow us to assess the impact of the data quality on the results of the models.
 By only including those studies that measured air speed at three different heights, we can reduce the bias introduced by the lack of adherence to the measurement protocol recommended by both standards.
 We did not use \qty{0.1}{\m\per\s} as a threshold because the original difference between the two models was \qty{0.2}{\m\per\s} and it was changed to \qty{0.1}{\m\per\s} only in the \gls{55}.
 The effect of air movement is perceptible only when the airspeed is sufficiently high to disrupt the body's thermal plume~\cite{zukowska_impact_2012}.
-The threshold in the ASHRAE standard was reduced to \qty{0.1}{\m\per\s} to simplify the usability and achieve one threshold for all the air speeds.
 In \ref{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}, we also present the results generated using those entries with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} and from those studies that measured \ac{v} at three different heights.
 We have not included these results here, as they are comparable to those presented in this section and lead to the same conclusions.
 
@@ -50,22 +57,26 @@ The \ac{pmv} results were calculated using the function `pythermalcomfort.models
 We are committed to reproducible research, hence we have shared the source code and the dataset we used publicly at this URL: \url{https://github.com/FedericoTartarini/paper-pmv-comparison} so other users can test different assumptions.
 
 \subsection{Model Validation}\label{subsec:model-validation}
-The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants, but it is commonly used both in singly occupied zones and in areas with several hundred people.
+The \ac{pmv} model was developed to predict the average thermal sensation of a large group of occupants, but it is often applied in both singly occupied spaces and areas accommodating several hundred people.
+Partially because neither of the two standards specifies the minimum number of people needed to apply the model.
 We first grouped participants' responses by their \ac{tsv}, and we determined how many of these votes were correctly labelled by the \ac{pmv} and \ac{pmv-ce} models.
 This approach is useful for performing an overall assessment of the accuracy of the models, but it introduces an error due to the rounding of both the \ac{pmv}, \ac{pmv-ce}, and \ac{tsv} values.
 The latter were sometimes collected using a continuous scale and not a discrete one, in other words, they could take any value in the range from -3.0 to 3.0.
 
 To remove this rounding error, we subtracted the \ac{tsv} value from the \ac{pmv} and \ac{pmv-ce} values.
 These differences, also known as bias, quantify the success of the model in predicting \ac{tsv}.
-However, on their own, are a low-precision estimate of the overall accuracy of the model~\cite{Humphreys2002}.
+However, on their own, are a low-precision estimate of the overall accuracy of the model~\cite{Humphreys2002} since the model is not expected to predict the exact \ac{tsv} of each participant.
 These values were then binned using several independent variables (e.g., \ac{tdb}, \ac{vr}).
 If the \ac{pmv} or \ac{pmv-ce} formulations are bias-free, the distribution of any batch derived from these differences would have a mean value that is zero.
 The standard deviation would reflect the combined effect of the people's individual differences, any errors in the model formulation or, in the data collection method (accuracy or precision of the instrumentation used)~\cite{Humphreys2002}.
-According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between \num{-0.25} and \num{0.25}.
-However, we believe that this range is too narrow since \ac{tsv} is commonly measured using an ordinal scale of integers.
-Consequently, we expanded the range to \num{-.5} and \num{0.5}.
+This is a similar assumption to the one used by the \ac{pmv} model which ignores individual differences and calculates the average thermal sensation of a `typical' average person.
+According to \mycite{Humphreys2002} the model can be considered accurate if the above-mentioned differences are between \num{\pm 0.25}.
+However, we believe that this range is too narrow since \ac{tsv} is commonly measured using an ordinal scale of integers and even when environmental parameters are measured within the accuracy of the standards, the output of the model may vary by more than \num{\pm 0.25}~\cite{dambrosio_alfano_role_2011}.
+Consequently, we expanded the range to \num{\pm 0.5}.
 This is needed to ensure that each \ac{pmv} value can be matched to a \ac{tsv}.
-We are aware that an error of \num{.5} is approximately \qty{7}{\percent} of the total range and ideally, we would want to have the \ac{pmv} to have higher precision, however, this is a necessary limitation introduced by the low resolution of the \ac{tsv} scale.
+We are aware that an error of \num{.5} is approximately \qty{7}{\percent} of the total range.
+Ideally, we would want to have the \ac{pmv} to have higher precision.
+however, this is a necessary limitation introduced by the low resolution of the \ac{tsv} scale and by the accuracy of the inputs.
 When the aim is to predict the average thermal sensation of a large group of occupants, binning data by the independent variables is a better representation.
 Grouping the participants' responses by their \ac{tsv} mixes people who reported the same \ac{tsv} vote but could have been in different locations and moments of the year and day.
 

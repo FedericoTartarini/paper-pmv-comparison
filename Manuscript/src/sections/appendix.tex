@@ -3,7 +3,8 @@
 \section{Analysis of the Dataset with Air Speed Measurements at Three Heights}\label{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}
 
 In this section, we show the results of the analysis of the dataset with air speed measurements at three heights.
-Only \num{3063} entries in the \ac{db2} had air speed measurements at three heights with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
+% todo check manually
+Only \num{3059} entries in the \ac{db2} had air speed measurements at three heights with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
 A summary of the papers that collected these data is provided in Table~\ref{tab:three_heights_papers}.
 The table also shows the number of measurements for each paper and how much (percentage) each study contributed to the dataset.
 \begin{table}[htb!]
@@ -25,7 +26,7 @@ The air speed distribution at the three heights for each paper is shown in Figur
 \end{figure}
 The adjustment of \ac{vr} based on the \ac{met} significantly increased the base value of the air speed measured by all the studies.
 With the value of \ac{vr} being \var{delta_v_mean} higher than the average of the other air speeds combined.
-The discussion on whether this increase is justified is beyond the scope of this paper, since both standards require the user to adjust the air speed based on the \ac{met} value.
+The discussion on whether this increase is justified is beyond the scope of this paper, since both standards require the user to adjust the air speed based on the \ac{met} value using the same equation.
 
 The F1-macro score for \ac{pmv-ce}~=~\num{.16} is lower than for the \ac{pmv}~=~\num{.17} as previously shown in Table~\ref{tab:f1}.
 The \ac{pmv-ce} should be more accurate than the \ac{pmv} model for this subset of data to justify its use.
@@ -43,7 +44,7 @@ The results are shown in Figure~\ref{fig:bubble_models_vs_tsv_three_heights}.
     \label{fig:bubble_models_vs_tsv_three_heights}
 \end{figure*}
 The \ac{pmv} model is more accurate than the \ac{pmv-ce} model.
-The intercept of the \ac{pmv} model is \num{-.31} while the intercept of the \ac{pmv-ce} model is \num{-.41}.
+The intercept of the \ac{pmv} model is \var{intercept_v_02_three_pmv} while the intercept of the \ac{pmv-ce} model is \var{intercept_v_02_three_pmv_ce}.
 Moreover, the \ac{pmv-ce} \ac{lowess} curve is only marginally higher than \num{0} despite participants reporting a \ac{tsv} of \num{3}.
 
 The overall bias of the \ac{pmv} and \ac{pmv-ce} models is shown in Figure~\ref{fig:hist_discrepancies_three_heights}.
@@ -53,9 +54,9 @@ The overall bias of the \ac{pmv} and \ac{pmv-ce} models is shown in Figure~\ref{
     \caption{Bias of the \ac{pmv} and \ac{pmv-ce} models for the dataset with air speed measured at three heights.}
     \label{fig:hist_discrepancies_three_heights}
 \end{figure}
-The \ac{pmv} model has a bias of \num{-.28} while the \ac{pmv-ce} model has a bias of \num{-.39}.
-The interquartile range for the \ac{pmv} model is more centered around \num{0} than the \ac{pmv-ce} model.
-These results allow us to conclude that the \ac{pmv} model is more accurate than the \ac{pmv-ce} model for the dataset with air speed measured at three heights.
+% todo check manually
+The \ac{pmv} model has a bias of \num{-.39} while the \ac{pmv-ce} model has a bias of \num{-.38}.
+These results allow us to conclude that the \ac{pmv} has a similar accuracy than the \ac{pmv-ce} model for the dataset with air speed measured at three heights.
 
 \subsection{Dataset with \ac{vr} measured at three heights and \ac{tdb}~$\geq$~\qty{24}{\celsius}}\label{subsec:dataset-with-v-measured-at-three-heights-and-tdb-geq-24-celsius}
 We are showing here the results for the subset of data with \ac{vr} measured at three heights and \ac{tdb}~$\geq$~\qty{24}{\celsius}.
@@ -68,4 +69,5 @@ The results are shown in Figure~\ref{fig:hist_discrepancies_three_heights_limit_
     \label{fig:hist_discrepancies_three_heights_limit_t}
 \end{figure*}
 
-The \ac{pmv} model has a bias of \num{-.08} while the \ac{pmv-ce} model has a bias of \num{-.31}. Even for this subset of data, the \ac{pmv} model is more accurate than the \ac{pmv-ce} model; this result is consistent with the previous analysis and confirms that the \ac{pmv} model is more accurate than the \ac{pmv-ce}.
+The \ac{pmv} model has a bias of \num{-.28} while the \ac{pmv-ce} model has a bias of \num{-.31}.
+Even for this subset of data, the \ac{pmv} model is more accurate than the \ac{pmv-ce} model.

@@ -131,9 +131,12 @@ var_names = {
     "ta": r"$t_{db}$",
     "tr": r"$\overline{t_{r}}$",
     "top": r"$t_{o}$",
-    "vel_r": r"$V$",
+    "vel_r": r"$V_r$",
+    "vel": r"$V$",
     "rh": r"RH",
     "clo": r"$I_{cl}$",
+    "clo_d": "ASHRAE\n" + r"$I_{cl,r}$",
+    "i_cl_r": "ISO\n" + r"$I_{cl,r}$",
     "met": r"$M$",
     "thermal_sensation": "Thermal Sensation Vote (TSV)",
     "thermal_sensation_round": "Thermal Sensation Vote (TSV)",
@@ -164,8 +167,11 @@ var_units = {
     "ta": r"$^{\circ}$C",
     "tr": r"$^{\circ}$C",
     "vel_r": r"m/s",
+    "vel": r"m/s",
     "rh": r"%",
     "clo": r"clo",
+    "clo_d": r"clo",
+    "i_cl_r": r"clo",
     "met": r"met",
 }
 
@@ -1314,11 +1320,11 @@ def importing_filtering_processing(load_preprocessed=False):
     # ax.set(ylabel="Clothing insulation [clo]")
 
     # calculation in accordance with the ISO 9920
-    i_a = 0.7  # todo 9920 default value
+    i_a = 0.7
     f_cl = 1 + 0.28 * df_.clo
     i_t = df_.clo + i_a / f_cl
     v_walk = 0.3 * (df_.met - 1)
-    # v_walk = 0  # todo check what to use
+    # v_walk = 0
     # v_walk[v_walk > 0.7] = 0.7
     v_r = df_.vel + 0.3 * (df_.met - 1)
     # v_r[v_r < df_.vel] = df_.vel
@@ -1800,9 +1806,11 @@ def plot_error_prediction(data):
 
 
 def plot_distribution_variable():
-    f, axs = plt.subplots(1, 6, constrained_layout=True, figsize=(7, 3))
+    f, axs = plt.subplots(1, 9, constrained_layout=True, figsize=(7, 3))
 
-    for ix, var in enumerate(["ta", "tr", "rh", "vel_r", "clo", "met"]):
+    for ix, var in enumerate(
+        ["ta", "tr", "rh", "met", "vel", "vel_r", "clo", "clo_d", "i_cl_r"]
+    ):
         sns.boxenplot(
             y=var,
             data=df,
@@ -1823,12 +1831,12 @@ def plot_distribution_variable():
                 yticks=(np.linspace(10, 90, 5)),
                 ylim=(10, 90),
             )
-        if var == "vel_r":
+        if var in ["vel_r", "vel"]:
             axs[ix].set(
                 yticks=(np.linspace(0, 1, 5)),
                 ylim=(0, 1),
             )
-        if var == "clo":
+        if var in ["clo", "clo_d", "i_cl_r"]:
             axs[ix].set(
                 yticks=(np.linspace(0.1, 1.6, 4)),
                 ylim=(0.1, 1.6),
@@ -2183,6 +2191,7 @@ def plot_bubble_models_vs_tsv(
     data_: pd.DataFrame() = None,
     fig_name: str = "./Manuscript/src/figures/bubble_models_vs_tsv.pdf",
     fig_letters: list[str] = ["a", "b"],
+    dataset=None,
 ) -> None:
     data_plot = data_.copy()
 
@@ -2220,15 +2229,13 @@ def plot_bubble_models_vs_tsv(
             scatter=False,
             lowess=True,
         )
-        print(model)
-        print(
-            round(
-                scipy.stats.linregress(
-                    x=p.get_lines()[0].get_xdata(), y=p.get_lines()[0].get_ydata()
-                ).intercept,
-                2,
-            )
+        intercept = round(
+            scipy.stats.linregress(
+                x=p.get_lines()[0].get_xdata(), y=p.get_lines()[0].get_ydata()
+            ).intercept,
+            2,
         )
+        save_var_latex(f"intercept_{dataset}_{model}", intercept, "", 2)
         axs[ix].plot(
             [-3, 3],
             [-3, 3],
@@ -2452,6 +2459,7 @@ def plot_stacked_bar_predictions_ts(
     fig_name: str = None,
     fig_letters: list[str] = ["a", "b"],
     fig_letters_height: float = 0.86,
+    dataset=None,
 ) -> None:
     plt.close("all")
 
@@ -2488,6 +2496,10 @@ def plot_stacked_bar_predictions_ts(
         axs[ix].set(xlabel="")
         title = " - All data" if v_min == 0 else f" - $V$  $\geq$ {v_min}"
         axs[ix].set_title(f"Overall accuracy {var_names[pmv]}={accuracy}% {title}")
+        if dataset == "all":
+            save_var_latex(f"overall_acc_{pmv}", accuracy, "\\percent", 1)
+        elif dataset == "v_02":
+            save_var_latex(f"overall_acc_{pmv}_{v_min}", accuracy, "\\percent", 1)
         handles, labels = axs[ix].get_legend_handles_labels()
         axs[ix].get_legend().remove()
         axs[ix].grid(False)
@@ -3010,7 +3022,7 @@ def plot_bias_distribution_by_variable_binned():
         # "t_mot_isd",
         "vel_r",
         "rh",
-        "clo",
+        # "clo",
         "met",
         # "thermal_sensation",
         # "thermal_preference",
@@ -3041,7 +3053,7 @@ def plot_bias_distribution_by_variable_binned():
     df_analysis = df.copy()
     df_analysis.loc[df_analysis.vel_r == 0, "vel_r"] = 0.0000001
 
-    f, axs = plt.subplots(5, 1, figsize=(7, 9))
+    f, axs = plt.subplots(4, 1, figsize=(7, 8))
     axs = axs.flatten()
     for i, var in enumerate(variables):
         # plot bias distribution
@@ -3206,17 +3218,6 @@ def table_f1_scores():
         )
     with open("./Manuscript/src/tables/f1.tex", "w") as f:
         f.write(file)
-
-    results_f1 = {}
-    for model in [f"lr_hb_{x}" for x in models_to_test[:-1]]:
-        df_analysis = df[[f"{model}_round", "thermal_sensation_round"]].copy().dropna()
-        x = df_analysis[f"{model}_round"]
-        y = df_analysis[f"thermal_sensation_round"]
-        results_f1[model] = {}
-        for type in ["micro", "macro", "weighted"]:
-            results_f1[model][type] = f1_score(y, x, average=type)
-    df_f1 = pd.DataFrame.from_dict(results_f1)
-    print(df_f1.to_markdown())
 
 
 def pmv_jiayu_fed(tdb, tr, vr, rh, met, clo, wme=0):
@@ -3650,20 +3651,26 @@ if __name__ == "__plot__":
     # Figure 3
     plot_bar_tp_by_ts(data_=df.copy())
 
-    plot_bar(data_=df.copy(), x_var="thermal_sensation_round", y_var="thermal_comfort")
+    # plot_bar(data_=df.copy(), x_var="thermal_sensation_round", y_var="thermal_comfort")
     plot_bar(
         data_=df.copy(), x_var="thermal_sensation_round", y_var="thermal_acceptability"
     )
-    plot_bar(
-        data_=df.copy(),
-        x_var="thermal_sensation_round",
-        y_var="air_movement_preference",
-    )
+    # plot_bar(
+    #     data_=df.copy(),
+    #     x_var="thermal_sensation_round",
+    #     y_var="air_movement_preference",
+    # )
 
     # plot model accuracy using bar chart
-    plot_stacked_bar_predictions_ts(data_=df.copy(), v_min=0, fig_letters=["a)", "b)"])
     plot_stacked_bar_predictions_ts(
-        data_=df.copy(), v_min=0.2, fig_letters=["c)", "d)"], fig_letters_height=0.95
+        data_=df.copy(), v_min=0, fig_letters=["a)", "b)"], dataset="all"
+    )
+    plot_stacked_bar_predictions_ts(
+        data_=df.copy(),
+        v_min=0.2,
+        fig_letters=["c)", "d)"],
+        fig_letters_height=0.95,
+        dataset="v_02",
     )
     # only for entries with velocity >= 0.2 m/s and three heights
     plot_stacked_bar_predictions_ts(
@@ -3672,6 +3679,7 @@ if __name__ == "__plot__":
         fig_name="bar_stacked_model_accuracy_0.2_three_heights",
         fig_letters=["a)", "b)"],
         fig_letters_height=0.95,
+        dataset="v_02_three",
     )
 
     # print Markdown table of f1-scores
@@ -3681,11 +3689,13 @@ if __name__ == "__plot__":
     plot_bubble_models_vs_tsv(
         data_=df.copy(),
         fig_letters=["a)", "b)"],
+        dataset="all",
     )
     plot_bubble_models_vs_tsv(
         data_=df[df["vel_r"] >= 0.2].dropna(subset="vel_l"),
         fig_name="./Manuscript/src/figures/bubble_models_vs_tsv_three_heights.pdf",
         fig_letters=["a)", "b)"],
+        dataset="v_02_three",
     )
 
     # plot bias distribution

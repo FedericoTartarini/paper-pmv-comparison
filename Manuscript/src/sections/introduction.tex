@@ -27,6 +27,9 @@ The \gls{55} standard uses a modified version of the original model, the \ac{pmv
 The best source to see how \ac{pmv-ce} works is the standard itself, but the standard does not explain why some changes to the \ac{pmv} inputs were implemented, nor for example, why the \ac{ce} is subtracted from the \ac{tdb} and \ac{tr}.
 A partial justification of the model is mainly described in \mycite{arens_moving_2009} and secondarily in \mycite{yang_cooling_2015}.
 However, we could not find a peer-reviewed scientific publication that quantified the accuracy improvements of the model as implemented in the \gls{55} over the original \ac{pmv} model.
+\todo[inline]{true enough, but in the standard the objective is to have a rational physiology model.
+The Gagge models are as well or better documented than the Fanger heat balance model, and have been available to Standards users in the ASHRAE Handbook of Fundamentals.}
+\todo[inline, color=blue!40]{FT. The PMV CE and the Gagge model are very different, hence, publications about the latter do not justify the implementation proposed in the Std 55}
 
 Figure~\ref{fig:flowchart_pmv_calculation} shows side by side the calculation routines for the \ac{pmv} and \ac{pmv-ce} models.
 \begin{figure}[!htb]
@@ -120,9 +123,6 @@ The main rationale for the development of the \ac{pmv-ce} model is that the orig
 The \ac{pmv} does not accurately estimate evaporative heat losses trough sweating because it assumes that sweating is constant and only varies as a function of \ac{met}.
 Hence, if sweating is required to maintain the body in thermal equilibrium, the \ac{pmv} model assumes that the body would get hotter.
 The human body, on the other hand, uses sweating to maintain a constant body temperature in `warm' environments.
-\todo[inline]{true enough, but in the standard the objective is to have a rational physiology model.
-The Gagge models are as well or better documented than the Fanger heat balance model, and have been available to Standards users in the ASHRAE Handbook of Fundamentals.}
-\todo[inline, color=blue!40]{FT. The PMV CE and the Gagge model are very different, hence, publications about the latter do not justify the implementation proposed in the Std 55}
 
 Despite this claim from the authors of the \ac{pmv-ce}, our analysis has, however, revealed several limitations specific to the \ac{pmv-ce} model, as outlined below.
 
@@ -181,7 +181,9 @@ Finally, \mycite{Yao2022} only reported the overall bias for the whole dataset, 
 
 \subsection{Objectives}\label{subsec:aim-and-objectives}
 Choosing between the \ac{pmv} and \ac{pmv-ce} is a source of confusion for researchers, educators and practitioners worldwide since both models are widely used in building codes, guidelines and certification programs.
-For example, the WELL certification allows both compliance with \gls{7730} and \gls{55} standards.
+For example, the WELL certification allows both compliance with \gls{7730} and \gls{55} standards, despite the fact that the two models have different outputs under the same environmental and personal conditions as shown in Figure~\ref{fig:comfort_regios_pmv_pmvce}.
+This can lead to confusion when comparing results from different studies or when trying to apply the results in practice.
+
 In this paper, we compare the accuracy of the \ac{pmv} and \ac{pmv-ce} models used in the \gls{7730} and \gls{55} standards, respectively.
 We used the \ac{tsv} recorded in the \acf{db2}.
 We aim to determine which \ac{pmv} model is most accurate and the models' applicability limits.

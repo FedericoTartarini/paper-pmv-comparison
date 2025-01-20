@@ -27,7 +27,7 @@ Figure~\ref{fig:dist_other_data} shows the distribution of age, height, weight, 
     \caption{Distribution of age, height, weight, and running mean outdoor temperature.}
     \label{fig:dist_other_data}
 \end{figure*}
-Less than half (\var{entries_with_sex_info}) of the total entries have information about the participant's sex, and are almost equally distributed among males (\qty{52}{\percent}) and females.
+Less than half (\var{entries_with_sex_info}) of the total entries have information about the participant's sex and are almost equally distributed among males (\qty{52}{\percent}) and females.
 Ages are not normally distributed, the same is true for the running mean outdoor temperature.
 About half of the participants (\var{percentage_age_20_35}) were aged between \num{20} and \num{35} years old, and only \var{percentage_age_over_60} were older than 60.
 This limits our analysis to young adults and does not allow us to determine the accuracy of the \ac{pmv} and \ac{pmv-ce} models in predicting thermal sensation for children or older adults.
@@ -43,7 +43,7 @@ The percentage of \ac{tpv} grouped by each \ac{tsv} is shown in Figure~\ref{fig:
         \caption{Figure a) shows the percentage of \ac{tpv} for each \ac{tsv}.
     The numbers on the right side of each bar show the number of points for each \ac{tsv}.
         Figure b) shows the total number of data points grouped by \ac{tsv}.
-    Each bin in the right figure has more data points than in the left figure, since less data on \ac{tpv} were available.}
+    Each bin in the right figure has more data points than in the left figure since less data on \ac{tpv} were available.}
     \label{fig:bar_plot_tp_by_ts}
     \end{subfigure}
     \par\bigskip % force a bit of vertical whitespace
@@ -62,7 +62,7 @@ The \ac{tsv} dataset is unbalanced.
 Approximately \var{perc_tsv_neutral} of all the entries have a \ac{tsv} of `neutral'.
 While less than \var{perc_tsv_hot} of the total sample of participants reported to be either `hot' or `cold'.
 In thermal comfort research, it is generally assumed that people who are `slightly warm' or `slightly cool' are thermally comfortable~\cite{Fanger1970, schweiker2020evaluating}.
-Fanger, in his seminal book on thermal comfort wrote that ``The dissatisfied are defined here as those who vote \num{-2} (cool) or \num{-3} (cold), \num{2} (warm) or \num{3} (hot).
+Fanger, in his seminal book on thermal comfort, wrote that ``The dissatisfied are defined here as those who vote \num{-2} (cool) or \num{-3} (cold), \num{2} (warm) or \num{3} (hot).
 One could perhaps object that those voting \num{-1} or \num{1} were not included also, but as evidenced by Gagge et al., real discomfort is first expressed by those voting higher than \num{2} or lower than \num{-2}.''~\cite{Fanger1970}.
 However, \qty{68}{\percent} of participants who were `slightly warm' wanted to be `cooler' and \qty{54}{\percent} of participants who were `slightly cool' wanted to be `warmer'.
 This finding challenges the above assumption.
@@ -133,12 +133,12 @@ All the F1 scores significantly increase when analyzing the dataset with $\lvert
 This highlights that the \ac{pmv} models are only accurate in predicting the thermal sensation of people when the thermal sensation is close to neutral.
 
 \subsection{Model Bias}\label{subsec:model-bias}
-The intended aim of the \ac{pmv} model is not to accurately predict each individual thermal response from participants.
+The intended aim of the \ac{pmv} model is not to accurately predict individual thermal responses from participants.
 The \ac{pmv} model was developed to predict the average thermal sensation of an undefined large group of occupants sharing the same environment.
 The results presented so far are primarily comparing individual \ac{tsv} to \ac{pmv}.
 This type of analysis does not conclusively disprove the inefficacy of the \ac{pmv} models in predicting the average thermal sensation of a large group of occupants.
 Moreover, grouping the results into discrete categories introduces rounding errors since some participants reported \ac{tsv} on a continuous scale and the \ac{pmv} value is a continuous variable.
-To compensate for this we plotted the \ac{pmv} and \ac{pmv-ce} values as a function of \ac{tsv} in Figure~\ref{fig:bubble_models_vs_tsv} and we plotted a \ac{lowess} curve.
+To compensate for this, we plotted the \ac{pmv} and \ac{pmv-ce} values as a function of \ac{tsv} in Figure~\ref{fig:bubble_models_vs_tsv} and we plotted a \ac{lowess} curve.
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/bubble_models_vs_tsv}
@@ -158,17 +158,17 @@ Both \ac{pmv} formulations always under-predict the thermal sensation of people 
 the slope of the curve is significantly lower than 1.
 
 \subsubsection{Model Overall Bias}\label{subsubsec:model-overall-bias}
-We calculated the overall bias of the model as previously done by \mycite{Humphreys2002} by subtracting the \ac{pmv} and \ac{pmv-ce} models prediction from the self-reported \ac{tsv}.
+We calculated the overall bias of the model as previously done by \mycite{Humphreys2002} by subtracting the \ac{pmv} and \ac{pmv-ce} predictions from the self-reported \ac{tsv}.
 Figure~\ref{fig:hist_discrepancies} contains the summary statistics.
 % todo check data manually
-Overall both the \ac{pmv} and \ac{pmv-ce} models have a median bias lower than half of a thermal sensation interval.
+Overall, both the \ac{pmv} and \ac{pmv-ce} models have a median bias lower than half of a thermal sensation interval.
 \begin{figure*}[htb!]
     \centering
     \includegraphics[width=\textwidth]{figures/hist_discrepancies}
     \caption{Overall bias of the \ac{pmv} and \ac{pmv-ce} models for the subset of data with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
     The x-axis shows the discrepancy (bias) between the predicted and self-reported \ac{tsv}.
     We have binned the data into intervals of equal width.
-    We colored the bars in the range from \num{-.5} to \num{.5} to highlight the number of responses that are within this range.
+    We colored the bars in the range from \numrange{-.5}{.5} to highlight the number of responses that are within this range.
     We report the median and inter-quantile ranges since data are not normally distributed.
     }
     \label{fig:hist_discrepancies}
@@ -192,7 +192,7 @@ Results are shown in Figure~\ref{fig:bias_models}.
 \end{figure*}
 In each sub-figure, we have binned the results into discrete intervals.
 The x-axis tick label shows the bin range.
-All the boxen-plots have the same area to aid visualization, even though the number of points in each bin is not constant.
+All the boxen plots have the same area to aid visualization, even though the number of points in each bin is not constant.
 The results depict that the use of the \ac{pmv-ce} model does not improve the bias of the \ac{pmv} results across all input variables.
 % todo check data manually
 On the contrary, the bias of the \ac{pmv-ce}~=~\num{-.33} is higher than \ac{pmv}~=~\num{-0.23} for \qty{0.3}{\m\per\s}~$<$~\ac{vr}~$\leq$~\qty{0.46}{\m\per\s}.
@@ -234,7 +234,7 @@ To continue using the \ac{pmv} model beyond an absolute value of \num{0.5}, more
 \begin{enumerate}
     \item verify the assumption that the heat losses/gains estimated by the \ac{pmv} are correlated to the thermoregulatory response that the body has to undertake to compensate for unsatisfactory thermal comfort conditions;
     \item if the previous assumption holds, research is needed to validate the correlation coefficients used by Fanger to map the heat losses/gains and thermal stress;
-    \item currently a single correlation coefficient is used for the hot and cold side but this may not be a valid assumption and two different sets of equations may be used;
+    \item currently a single correlation coefficient is used for the hot and cold side, but this may not be a valid assumption and two different sets of equations may be used;
     \item the anchors used by the \ac{pmv} model are different from those used by participants in reporting their thermal sensation.
     The \ac{pmv} model assumes that a score of 3 (`hot') signifies the change between a compensable set of conditions to an un-compensable one, e.g., skin wettedness reaches its max value ($w_{max}$), as suggested by Gagge~\cite{GaggeSET}.
     On the contrary, participants indoors may deem the environment to be `hot' as soon as their \ac{w} crosses a critical threshold, which is only a fraction of $w_{max}$.
@@ -242,7 +242,7 @@ To continue using the \ac{pmv} model beyond an absolute value of \num{0.5}, more
 
 A combination of all the above-mentioned factors likely plays a role in explaining the discrepancies between the \ac{pmv} model and the self-reported \ac{tsv}.
 The latter hypothesis -- 4) anchoring -- has gained significant momentum in the literature, which led to the development of several \ac{pmv} formulations that apply correction factors to the final \ac{pmv} result without changing the underlying equations~\cite{Yao2022, Toftum2002}.
-Supporting evidence was provided by \mycite{schweiker2020evaluating}, who showed that the distances between the anchors are not constant and a layperson may not perceive the \ac{tsv} scale as researchers believe they do~\cite{schweiker2019scales, schweiker2020evaluating}.
+Supporting evidence was provided by \mycite{schweiker2020evaluating}, who showed that the distances between the anchors are not constant, and a layperson may not perceive the \ac{tsv} scale as researchers believe they do~\cite{schweiker2019scales, schweiker2020evaluating}.
 
 \paragraph{Measurement Errors}
 All the data contained in the \ac{db2} have been published in peer-reviewed manuscripts; however, measurement errors are inevitably present in the dataset.
@@ -252,8 +252,8 @@ In an ideal scenario, errors would be randomly distributed and cancel out, not s
 However, this may not always be the case, for example, if a researcher often underestimates participants' clothing insulation or activity levels.
 Moreover, most of the data in the \ac{db2} also only contains entries where the air speed was measured at a single height.
 This is a problem since the \ac{pmv} model assumes that the air speed is uniform across the human body, and this is not always the case.
-Measuring the air speed at a single height may lead to record higher values than the averaged velocities that are required for the standards’ comfort models.
-This is because the anemometer is almost always placed in relatively open space between mid-body and head level, avoiding measuring the usually sheltered lower body level, consequently the associated sensation prediction will be cooler than it should be.
+Measuring the air speed at a single height may lead to recording higher values than the averaged velocities that are required for the standards’ comfort models.
+This is because the anemometer is almost always placed in a relatively open space between mid-body and head level, avoiding measuring the usually sheltered lower body level, consequently, the associated sensation prediction will be cooler than it should be.
 To account for this error, we only included the studies where the air speed was measured at three different heights in \ref{sec:analysis-of-the-dataset-with-air-speed-measurements-at-three-heights}.
 However, these results were not significantly different from those presented in this paper, and the \ac{pmv-ce} model still had a higher bias than the \ac{pmv} model.
 
@@ -261,5 +261,5 @@ However, these results were not significantly different from those presented in 
 One minor, but not negligible, source of error is using a discrete scale to assess thermal sensation (most of the \ac{tsv} in the \ac{db2} were collected using a discrete scale) while the \ac{pmv} output is continuous.
 For example, even if the model is \qty{100}{\percent} accurate and the estimated \ac{pmv} value is \num{2.5} the person can only report being `warm (\num{2})' or `hot (\num{3})'.
 Using a continuous scale, may in principle be a more robust approach since the distances between the anchors are not constant~\cite{schweiker2019scales, schweiker2020evaluating}.
-They also showed that the \ac{tsv} assumption of its independence from contextual factors such as climate, season and language is flawed~\cite{schweiker2019scales, schweiker2020evaluating}.
+They also showed that the \ac{tsv} assumption of its independence from contextual factors such as climate, season, and language is flawed~\cite{schweiker2019scales, schweiker2020evaluating}.
 An alternative solution would be to transform the \ac{pmv} output to an ordinal seven-point scale.

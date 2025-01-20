@@ -1,7 +1,7 @@
 \section{Conclusions}\label{sec:conclusions}
 The present study compares the accuracy of the \ac{pmv} model, as used in the \gls{7730} standard, and its modified version, the \ac{pmv-ce} model, included in the \gls{55} standard.
 The \ac{pmv-ce} was intentionally developed to more accurately estimate the effect of elevated air movement~\cite{arens_moving_2009}.
-We determined the predictive accuracy of the \ac{pmv} and \ac{pmv-ce} models by comparing their results to the \ac{tsv} available in the ASHRAE Global Thermal Comfort Database II v2.1.
+We determined the predictive accuracy of the \ac{pmv} and \ac{pmv-ce} models by comparing their results to the \ac{tsv} available in the \acl{db2}.
 
 % todo check values manually
 The overall accuracy and F1-macro score of the \ac{pmv} is \var{overall_acc_pmv} and \num{.16}, respectively.
@@ -18,19 +18,19 @@ Our results also show that the assumption that people who are `slightly warm' or
 In the \ac{db2} \qty{68}{\percent} of participants who were `slightly warm' wanted to be `cooler' and \qty{54}{\percent} of participants who were `slightly cool' wanted to be `warmer'.
 
 \subsection{Implications for the \gls{55} and \gls{7730} Standards and \ac{pmv} Users}\label{subsec:implications-for-the-ashrae-55-and-iso-7730-standards}
-Researchers, educators and practitioners worldwide may wonder which model they should use.
+Researchers, educators, and practitioners worldwide may wonder which model they should use.
 The \gls{55} standard explains how the \ac{pmv-ce} works, however, we could not find a peer-reviewed publication that proves it has superior prediction performances.
 The \ac{pmv-ce} is more complex and computationally intensive to run, while not being more accurate than the original \ac{pmv} model.
 Hence, we suggest researchers should calculate the \ac{pmv} values according to the \gls{7730} standards.
 
 The very low prediction accuracy of both model formulations, along with the lack of data at the extremes of their applicability limits, suggests that these limits should be reconsidered.
 Based on our results, we recommend restricting the use of the \ac{pmv} only to values $\lvert \textrm{PMV}\lvert \leq 0.5$.
-In other words, we only recommend using it for determining whether an environment may be deemed thermally neutral by a large group of occupants.
+In other words, we only recommend using it to determine whether an environment may be deemed thermally neutral by a large group of occupants.
 The model, however, is not capable of determining the degree by which people are dissatisfied and can only be used to classify if individuals are on the `cold' (\ac{pmv}~$\leq 0.5$) or `warm' (\ac{pmv}~$\geq 0.5$) side.
 Several peer-reviewed papers \cite{Cheung2019, Yao2022, kim2019thermal, tartarini2018thermal, Humphreys2002, doherty_evaluation_1988} provide corroborating evidence that supports our results.
 We understand that this may raise the concern that limiting the \ac{pmv} to $\lvert \textrm{PMV}\lvert \leq 0.5$ would increase the building energy consumption.
 However, this is not the case.
-As shown in Figure~\ref{fig:comfort_regios_pmv_pmvce} increasing \ac{vr} to a modest \qty{0.4}{\m\per\s}, which is achievable with any standard electric fan, is sufficient in an office settiong to extend the upper boundary of comfort region to \ac{tdb}~=~\qty{27.7}{\celsius}.
+As shown in Figure~\ref{fig:comfort_regios_pmv_pmvce} increasing \ac{vr} to a modest \qty{0.4}{\m\per\s}, which is achievable with any standard electric fan, is sufficient in an office setting to extend the upper boundary of comfort region to \ac{tdb}~=~\qty{27.7}{\celsius}.
 This is the upper \ac{tdb} value estimated by the \ac{pmv} to keep a person within the comfort region while wearing a typical office attire \ac{clor}~=~\qty{0.5}{clo} and performing office tasks \ac{met}~=~\qty{1.2}{met} with \ac{rh}~=~\qty{50}{\percent}.
 Hence, we would like to point out that it is not the \ac{pmv} model that is a limiting factor in saving energy, but instead is that in buildings we cool the air rather than moving it.
 A field study in Singapore showed that allowing participants to control \ac{v} while simultaneously increasing \ac{tdb} from \qty{24}{\celsius} to \qty{26.5}{\celsius} reduced the energy consumption by \qty{32}{\percent}~\cite{kent_energy_2023}.
@@ -39,7 +39,8 @@ We also recommend restricting the ranges on both environmental and personal fact
 Currently, these limits extend far beyond the range of data contained in the \ac{db2} dataset.
 \todo{But this statement is incorrect for ASHRAE Std 55, which only defines its single comfort zone using +/-0.5}
 Being the \ac{db2} the largest thermal comfort dataset in the world and containing data from all continents, we deem it not to be necessary to have such wide applicability limits for both \gls{55} and \gls{7730} standards when these environmental variables are rarely observed in buildings across the world.
-\todo{unclear what limits you are talking about, or who the audience is for your suggestions.  The ComfortTool allows extrapolation to high PMVs, but that is not true for ASHRAE 55 itself.  Your suggestions are actually just aimed at yourselves as keepers of the ComfortTool}
+\todo{unclear what limits you are talking about, or who the audience is for your suggestions.  The ComfortTool allows extrapolation to high PMVs, but that is not true for ASHRAE 55 itself.  
+Your suggestions are just aimed at you as keepers of the ComfortTool}
 The lack of data available beyond the ranges depicted in Figure~\ref{fig:dist_input_data} did not allow us to test the accuracy of both the \ac{pmv} and \ac{pmv-ce} above those ranges.
 Consequently, we suggest reducing both standards' applicability limits to the ranges shown in Table~\ref{tab:ranges}, until more data are collected.
 \begin{table}[htb!]
@@ -53,7 +54,7 @@ Consequently, we suggest reducing both standards' applicability limits to the ra
         \ac{rh} & \qtyrange{10}{80}{\percent} \\
         \ac{clo} & \qtyrange{0.3}{1.5}{clo} \\
         \ac{met} & \qtyrange{1}{2}{met} \\
-        \ac{pmv} & \numrange{-.5}{.5}{} \\
+        \ac{pmv} & \numrange{-.5}{.5} \\
         \bottomrule
     \end{tabular}
     \caption{New proposed applicability limits for the \gls{55} and \gls{7730} standards.}

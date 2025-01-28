@@ -202,28 +202,27 @@ These findings, along with those shown in Table~\ref{tab:f1} and earlier figures
 
 \subsection{Sources of Error}\label{subsec:sources-of-error}
 In this section, we try to identify some of the main reasons that could explain the difference in the results from the two \ac{pmv} models when compared against the \ac{tsv} available in the \ac{db2}.
-Moreover, we tried to explain why we observed that the \ac{pmv-ce} model has a lower accuracy than the \ac{pmv} in predicting thermal sensation.
-The issues are reported in order of importance of what we believe may affect the accuracy of the model.
-\todo{Ed's comment - Note that the section below does not mention the two-node model, the CE implementation of PMV, or the physiological differences between the ISO and ASHRAE models that could explain the observed differences or ‘error’. }
+The issues are reported in order of importance of what we believe may affect the accuracy of the model. 
+In this paragraph, we refer to the \ac{pmv} model, but the consideration can also be applied to the \ac{pmv-ce} model given its formulation.
 
-\paragraph{Heat Balance Equation and Calculation of the PMV Value}
+\paragraph{Heat Balance Equations and Thermal Sensation Predictions}
 The \ac{pmv} model uses simplified heat balance equations to estimate the heat losses and gains from the human body to its surrounding environment.
-This is a possible source of error since the model considers the human body to be a cylinder with constant width all uniformly covered with clothing where the heat is all generated in its core.
+This is a possible source of error since the model considers the human body to be a cylinder with constant width, all uniformly covered with clothing, where the heat is all generated in its core.
 This is a significant simplification, as it overlooks several important factors, such as the uneven coverage of clothing across different parts of the body, the non-uniformity of metabolic heat generation, and the variations of mass-to-surface ratios.
 It also ignores vasoconstriction and vasodilation.
 Additionally, the \ac{pmv} model erroneously assumes that the human body is not capable of maintaining a stable core temperature.
-A \ac{pmv} value higher than \num{.5} or lower than \num{-.5} indicate that the hypothetical cylinder representing the human body is either gaining or losing heat, and consequently it is getting warmer or colder, respectively.
+A \ac{pmv} value higher than \num{.5} or lower than \num{-.5} indicate that the hypothetical cylinder representing the human body is either gaining or losing heat, and consequently, it is getting warmer or colder, respectively.
 
 Moreover, the \ac{pmv} model has been developed based on the assumption of steady-state heat transfer; however, this never precisely occurs.
 The human thermoregulatory system, in healthy humans, is constantly actively engaged to ensure a stable core temperature~\cite{romanovsky_thermoregulation_2018}.
 
 The \ac{pmv} model also assumes that the human body is constantly losing a certain amount of heat through sweating and this heat loss (W/m\textsuperscript{2}) only varies as a function of \ac{met} and it is calculated using the following equation $0.42\times($\ac{met}$\times58.15 - 58.15)$~\cite{Fanger1970}.
-This amount of heat loss is included in the equation even if the cylinder has a negative heat gain, or in other words, the person is estimated to be feeling cold.
+This amount of heat loss is included in the equation even if a person is in thermal neutrality (feeling comfortable) or has a negative heat gain (feeling cooler than neutral).
 
 The \ac{pmv} model uses the overall heat losses or gains to calculate a \ac{pmv} value which should represent the average \ac{tsv} of a large group of occupants.
 Heat losses or gains are only a proxy for the thermoregulation effort that the human body has to undergo to maintain a constant internal temperature.
-Fanger created this equation based on a limited dataset collected in a laboratory, and this equation was never updated or revisited~\cite{Fanger1970}.
-In the \ac{pmv} model the heat losses and gains are mapped using constant coefficients to a \ac{tsv}, disregarding the fact that the human body employs different strategies, i.e., vasodilation and vasoconstriction to cope with warm and cold conditions~\cite{romanovsky_thermoregulation_2018}.
+Fanger created this equation based on a limited dataset collected in a laboratory, which was never updated or revisited~\cite{Fanger1970}.
+In the \ac{pmv} model, the heat losses and gains are mapped using constant coefficients to a \ac{tsv}, disregarding the fact that the human body employs different strategies, i.e., vasodilation and vasoconstriction, to cope with warm and cold conditions~\cite{romanovsky_thermoregulation_2018}.
 
 It is, therefore, not surprising to observe that the \ac{pmv} model has an `acceptable' accuracy only in determining when people are `neutral'.
 This is equivalent to no heat losses or gains (i.e., \ac{pmv}=0) which means that the body is dissipating all the internal metabolic heat production through conduction, convection, evaporation, or radiation without needing to thermoregulate using sweating, shivering, vasoconstriction, vasodilation, behavioral adjustments, and non-shivering thermogenesis~\cite{ romanovsky_thermoregulation_2018}.

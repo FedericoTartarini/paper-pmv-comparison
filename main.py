@@ -30,10 +30,12 @@ warnings.filterwarnings("ignore")
 psychrolib.SetUnitSystem(psychrolib.SI)
 
 
-results = two_nodes(29, 29, 0.15, 80, 1, 0.5, 0)
-results["w"]
-results = cooling_effect(29, 29, 0.15, 80, 1, 0.5, 0)
-print(results)
+results = two_nodes(29, 29, 0.25, 80, 1, 0.5, 0)
+print(results["w"])
+ce = cooling_effect(29, 29, 0.25, 80, 1, 0.5, 0)
+print(ce)
+results = two_nodes(29 - ce, 29 - ce, 0.25, 80, 1, 0.5, 0)
+print(results["w"])
 
 palette_tp = [
     "#06A6EE",

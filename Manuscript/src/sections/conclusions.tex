@@ -39,12 +39,7 @@ A field study in Singapore showed that allowing participants to control \ac{v} w
 
 We also recommend restricting the ranges on both environmental and personal factors set by both \gls{55} and \gls{7730} standards.
 Currently, these limits extend far beyond the range of data contained in the \ac{db2} dataset.
-\todo{EA. But this statement is incorrect for ASHRAE Std 55, which only defines its single comfort zone using +/-0.5}
-\todo[inline, color=blue!40]{FT. We clarified this issue above.}
 Being the \ac{db2} the largest thermal comfort dataset in the world and containing data from all continents, we deem it not to be necessary to have such wide applicability limits for both \gls{55} and \gls{7730} standards when these environmental variables are rarely observed in buildings across the world.
-\todo{unclear what limits you are talking about, or who the audience is for your suggestions.  The ComfortTool allows extrapolation to high PMVs, but that is not true for ASHRAE 55 itself.  
-Your suggestions are just aimed at you as keepers of the ComfortTool}
-\todo[inline, color=blue!40]{FT. The limits are the one described in Table 2, for example, we suggest to use the model only from 0.3 and 1.5 clo and met between 1 and 2.}
 The lack of data available beyond the ranges depicted in Figure~\ref{fig:dist_input_data} did not allow us to test the accuracy of both the \ac{pmv} and \ac{pmv-ce} above those ranges.
 Consequently, we suggest reducing both standards' applicability limits to the ranges shown in Table~\ref{tab:ranges}, until more data are collected.
 \begin{table}[htb!]
@@ -72,8 +67,6 @@ The \ac{tsv} is ambiguous and does not allow determining if an action should be 
 Assuming that people who are `slightly warm' or `slightly cool' are thermally neutral leads to undercounting thermal discomfort in our dataset, which is not a valid assumption.
 We recommend the use of the thermal preference scale to determine how people perceive their thermal environment. 
 This scale more clearly allows an HVAC system to decide whether to change or not the thermal environment.
-\todo{EA. This is a major suggestion with very significant implications for energy etc that have not been discussed in the paper.  There are surely reasons people have not used that scale on its own, for this purpose.}
-\todo[inline, color=blue!40]{FT. We discussed this in Figure 5a and in its related text. The PMV model assume that people are comfortable when they claim to be slightly warm or slightly cool, this is explicit in Fanger's book.}
 
 Finally, we would like to highlight that the current definition of the \ac{pmv} model which states that the model aims ``\ldots to predict the average thermal sensation of a large group of occupants'' is ambiguous.
 Both the \gls{55} and \gls{7730} standards should clarify the minimum number of occupants required to use the \ac{pmv} model.

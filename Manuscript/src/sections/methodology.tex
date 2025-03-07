@@ -23,13 +23,17 @@ Consequently, the final dataset used for the analysis contains \var{entries_db_u
 The adjusted total clothing insulation and relative airspeed, as required by both standards, were used to calculate the \ac{pmv} and \ac{pmv-ce} values.
 
 Fanger and the \gls{7730} state that the \ac{pmv} should only be used when its absolute value is lower than 2~\cite{Fanger1970, iso7730}.
-However, since the thermal sensation was measured with a seven-point scale, the \ac{pmv} has no upper or lower boundary, and the \gls{55} does not specify the range of applicability of the \ac{pmv-ce} model, we decided to keep the data that felt within the following ranges $|$\ac{tsv}$|$~$\leq$~\num{3} or $|$\ac{pmv}$|$~$\leq$~\num{3.5}.
+However, since the thermal sensation was measured with a seven-point scale, the \ac{pmv} has no upper or lower boundary, and the \gls{55} does not specify the range of applicability of the \ac{pmv-ce} model, we decided to keep the data that felt within the following ranges $|$\ac{tsv}$|$~$\leq$~\num{3} or $|$\ac{pmv}$|$~$\leq$~\num{3.5}. 
+The \gls{55} classifies “combinations of indoor thermal environmental factors and personal factors that produce satisfactory thermal environmental conditions” into only two categories: compliant or non-compliant with the standard. 
+It defines compliance as $\mid$\ac{pmv-ce}$\mid \leq 0.5$. Consequently, its accuracy could have been evaluated by relating the standard-compliant (or not) conditions and the thermal satisfaction (dissatisfaction) votes. 
+However, this metric is rarely collected and is absent from the \ac{db2}. 
 
 In addition, it should also be noted that while all the data included in the \ac{db2} are published in peer-reviewed papers, not all entries were collected using the same standardized methodology.
 For example, while both thermal comfort standards recommend measuring \ac{v} at three different heights, this was not always done.
 The absence of standardized measurement protocols, the use of inaccurate or uncalibrated sensors, and the use of different reference tables to estimate \ac{clo} and \ac{met} may all introduce an error in the measurements and, consequently, in the results of both models.
 This issue has already been evidenced in the literature by \mycite{dambrosio_alfano_role_2011}.
 They showed that the reliability of the \ac{pmv} model is strongly affected by the accuracy of the input data.
+Moreover, it is unclear if the clothing insulation of the chair has been consistently included or excluded in \ac{clo}.
 In our analysis, we compensate this issue by:
 \begin{enumerate}[ {}1{)} ]
     \item comparing the results of the two models using the same dataset; hence, the difference in the output is mainly due to the different formulations of the models;

@@ -10,7 +10,7 @@ To this date, the \ac{pmv} remains to be the most utilized thermal comfort model
 
 \subsection{\ac{pmv-ce} model}\label{subsec:pmv-ce-limitations}
 The \gls{55} standard uses a modified version of the original model, the \ac{pmv-ce}~\cite{ashrae552023}.
-The best source to see how \ac{pmv-ce} works is the standard itself, but the standard does not explain why some changes to the \ac{pmv} inputs were implemented, nor for example, why the \ac{ce} is subtracted from the \ac{tdb} and \ac{tr}.
+The best source to see how \ac{pmv-ce} works is the standard itself, but the standard does not explain why some changes to the \ac{pmv} inputs were implemented, nor for example, why the \ac{ce} is subtracted from the \ac{tdb} and \ac{tr}. It is a common practice of normative standards not to provide explanations.
 A partial justification of the model is mainly described in \mycite{arens_moving_2009} and secondarily in \mycite{yang_cooling_2015}.
 However, we could not find a peer-reviewed scientific publication that quantified the accuracy improvements of the model as implemented in the \gls{55} over the original \ac{pmv} model.
 
@@ -120,7 +120,7 @@ However, despite this claim of the authors of \ac{pmv-ce}, our analysis has reve
     The assumption of keeping \ac{rh} constant after adjusting \ac{tdb} and \ac{tr} is thermodynamically incorrect since the value of \ac{rh} is dependent on \ac{tdb}.
     The \ac{rh} should be re-calculated, potentially assuming the humidity ratio to be constant, to reflect the new \ac{tdb} value.
     \item It should be noted that over the years, the threshold value of \ac{vr} after which the \ac{ce} is calculated, has been changed from \qty{0.15}{\m\per\s} in the ASHRAE~55:2013~\cite{ASHRAE552013} to \qty{0.2}{\m\per\s} in the ASHRAE~55:2017~\cite{ASHRAE552017, arens_moving_2009} to \qty{0.1}{\m\per\s} in \gls{55}~\cite{ashrae552023}.
-    However, these changes were not based on any scientific evidence, despite significantly affecting the output of the model.
+    These changes significantly affected the output and applicability of the model.
     \item Calculating the \ac{pmv-ce} is more computationally intensive and complex since it requires the user to solve two heat balance equations, the \ac{pmv} and the \ac{set} model.
     In some contexts, like in yearly building performance simulations, this could make a difference. 
 \end{enumerate}
@@ -161,4 +161,4 @@ This can lead to confusion when comparing results from different studies or when
 
 In this paper, we compare the accuracy of the \ac{pmv} and \ac{pmv-ce} models used in the \gls{7730} and \gls{55} standards, respectively.
 We used the \ac{tsv} recorded in the \acf{db2}.
-We aim to determine which \ac{pmv} model is most accurate and the models' applicability limits.
+We aim to determine which \ac{pmv} model is more accurate and the models' applicability limits.

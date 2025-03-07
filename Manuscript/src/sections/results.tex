@@ -106,7 +106,6 @@ Being \ac{tsv} the value reported by participants (i.e., ground truth), in Figur
 Both \ac{pmv} formulations underestimate the conditions at which participants are thermally dissatisfied with their environment.
 The overall accuracies of the \ac{pmv} and \ac{pmv-ce} are \var{overall_acc_pmv} and \var{overall_acc_pmv_ce}, respectively, when using the whole dataset.
 The overall accuracy of both \ac{pmv} models changed to \var{overall_acc_pmv_0.2} and \var{overall_acc_pmv_ce_0.2}, respectively when only considering entries with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s}.
-% todo check data manually
 The \ac{pmv-ce} model outperforms the \ac{pmv} model for \ac{tsv}~=~0 and -1.
 However, the \ac{pmv} model outperforms the \ac{pmv-ce} model when considering \ac{tsv}~=~1.
 The number of data points in each \ac{tsv} bin is different.
@@ -123,7 +122,6 @@ In Table~\ref{tab:f1}, we report the F1 scores for both models, i) using the who
     \caption{F1 scores for the \ac{pmv} and \ac{pmv-ce} models for different subsets of data.}
     \label{tab:f1}
 \end{table}
-% todo check data manually
 The F1-macro score, which is free from label imbalance, depicts that the accuracy of both models across all metrics is marginally better than random guessing (i.e., \qty{14}{\percent}) for all data.
 For the subset of data with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} the F1-macro scores of the \ac{pmv} and \ac{pmv-ce} models only slightly improved.
 We then analyzed the subset of data with \ac{vr}~$\geq$~\qty{0.2}{\m\per\s} and with \ac{vr} measured at three heights.
@@ -152,7 +150,6 @@ We only binned the data to aid the visualization of a large dataset.
 For the model to accurately predict people’s thermal sensation, the regression line (black continuous line) should pass through the origin of the Cartesian plane and have a slope of 1.
 This ideal prediction is referred to as the identity line, shown as the brown dashed line in the figure.
 The intercepts for the \ac{pmv} is \var{intercept_all_pmv} and for the \ac{pmv-ce} is \var{intercept_all_pmv_ce} which means that the model has a bias of less than one-quarter of a thermal sensation interval.
-% todo check data manually
 This result is aligned with those presented in Figure~\ref{fig:bar_stacked_model_accuracy} where the \ac{pmv} and \ac{pmv-ce} models can predict people who reported to be neutral \qty{51}{\percent} and \qty{58}{\percent} of the times, respectively.
 Both \ac{pmv} formulations always under-predict the thermal sensation of people who reported to be on the extremes of the \ac{tsv};
 the slope of the curve is significantly lower than 1.
@@ -160,7 +157,6 @@ the slope of the curve is significantly lower than 1.
 \subsubsection{Model Overall Bias}\label{subsubsec:model-overall-bias}
 We calculated the overall bias of the model as previously done by \mycite{Humphreys2002} by subtracting the \ac{pmv} and \ac{pmv-ce} predictions from the self-reported \ac{tsv}.
 Figure~\ref{fig:hist_discrepancies} contains the summary statistics.
-% todo check data manually
 Overall, both the \ac{pmv} and \ac{pmv-ce} models have a median bias lower than half of a thermal sensation interval.
 \begin{figure*}[htb!]
     \centering
@@ -194,7 +190,6 @@ In each sub-figure, we have binned the results into discrete intervals.
 The x-axis tick label shows the bin range.
 All the boxen plots have the same area to aid visualization, even though the number of points in each bin is not constant.
 The results depict that the use of the \ac{pmv-ce} model does not improve the bias of the \ac{pmv} results across all input variables.
-% todo check data manually
 On the contrary, the bias of the \ac{pmv-ce}~=~\num{-.33} is higher than \ac{pmv}~=~\num{-0.23} for \qty{0.3}{\m\per\s}~$<$~\ac{vr}~$\leq$~\qty{0.46}{\m\per\s}.
 Both models have a median bias higher or equal to $\lvert0.5\lvert$ for \ac{tdb}~$\leq$~\qty{21}{\celsius}.
 

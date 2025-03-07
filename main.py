@@ -3621,7 +3621,7 @@ def compare_pmv_pmv_ce_comfort_region():
         axs[ix].set(
             ylabel="Relative Humidity (%)",
             xlabel="Temperature (°C)",
-            title=r"$V$" + f" = {v} m/s",
+            title=r"$V_r$" + f" = {v} m/s",
             ylim=(0, 100),
             yticks=np.arange(0, 110, 25),
         )

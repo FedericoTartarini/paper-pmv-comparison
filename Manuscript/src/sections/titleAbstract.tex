@@ -21,17 +21,14 @@
         We found that overall both models only predict \ac{tsv} correctly only one-third of the time.
         The \ac{pmv-ce} has a higher bias than \ac{pmv} in predicting thermal sensation in the subset of data with \acl{vr}~$\geq$~\qty{0.2}{\m\per\s}.
 
-%        todo manually check values
         Both models have an accuracy lower or equal to \qty{5}{\percent} when predicting either `warm', `hot', or `cold'.
         This value is lower than random guessing (\qty{14}{\percent}), meaning they are misleading users.
         A \ac{pmv} value higher than \num{.5} or lower than \num{-.5} only indicates that people's thermal sensation is on the `warm' or `cold' side, respectively.
         Hence, we suggest reducing the applicability limit of both models within the range $\mid$\ac{pmv}$\mid \leq 0.5$.
         Finally, the assumption that individuals who feel `slightly warm' or `slightly cool' can be considered thermally comfortable leads to under-counting thermal discomfort.
-%        todo manually check values
         In the \acl{db2}, \qty{68}{\percent} of participants who were `slightly warm' wanted to be `cooler' and \qty{54}{\percent} of participants who were `slightly cool' wanted to be `warmer'.
     \end{abstract}
 
-%    todo change the graphical abstract
     \begin{graphicalabstract}
         \includegraphics[width=\linewidth]{figures/graphical_abstract}
     \end{graphicalabstract}
